@@ -1,0 +1,15 @@
+[submodule "external/ImTerm"]
+	path = external/ImTerm
+	url = https://github.com/Organic-Code/ImTerm
+[submodule "external/spdlog"]
+	path = external/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "external/ImGui"]
+	path = external/ImGui
+	url = https://github.com/ocornut/imgui
+[submodule "external/ImGui-SFML"]
+	path = external/ImGui-SFML
+	url = https://github.com/eliasdaler/imgui-sfml
+[submodule "external/SFML"]
+	path = external/SFML
+	url = https://github.com/SFML/SFML
