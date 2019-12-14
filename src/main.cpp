@@ -1,24 +1,24 @@
-#include <imgui.h>
 #include <imgui-SFML.h>
+#include <imgui.h>
 
 #include <imterm/terminal.hpp>
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
-
-#include <spdlog/spdlog.h>
+#include <SFML/System/Clock.hpp>
+#include <SFML/Window/Event.hpp>
 
 #include "program_state.hpp"
 #include "terminal_commands.hpp"
+#include <spdlog/spdlog.h>
 
 namespace cst {
-	constexpr unsigned long window_width = 800;
-	constexpr unsigned long window_height = 450;
-}
+constexpr unsigned long window_width  = 800;
+constexpr unsigned long window_height = 450;
+} // namespace cst
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 	program_state prgm;
 	ImTerm::terminal<terminal_commands> terminal_log(prgm, "terminal", cst::window_width);
 	terminal_log.theme() = ImTerm::themes::cherry;
@@ -40,24 +40,23 @@ int main(int argc, char* argv[]) {
 	window.setFramerateLimit(60);
 	ImGui::SFML::Init(window);
 
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io    = ImGui::GetIO();
 	io.IniFilename = nullptr;
 
-	while(window.isOpen())
-	{
+	while (window.isOpen()) {
 		sf::Event event{};
-		while(window.pollEvent(event))
-		{
+		while (window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
 
-			if(event.type == sf::Event::Closed)
-			{
+			if (event.type == sf::Event::Closed) {
 				window.close();
-			} else if (event.type == sf::Event::KeyPressed) {
+			}
+			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::F11) {
 					prgm.term_on_display = !prgm.term_on_display;
 				}
-			} else if (event.type == sf::Event::Resized) {
+			}
+			else if (event.type == sf::Event::Resized) {
 				terminal_log.set_width(window.getSize().x);
 				if (resized_once) {
 					terminal_log.set_height(std::min(window.getSize().y, static_cast<unsigned>(terminal_log.get_size().y)));
