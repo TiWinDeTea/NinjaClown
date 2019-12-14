@@ -17,8 +17,40 @@ constexpr unsigned long window_width  = 800;
 constexpr unsigned long window_height = 450;
 } // namespace cst
 
-int main(int argc, char *argv[])
-{
+int actual_main(int argc, char* argv[]);
+
+#ifdef USE_WINMAIN
+#include <windows.h>
+#include <tchar.h>
+#include <shellapi.h>
+
+INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPWSTR, INT) {
+	UNREFERENCED_PARAMETER(hInst);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+
+    int argc;
+    char** argv;
+    {
+        LPWSTR* lpArgv = CommandLineToArgvW( GetCommandLineW(), &argc );
+        argv = (char**) malloc( argc*sizeof(char*) );
+        int size, i = 0;
+        for( ; i < argc; ++i )
+        {
+            size = wcslen( lpArgv[i] ) + 1;
+            argv[i] = (char*) malloc( size );
+            wcstombs( argv[i], lpArgv[i], size );
+        }
+        LocalFree( lpArgv );
+    }
+    return actual_main(argc, argv);
+}
+#else
+int main(int argc, char* argv[]) {
+	return actual_main(argc, argv);
+}
+#endif
+
+int actual_main(int argc, char* argv[]) {
 	program_state prgm;
 	ImTerm::terminal<terminal_commands> terminal_log(prgm, "terminal", cst::window_width);
 	terminal_log.theme() = ImTerm::themes::cherry;
@@ -80,4 +112,5 @@ int main(int argc, char *argv[])
 		window.display();
 	}
 	ImGui::SFML::Shutdown();
+	return 0;
 }

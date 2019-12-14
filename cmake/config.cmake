@@ -1,6 +1,10 @@
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     add_compile_definitions(OS_WINDOWS)
     set(CONFIG_OS_WINDOWS 1)
+    if (MSVC)
+        set(OPTIONS WIN32)
+        add_compile_definitions(USE_WINMAIN)
+    endif(MSVC)
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_compile_definitions(OS_LINUX)
