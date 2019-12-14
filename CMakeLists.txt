@@ -27,6 +27,7 @@ target_link_libraries(
         ninja-clown
         ${IMGUI_SFML_LIBRARIES}
 		${SFML_LIBRARIES}
+		${DLL_LOADING_TARGET_LIBRARY}
 )
 
 file(GLOB_RECURSE files "resources/*")

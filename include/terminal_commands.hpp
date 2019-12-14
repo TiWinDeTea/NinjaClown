@@ -23,6 +23,7 @@ public:
 	static void exit(argument_type&);
 	static void help(argument_type&);
 	static void quit(argument_type&);
+	static void load_shared_library(argument_type&);
 };
 
 #endif // NINJACLOWN_TERMINAL_COMMANDS_HPP

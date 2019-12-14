@@ -3,6 +3,8 @@
 #include <imterm/misc.hpp>
 
 #include <array>
+#include <charconv>
+#include <dlfcn.h> // linux
 
 namespace {
 
@@ -19,6 +21,8 @@ namespace {
 			                                terminal_commands::no_completion},
 			terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit,
 			                                terminal_commands::no_completion},
+			terminal_commands::command_type{"load", "loads a shared library", terminal_commands::load_shared_library,
+								            terminal_commands::no_completion},
 	};
 }
 
@@ -95,4 +99,44 @@ void terminal_commands::help(argument_type& arg) {
 
 void terminal_commands::quit(argument_type& arg) {
 	arg.val.close_request = true;
+}
+
+void terminal_commands::load_shared_library(argument_type& arg) {
+	using think_fn_type = int(*)(int);
+
+	if (arg.command_line.size() < 3) {
+		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path> <some_magic_int>");
+		return;
+	}
+
+	int think_param;
+	{
+		std::string think_param_str = arg.command_line[2];
+		auto [p, ec] = std::from_chars(think_param_str.data(), think_param_str.data()+think_param_str.size(), think_param);
+		if (ec != std::errc()) {
+			arg.term.add_text("couldn't parse magic int");
+			return;
+		}
+	}
+
+	std::string shared_library_path = arg.command_line[1];
+	arg.term.add_text("loading " + shared_library_path);
+
+	void* handle = dlopen(shared_library_path.c_str(), RTLD_NOW);
+	if (!handle) {
+		arg.term.add_text(std::string{dlerror()});
+		return;
+	}
+
+	auto think = reinterpret_cast<think_fn_type>(dlsym(handle, "think"));
+	char* error = dlerror();
+	if (error != nullptr)  {
+		arg.term.add_text(std::string{error});
+		return;
+	}
+
+	int think_result = think(think_param);
+	arg.term.add_text("thinking about " + std::to_string(think_result));
+
+	dlclose(handle);
 }

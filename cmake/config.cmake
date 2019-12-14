@@ -5,6 +5,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_compile_definitions(OS_LINUX)
     set(CONFIG_OS_LINUX 1)
+    set(DLL_LOADING_TARGET_LIBRARY dl)
 
 else()
     message(FATAL_ERROR "unsupported OS")
