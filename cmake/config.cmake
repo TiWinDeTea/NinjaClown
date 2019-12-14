@@ -18,5 +18,7 @@ elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
 endif()
 
 add_compile_definitions(IMTERM_ENABLE_REGEX)
+add_compile_definitions(IMTERM_USE_FMT)
+add_compile_definitions(FMT_HEADER_ONLY)
 set(COMPILE_SFML_WITH_PROJECT OFF) # Use system SFML if present
 set(SFML_MINIMUM_SYSTEM_VERSION 2.5)

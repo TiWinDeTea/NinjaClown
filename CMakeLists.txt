@@ -21,6 +21,7 @@ target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMTERM_INCLUDE_DIR}
         ${SPDLOG_INCLUDE_DIR}
         ${SFML_INCLUDE_DIR}
+		${FMT_INCLUDE_DIR}
 )
 target_link_libraries(
         ninja-clown
