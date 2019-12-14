@@ -19,18 +19,20 @@ public:
 
 	explicit operator bool() const;
 
-	std::string error() const;
+	[[nodiscard]] std::string error() const;
 
-	template <typename FuncPtr> FuncPtr get_address(const char *func_name)
+	template <typename FuncPtr>
+	[[nodiscard]] FuncPtr get_address(const char *func_name)
 	{
 #if defined OS_WINDOWS
-		return reinterpret_cast<FuncPtr>(GetProcAddress(handle, func_name.c_str()));
+		return reinterpret_cast<FuncPtr>(GetProcAddress(m_handle, func_name));
 #elif defined OS_LINUX
 		return reinterpret_cast<FuncPtr>(dlsym(m_handle, func_name));
 #endif
 	}
 
-	template <typename FuncPtr> FuncPtr get_address(const std::string &func_name)
+	template <typename FuncPtr>
+	[[nodiscard]] FuncPtr get_address(const std::string &func_name)
 	{
 		return get_address<FuncPtr>(func_name.c_str());
 	}
