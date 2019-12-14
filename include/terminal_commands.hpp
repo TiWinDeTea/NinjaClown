@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <initializer_list>
 
 #include <imterm/terminal.hpp>
 #include <imterm/terminal_helpers.hpp>
@@ -24,6 +25,8 @@ public:
 	static void help(argument_type&);
 	static void quit(argument_type&);
 	static void load_shared_library(argument_type&);
+
+	static std::vector<std::string> autocomplete_path(argument_type&, const std::initializer_list<std::string_view>& extensions);
 };
 
 #endif // NINJACLOWN_TERMINAL_COMMANDS_HPP

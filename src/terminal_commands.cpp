@@ -1,12 +1,19 @@
 #include "terminal_commands.hpp"
+#include "utils.hpp"
 
 #include <imterm/misc.hpp>
 
 #include <array>
 #include <charconv>
+#include <filesystem>
+
 #include <dlfcn.h> // linux
 
 namespace {
+
+	std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type& arg) {
+		return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
+	}
 
 	constexpr std::array local_command_list{
 			terminal_commands::command_type{"clear", "clears the terminal screen", terminal_commands::clear,
@@ -22,7 +29,7 @@ namespace {
 			terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit,
 			                                terminal_commands::no_completion},
 			terminal_commands::command_type{"load", "loads a shared library", terminal_commands::load_shared_library,
-								            terminal_commands::no_completion},
+			                                autocomplete_library_path}
 	};
 }
 
@@ -139,4 +146,51 @@ void terminal_commands::load_shared_library(argument_type& arg) {
 	arg.term.add_text("thinking about " + std::to_string(think_result));
 
 	dlclose(handle);
+}
+
+std::vector<std::string> terminal_commands::autocomplete_path(argument_type& arg, const std::initializer_list<std::string_view>& extensions) {
+
+
+	std::vector<std::string> paths;
+
+	if (arg.command_line.size() == 2) {
+		std::string_view current = arg.command_line[1];
+		std::string_view file_prefix;
+		std::string_view directory;
+
+		if (auto last_dir_sep = current.find_last_of("/\\"); last_dir_sep != std::string_view::npos) {
+			file_prefix = current.substr(last_dir_sep + 1);
+			directory   = current.substr(0, last_dir_sep);
+			if (directory.empty()) {
+				directory = "/";
+			}
+		} else {
+			directory = ".";
+			file_prefix = current;
+		}
+
+		std::error_code ec;
+		std::filesystem::directory_iterator d_it(directory, ec);
+		if (!ec) {
+			unsigned int simple_file_count{0};
+			for (const auto& entry : d_it) {
+				if (utils::stars_with(entry.path().filename().string(), file_prefix)) {
+
+					const auto& ext = entry.path().extension();
+					if (entry.is_directory()) {
+						paths.emplace_back(entry.path().string() + "/");
+					} else {
+						for (const std::string_view& str : extensions) {
+							if (ext == str) {
+								paths.emplace_back(entry.path().string());
+								std::swap(paths[simple_file_count++], paths.back());
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return paths;
 }
