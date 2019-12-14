@@ -1,4 +1,5 @@
 #include "terminal_commands.hpp"
+#include "dll.hpp"
 #include "utils.hpp"
 
 #include <imterm/misc.hpp>
@@ -7,38 +8,7 @@
 #include <charconv>
 #include <filesystem>
 
-#if defined OS_LINUX
-#	include <dlfcn.h> // dlsym, dlopen, dlclose, dlerror
-#elif defined OS_WINDOWS
-#	include <Windows.h> // GetProcAddress, LoadLibrary, FreeLibrary, GetLastError, FormatMessageA
-#else
-#	error "Unknown system"
-#endif
-
 namespace {
-
-std::string dll_error()
-{
-#if defined OS_WINDOWS
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0) {
-		return {};
-	}
-	LPSTR messageBuffer = nullptr;
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-	                             errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &messageBuffer, 0, nullptr);
-	std::string message(messageBuffer, size);
-	LocalFree(messageBuffer);
-	return message;
-#elif defined OS_LINUX
-	const char *error = dlerror();
-	if (error == nullptr) {
-		return "";
-	}
-	return error;
-#endif
-}
-
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg)
 {
 	return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
@@ -142,15 +112,6 @@ void terminal_commands::quit(argument_type &arg)
 void terminal_commands::load_shared_library(argument_type &arg)
 {
 	using think_fn_type = int (*)(int);
-	auto close_dll      = [&arg](auto handle) {
-#if defined OS_WINDOWS
-		if (!FreeLibrary(handle)) {
-#elif defined OS_LINUX
-		if (!dlclose(handle)) {
-#endif
-			arg.term.add_text_err(dll_error());
-		}
-	};
 
 	if (arg.command_line.size() < 3) {
 		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path> <some_magic_int>");
@@ -170,37 +131,20 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path);
 
-#if defined OS_WINDOWS
-	HMODULE handle = LoadLibrary(shared_library_path.c_str());
-#elif defined OS_LINUX
-	void *handle = dlopen(shared_library_path.c_str(), RTLD_NOW);
-#endif
-	if (handle == nullptr) {
-		arg.term.add_text_err(dll_error());
+	dll lib = dll(shared_library_path);
+	if (!lib) {
+		arg.term.add_text("couldn't load library: " + lib.error());
 		return;
 	}
 
-#if defined OS_WINDOWS
-	auto think = reinterpret_cast<think_fn_type>(GetProcAddress(handle, "think"));
+	auto think = lib.get_address<think_fn_type>("think");
 	if (think == nullptr) {
-		arg.term.add_text_err(dll_error());
-		close_dll(handle);
+		arg.term.add_text("couldn't get function: " + lib.error());
 		return;
 	}
-#elif defined OS_LINUX
-	auto think   = reinterpret_cast<think_fn_type>(dlsym(handle, "think"));
-	char *error  = dlerror();
-	if (error != nullptr) {
-		arg.term.add_text(std::string{error});
-		close_dll(handle);
-		return;
-	}
-#endif
 
 	int think_result = think(think_param);
 	arg.term.add_text("thinking about " + std::to_string(think_result));
-
-	close_dll(handle);
 }
 
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg, const std::initializer_list<std::string_view> &extensions)

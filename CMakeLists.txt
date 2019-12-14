@@ -8,7 +8,7 @@ include(cmake/imgui-sfml.cmake)
 include(cmake/imterm.cmake)
 include(cmake/spdlog.cmake)
 
-add_executable(ninja-clown src/main.cpp src/terminal_commands.cpp)
+add_executable(ninja-clown src/main.cpp src/terminal_commands.cpp src/dll.cpp)
 set_target_properties(
 	ninja-clown PROPERTIES
 	CXX_STANDARD 17
