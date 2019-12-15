@@ -17,40 +17,45 @@ constexpr unsigned long window_width  = 800;
 constexpr unsigned long window_height = 450;
 } // namespace cst
 
-int actual_main(int argc, char* argv[]);
+int actual_main(std::vector<std::string> &);
 
 #ifdef USE_WINMAIN
-#include <windows.h>
-#include <tchar.h>
-#include <shellapi.h>
+#	include <shellapi.h>
+#	include <tchar.h>
+#	include <windows.h>
 
-INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPWSTR, INT) {
-	UNREFERENCED_PARAMETER(hInst);
-    UNREFERENCED_PARAMETER(hPrevInstance);
+INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, INT)
+{
 
-    int argc;
-    char** argv;
-    {
-        LPWSTR* lpArgv = CommandLineToArgvW( GetCommandLineW(), &argc );
-        argv = (char**) malloc( argc*sizeof(char*) );
-        int size, i = 0;
-        for( ; i < argc; ++i )
-        {
-            size = wcslen( lpArgv[i] ) + 1;
-            argv[i] = (char*) malloc( size );
-            wcstombs( argv[i], lpArgv[i], size );
-        }
-        LocalFree( lpArgv );
-    }
-    return actual_main(argc, argv);
+	int argc;
+	LPWSTR *lpArgv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	std::vector<std::string> args;
+	args.reserve(argc);
+	for (unsigned int i = 0; i < argc; ++i) {
+		size_t size = wcslen(lpArgv[i]) + 1;
+		std::string arg;
+		arg.resize(size);
+		wcstombs_s(nullptr, arg.data(), arg.size(), lpArgv[i], size);
+		args.emplace_back(std::move(arg));
+	}
+	LocalFree(lpArgv);
+	return actual_main(args);
 }
 #else
-int main(int argc, char* argv[]) {
-	return actual_main(argc, argv);
+int main(int argc, char *argv[])
+{
+	std::vector<std::string> args;
+	args.reserve(argc);
+	while (argc--) {
+		args.emplace_back(argv++);
+	}
+	return actual_main(args);
 }
 #endif
 
-int actual_main(int argc, char* argv[]) {
+int actual_main([[maybe_unused]] std::vector<std::string> &args)
+{
 	program_state prgm;
 	ImTerm::terminal<terminal_commands> terminal_log(prgm, "terminal", cst::window_width);
 	terminal_log.theme() = ImTerm::themes::cherry;
