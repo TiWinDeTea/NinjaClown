@@ -8,9 +8,10 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include "program_state.hpp"
 #include "terminal_commands.hpp"
-#include <spdlog/spdlog.h>
 
 namespace cst {
 constexpr unsigned long window_width  = 800;
