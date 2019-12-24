@@ -21,7 +21,9 @@ constexpr std::array local_command_list{
   terminal_commands::command_type{"help", "show this help", terminal_commands::help, terminal_commands::no_completion},
   terminal_commands::command_type{"print", "prints text", terminal_commands::echo, terminal_commands::no_completion},
   terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit, terminal_commands::no_completion},
-  terminal_commands::command_type{"load", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path}};
+  terminal_commands::command_type{"load", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
+  terminal_commands::command_type{"fps_max", "sets the target fps", terminal_commands::set_fps, terminal_commands::no_completion}, // TODO: autocomplete with current value
+  terminal_commands::command_type{"valueof", "prints the value of a game variable", terminal_commands::valueof, terminal_commands::autocomplete_variable}};
 } // namespace
 
 terminal_commands::terminal_commands()
@@ -147,6 +149,35 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	arg.term.add_text("thinking about " + std::to_string(think_result));
 }
 
+void terminal_commands::set_fps(argument_type &arg)
+{
+    if (arg.command_line.size() == 2) {
+        auto value = utils::from_chars<unsigned int>(arg.command_line.back());
+        if (value) {
+			arg.val.viewer.target_fps(*value);
+			return;
+		}
+    }
+
+    arg.term.add_formatted("usage: {} <unsigned integer value>", arg.command_line.front());
+}
+
+void terminal_commands::valueof(argument_type &arg) {
+    // todo: std::map & lower_bound + higher_bound, ptr vers fonctions membres
+    if (arg.command_line.size() == 2) {
+        if ("average_fps" == arg.command_line.back()) {
+            arg.term.add_formatted("average fps: {:.1f}", arg.val.viewer.average_fps());
+            return;
+        }
+        if ("target_fps" == arg.command_line.back()) {
+            arg.term.add_formatted("max fps: {}", arg.val.viewer.target_fps());
+            return;
+        }
+    }
+
+    arg.term.add_formatted("usage: {} <variable>", arg.command_line.front());
+}
+
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg, const std::initializer_list<std::string_view> &extensions)
 {
 	auto escape = [](std::string &&str) -> std::string && {
@@ -202,4 +233,19 @@ std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg
 		}
 	}
 	return paths;
+}
+std::vector<std::string> terminal_commands::autocomplete_variable(argument_type &arg)
+{
+	std::vector<std::string> ans;
+	if (arg.command_line.size() != 2) {
+		return ans;
+	}
+
+	if (utils::starts_with("average_fps", arg.command_line.back())) { // todo: std::map + lower_bound & higher_bound
+		ans.emplace_back("average_fps");
+	}
+	if (utils::starts_with("target_fps", arg.command_line.back())) {
+		ans.emplace_back("target_fps");
+	}
+	return ans;
 }

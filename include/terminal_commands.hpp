@@ -25,8 +25,11 @@ public:
 	static void help(argument_type&);
 	static void quit(argument_type&);
 	static void load_shared_library(argument_type&);
+	static void set_fps(argument_type&);
+	static void valueof(argument_type&);
 
 	static std::vector<std::string> autocomplete_path(argument_type&, const std::initializer_list<std::string_view>& extensions);
+	static std::vector<std::string> autocomplete_variable(argument_type&);
 };
 
 #endif // NINJACLOWN_TERMINAL_COMMANDS_HPP
