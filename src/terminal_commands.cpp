@@ -1,6 +1,6 @@
 #include "terminal_commands.hpp"
 #include "dll.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 #include <imterm/misc.hpp>
 
@@ -182,7 +182,7 @@ std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg
 		if (!ec) {
 			unsigned int simple_file_count{0};
 			for (const auto &entry : d_it) {
-				if (utils::stars_with(entry.path().filename().string(), file_prefix)) {
+				if (utils::starts_with(entry.path().filename().string(), file_prefix)) {
 
 					const auto &ext = entry.path().extension();
 					if (entry.is_directory()) {
