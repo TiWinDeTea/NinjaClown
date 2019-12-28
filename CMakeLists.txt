@@ -8,6 +8,7 @@ include(cmake/imgui-sfml.cmake)
 include(cmake/imterm.cmake)
 include(cmake/spdlog.cmake)
 include(cmake/fmt.cmake)
+include(cmake/cpptoml.cmake)
 
 add_executable(ninja-clown ${OPTIONS}
 		src/main.cpp
@@ -30,6 +31,7 @@ target_include_directories(ninja-clown SYSTEM PUBLIC
         ${SPDLOG_INCLUDE_DIR}
         ${SFML_INCLUDE_DIR}
 		${FMT_INCLUDE_DIR}
+		${CPPTOML_INCLUDE_DIR}
 )
 target_link_libraries(
         ninja-clown
