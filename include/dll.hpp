@@ -20,6 +20,8 @@ public:
 	explicit operator bool() const;
 
 	[[nodiscard]] std::string error() const;
+	void reload(const char *dll_path);
+	void reload(const std::string &dll_path);
 
 	template <typename FuncPtr>
 	[[nodiscard]] FuncPtr get_address(const char *func_name)

@@ -53,3 +53,21 @@ std::string dll::error() const
 	return error;
 #endif
 }
+
+void dll::reload(const char* dll_path) {
+#if defined OS_WINDOWS
+	if (m_handle != nullptr) {
+		FreeLibrary(m_handle);
+	}
+	m_handle = LoadLibrary(dll_path);
+#elif defined OS_LINUX
+	if (m_handle != nullptr) {
+		dlclose(m_handle);
+	}
+	m_handle = dlopen(dll_path, RTLD_NOW);
+#endif
+}
+
+void dll::reload(const std::string& dll_path){
+	reload(dll_path.c_str());
+}
