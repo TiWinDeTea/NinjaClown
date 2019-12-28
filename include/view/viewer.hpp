@@ -1,5 +1,5 @@
-#ifndef NINJACLOWN_VIEWER_HPP
-#define NINJACLOWN_VIEWER_HPP
+#ifndef NINJACLOWN_VIEW_VIEWER_HPP
+#define NINJACLOWN_VIEW_VIEWER_HPP
 
 #include "utils/synchronized.hpp"
 
@@ -50,4 +50,4 @@ private:
 };
 }
 
-#endif //NINJACLOWN_VIEWER_HPP
+#endif //NINJACLOWN_VIEW_VIEWER_HPP

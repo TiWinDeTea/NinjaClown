@@ -1,5 +1,5 @@
-#ifndef NINJACLOWN_FPS_LIMITER_HPP
-#define NINJACLOWN_FPS_LIMITER_HPP
+#ifndef NINJACLOWN_VIEW_FPS_LIMITER_HPP
+#define NINJACLOWN_VIEW_FPS_LIMITER_HPP
 
 #include <chrono>
 #include <thread>
@@ -88,4 +88,4 @@ private:
 };
 } // namespace view
 
-#endif //NINJACLOWN_FPS_LIMITER_HPP
+#endif //NINJACLOWN_VIEW_FPS_LIMITER_HPP

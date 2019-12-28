@@ -1,5 +1,5 @@
-#ifndef NINJACLOWN_SYNCHRONIZED_HPP
-#define NINJACLOWN_SYNCHRONIZED_HPP
+#ifndef NINJACLOWN_UTILS_SYNCHRONIZED_HPP
+#define NINJACLOWN_UTILS_SYNCHRONIZED_HPP
 
 namespace utils {
 template <typename StoredValue, typename Mutex = std::mutex>
@@ -55,4 +55,4 @@ private:
 };
 }
 
-#endif //NINJACLOWN_SYNCHRONIZED_HPP
+#endif //NINJACLOWN_UTILS_SYNCHRONIZED_HPP

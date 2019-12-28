@@ -1,10 +1,11 @@
-#ifndef NINJACLOWN_UTILS_HPP
-#define NINJACLOWN_UTILS_HPP
+#ifndef NINJACLOWN_UTILS_UTILS_HPP
+#define NINJACLOWN_UTILS_UTILS_HPP
 
 #include <algorithm>
 #include <mutex>
 #include <string_view>
 #include <charconv>
+#include <optional>
 
 namespace utils {
 inline bool starts_with(std::string_view str, std::string_view prefix)
@@ -23,4 +24,4 @@ std::optional<T> from_chars(std::string_view str) {
 }
 } // namespace utils
 
-#endif //NINJACLOWN_UTILS_HPP
+#endif //NINJACLOWN_UTILS_UTILS_HPP
