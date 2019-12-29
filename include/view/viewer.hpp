@@ -46,7 +46,7 @@ private:
     std::unique_ptr<std::thread> m_thread{};
     std::atomic_bool m_running{false};
 
-    fps_limiter m_fps_limiter;
+    fps_limiter m_fps_limiter{};
 };
 }
 
