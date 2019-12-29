@@ -6,11 +6,16 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
         add_compile_definitions(USE_WINMAIN)
     endif(MSVC)
 
+    set(THREADS_LIBRARIES)
+
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_compile_definitions(OS_LINUX)
     set(CONFIG_OS_LINUX 1)
     set(DLL_LOADING_TARGET_LIBRARY dl)
 
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    set(THREADS_LIBRARIES Threads::Threads)
 else()
     message(FATAL_ERROR "unsupported OS")
 

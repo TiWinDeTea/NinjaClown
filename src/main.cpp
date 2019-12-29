@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	std::vector<std::string> args;
 	args.reserve(argc);
 	while (argc--) {
-		args.emplace_back(argv++);
+		args.emplace_back(*argv++);
 	}
 	return actual_main(args);
 }

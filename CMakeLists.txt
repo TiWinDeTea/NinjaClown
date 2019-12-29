@@ -38,6 +38,7 @@ target_link_libraries(
         ${IMGUI_SFML_LIBRARIES}
 		${SFML_LIBRARIES}
 		${DLL_LOADING_TARGET_LIBRARY}
+		${THREADS_LIBRARIES}
 )
 
 file(GLOB_RECURSE files "resources/*")
