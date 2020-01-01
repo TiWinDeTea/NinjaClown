@@ -14,12 +14,16 @@ add_executable(ninja-clown ${OPTIONS}
 		src/main.cpp
 		src/terminal_commands.cpp
 		src/dll.cpp
+		src/program_state.cpp
 
 		src/model/grid.cpp
 		src/model/world.cpp
 
 		src/view/map.cpp
 		src/view/viewer.cpp
+		src/view/image.cpp
+
+		src/utils/resource_manager.cpp
 )
 set_target_properties(
 	ninja-clown PROPERTIES
@@ -46,6 +50,6 @@ target_link_libraries(
 
 file(GLOB_RECURSE files "resources/*")
 foreach(file ${files})
-    file(RELATIVE_PATH relative_file resources/ ${file})
-    configure_file(${file} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/${relative_file}" @ONLY)
+	file(RELATIVE_PATH relative_file "${CMAKE_CURRENT_LIST_DIR}" "${file}")
+    configure_file(${file} "${relative_file}" @ONLY)
 endforeach()
