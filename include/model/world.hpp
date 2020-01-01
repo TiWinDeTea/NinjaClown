@@ -1,18 +1,25 @@
 #ifndef NINJACLOWN_WORLD_HPP
 #define NINJACLOWN_WORLD_HPP
 
-#include "model/grid.hpp"
+#include <string>
+#include <vector>
+
+#include "button.hpp"
+#include "cell.hpp"
+#include "interaction.hpp"
 
 namespace model {
-class world {
-public:
-	world(size_t width, size_t height) noexcept
-	    : m_grid{width, height}
-	{
-	}
+struct world {
+	world(size_t width, size_t height) noexcept;
+	explicit world(const std::string &map_path);
+
+	void update();
 
 private:
-	grid m_grid;
+	std::vector<std::vector<cell>> m_grid{};
+
+	std::vector<interaction> m_interactions{};
+	std::vector<button> m_buttons{};
 };
 } // namespace model
 

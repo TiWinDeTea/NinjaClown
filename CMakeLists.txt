@@ -16,7 +16,6 @@ add_executable(ninja-clown ${OPTIONS}
 		src/dll.cpp
 		src/program_state.cpp
 
-		src/model/grid.cpp
 		src/model/world.cpp
 
 		src/view/map.cpp

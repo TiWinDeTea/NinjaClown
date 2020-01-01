@@ -1,11 +1,9 @@
 #ifndef NINJACLOWN_CELL_HPP
 #define NINJACLOWN_CELL_HPP
 
-#include <memory>
 #include <optional>
 
-#include "model/interactable.hpp"
-#include "utils/optional.hpp"
+#include "model/interaction.hpp"
 
 namespace model {
 enum class cell_type {
@@ -14,45 +12,28 @@ enum class cell_type {
 	WALL,
 };
 
-class cell {
-public:
-	cell() noexcept {};
+struct cell {
+	cell() noexcept = default;
 
 	explicit cell(cell_type type) noexcept
-	    : m_type{type}
+	    : type{type}
 	{
 	}
 
 	cell(cell &&other) noexcept
-	    : m_type{other.m_type}
-	    , m_interactable{std::move(other.m_interactable)}
+	    : type{other.type}
+	    , interaction_handle{other.interaction_handle}
 	{
 	}
 
-	cell(cell_type type, std::unique_ptr<interactable> &&interactable) noexcept
-	    : m_type{type}
-	    , m_interactable{std::move(interactable)}
+	cell(cell_type type, size_t interaction_handle) noexcept
+	    : type{type}
+	    , interaction_handle{interaction_handle}
 	{
 	}
 
-	cell_type type() const
-	{
-		return m_type;
-	}
-
-	utils::optional<interactable &> get_interactable()
-	{
-		if (m_interactable) {
-			return {*m_interactable.value()};
-		}
-		else {
-			return {};
-		}
-	}
-
-private:
-	cell_type m_type{cell_type::VOID};
-	std::optional<std::unique_ptr<interactable>> m_interactable{};
+	cell_type type{cell_type::VOID};
+	std::optional<size_t> interaction_handle{};
 };
 } // namespace model
 

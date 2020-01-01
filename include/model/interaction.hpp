@@ -1,9 +1,7 @@
-#ifndef NINJACLOWN_INTERACTABLE_HPP
-#define NINJACLOWN_INTERACTABLE_HPP
+#ifndef NINJACLOWN_INTERACTION_HPP
+#define NINJACLOWN_INTERACTION_HPP
 
 namespace model {
-class world; // forward declaration
-
 enum class interaction_kind {
 	LIGHT_MANUAL, // character or thrown item can interact
 	HEAVY_MANUAL, // only a character can interact
@@ -12,12 +10,15 @@ enum class interaction_kind {
 	GROUND, // only non-floating character in the cell cause interaction
 };
 
-class interactable {
-public:
-	virtual std::unique_ptr<interactable> clone() = 0;
-	virtual interaction_kind kind()               = 0;
-	virtual void interact(world &world)           = 0;
+enum class interactable_kind {
+	BUTTON,
+};
+
+struct interaction {
+	interaction_kind kind;
+	interactable_kind interactable;
+	size_t interactable_handler;
 };
 } // namespace model
 
-#endif //NINJACLOWN_INTERACTABLE_HPP
+#endif //NINJACLOWN_INTERACTION_HPP
