@@ -25,7 +25,11 @@ model::world::world(const std::string &map_path)
 		row.resize(width);
 		for (auto &cell : row) {
 			char type;
-			fs >> type;
+			fs >> std::noskipws >> type;
+			if (type == '\n') {
+				fs >> std::noskipws >> type;
+			}
+
 			switch (type) {
 				case '#':
 				case 'P':
@@ -38,7 +42,7 @@ model::world::world(const std::string &map_path)
 					m_buttons.push_back(button{1, 2}); // FIXME
 					break;
 				case 'D':
-				case 'g':
+				case ' ':
 					cell.type = cell_type::GROUND;
 					break;
 				default:
