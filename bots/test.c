@@ -1,15 +1,18 @@
-struct bot_api {
-	void (*log)(const char*);
-	void (*go_right)();
-};
+#include "bot_interface/bot.h"
 
 static struct bot_api* BOT;
 
-void bot_init(struct bot_api* api) {
+#ifdef OS_WINDOWS
+#define NINJACLOWN_DLLEXPORT __declspec(dllexport)
+#else
+#define NINJACLOWN_DLLEXPORT
+#endif
+
+void NINJACLOWN_DLLEXPORT bot_init(struct bot_api* api) {
 	BOT = api;
 }
 
-void bot_think() {
+void NINJACLOWN_DLLEXPORT bot_think() {
 	BOT->log("hello from test bot!");
 	BOT->go_right();
 }
