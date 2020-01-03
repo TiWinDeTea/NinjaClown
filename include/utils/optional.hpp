@@ -1,6 +1,7 @@
 #ifndef NINJACLOWN_UTILS_OPTIONAL_HPP
 #define NINJACLOWN_UTILS_OPTIONAL_HPP
 
+#include "utils.hpp"
 #include <optional>
 #include <type_traits>
 #include <typeinfo>
@@ -24,9 +25,9 @@ struct [[nodiscard]] optional<T &>
 	template <typename U>
 	optional(U & val)
 	{
-	    static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
-        m_value = dynamic_cast<T *>(&val);
-        if (m_value == nullptr) {
+		static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
+		m_value = dynamic_cast<T *>(&val);
+		if (m_value == nullptr) {
 			throw std::bad_cast{};
 		}
 	}
@@ -39,14 +40,15 @@ struct [[nodiscard]] optional<T &>
 	template <typename U>
 	optional(const optional<U *> &other)
 	{
-        static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
+		static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
 		if (other.has_value()) {
-            m_value = dynamic_cast<T *>(other.value);
-		    if (m_value == nullptr) {
+			m_value = dynamic_cast<T *>(other.value);
+			if (m_value == nullptr) {
 				throw std::bad_cast{};
 			}
-		} else {
-		    m_value = nullptr;
+		}
+		else {
+			m_value = nullptr;
 		}
 	}
 
@@ -61,18 +63,25 @@ struct [[nodiscard]] optional<T &>
 		return *this;
 	}
 
-	optional & operator=(T& val) {
-	    m_value = &val;
-	    return *this;
+	optional &operator=(T &val)
+	{
+		m_value = &val;
+		return *this;
 	}
 
 	template <typename U>
 	optional &operator=(U &val)
 	{
-        static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
-		m_value = dynamic_cast<T *>(&val);
-		if (m_value == nullptr) {
-			throw std::bad_cast{};
+		if constexpr (std::is_base_of_v<U, T> || std::is_base_of_v<T, U>) {
+			m_value = dynamic_cast<T *>(&val);
+			if (m_value == nullptr) {
+				throw std::bad_cast{};
+			}
+		}
+		else {
+			static_assert(std::is_same_v<utils::remove_const<T>, U>, "Value is not assignable "
+			                                                         "(no known conversion from U to T)");
+			m_value = &val;
 		}
 		return *this;
 	}
@@ -115,14 +124,14 @@ struct [[nodiscard]] optional<T &>
 		return m_value != nullptr;
 	}
 
-    [[nodiscard]] constexpr T &value()
+	[[nodiscard]] constexpr T &value()
 	{
 		if (!has_value()) {
 			throw std::bad_optional_access{};
 		}
 		return *m_value;
 	}
-    [[nodiscard]] constexpr const T &value() const
+	[[nodiscard]] constexpr const T &value() const
 	{
 		if (!has_value()) {
 			throw std::bad_optional_access{};
@@ -130,7 +139,7 @@ struct [[nodiscard]] optional<T &>
 		return *m_value;
 	}
 
-    [[nodiscard]] constexpr T &value_or(T & default_value) const noexcept
+	[[nodiscard]] constexpr T &value_or(T & default_value) const noexcept
 	{
 		return has_value() ? *m_value : default_value;
 	}
