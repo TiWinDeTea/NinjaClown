@@ -17,16 +17,20 @@ struct bot_dll {
 	explicit operator bool() const;
 
 	[[nodiscard]] std::string error() const;
-	void reload() noexcept;
+	[[nodiscard]] bool reload() noexcept;
 
 	void bot_init(bot_api* api);
 	void bot_think();
 
 private:
-	void h_load_api();
+	[[nodiscard]] bool h_load_api();
+
+    template <typename FuncPtr>
+    bool try_load(FuncPtr& ptr, const char* func_name);
 
 	std::string m_dll_path;
-	std::optional<dll> m_dll{};
+	dll m_dll;
+	bool good{false};
 
 	init_fn_type m_init_fn{};
 	think_fn_type m_think_fn{};
