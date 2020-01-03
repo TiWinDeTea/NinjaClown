@@ -38,9 +38,9 @@ void view::viewer::stop() noexcept
 
 void view::viewer::do_run() noexcept
 {
-	program_state prgm{*this};
+    assert(program_state::global != nullptr);
 
-	ImTerm::terminal<terminal_commands> terminal_log(prgm, "terminal", cst::window_width);
+	ImTerm::terminal<terminal_commands> terminal_log(*program_state::global, "terminal", cst::window_width);
 	terminal_log.theme() = ImTerm::themes::cherry;
 	terminal_log.log_level(ImTerm::message::severity::info);
 	terminal_log.set_flags(ImGuiWindowFlags_NoTitleBar);
@@ -75,7 +75,7 @@ void view::viewer::do_run() noexcept
 			}
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::F11) {
-					prgm.term_on_display = !prgm.term_on_display;
+					program_state::global->term_on_display = !program_state::global->term_on_display;
 				}
 			}
 			else if (event.type == sf::Event::Resized) {
@@ -89,10 +89,10 @@ void view::viewer::do_run() noexcept
 
 		ImGui::SFML::Update(window, deltaClock.restart());
 
-		if (prgm.term_on_display) {
+		if (program_state::global->term_on_display) {
 			ImGui::SetNextWindowPos({0.f, 0.f}, ImGuiCond_Always);
-			prgm.term_on_display = terminal_log.show();
-			if (prgm.close_request) {
+			program_state::global->term_on_display = terminal_log.show();
+			if (program_state::global->close_request) {
 				window.close();
 			}
 		}

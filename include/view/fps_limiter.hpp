@@ -45,7 +45,9 @@ public:
 			m_frame_duration += std::chrono::milliseconds(1);
 		}
 		else if (current_fps + .05f < target_fps) {
-			m_frame_duration -= std::chrono::milliseconds(1);
+            if (m_frame_duration >= std::chrono::milliseconds(1)) {
+				m_frame_duration -= std::chrono::milliseconds(1);
+			}
 		}
 	}
 

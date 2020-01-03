@@ -6,6 +6,8 @@
 #include "program_state.hpp"
 #include "terminal_commands.hpp"
 
+#include "utils/optional.hpp"
+
 int actual_main(std::vector<std::string> &);
 
 #ifdef USE_WINMAIN
@@ -46,8 +48,12 @@ int main(int argc, char *argv[])
 
 int actual_main([[maybe_unused]] std::vector<std::string> &args)
 {
-    view::viewer viewer;
-	viewer.run();
-	viewer.wait();
-	return 0;
+    program_state program;
+    program_state::global = &program;
+    program_state::global->viewer.run();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+    program_state::global->viewer.wait();
+    return 0;
 }
