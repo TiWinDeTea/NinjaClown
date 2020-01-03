@@ -1,6 +1,8 @@
 #ifndef NINJACLOWN_UTILS_SYNCHRONIZED_HPP
 #define NINJACLOWN_UTILS_SYNCHRONIZED_HPP
 
+#include <mutex>
+
 namespace utils {
 template <typename StoredValue, typename Mutex = std::mutex>
 class synchronized {

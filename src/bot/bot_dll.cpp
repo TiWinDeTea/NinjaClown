@@ -5,7 +5,7 @@
 
 template <typename FuncPtr>
 bool bot::bot_dll::try_load(FuncPtr& ptr, const char* func_name) {
-    ptr = m_dll.get_address<FuncPtr>("bot_init");
+    ptr = m_dll.get_address<FuncPtr>(func_name);
     if (ptr == nullptr) {
 		spdlog::error("Failed to load {} from dll {}", func_name, m_dll_path);
 		return false;
@@ -40,14 +40,14 @@ void bot::bot_dll::bot_think(){
 }
 
 bool bot::bot_dll::h_load_api(){
-	if (*this) {
-	    bool success = try_load(m_init_fn, "bot_init");
-		success = try_load(m_think_fn, "bot_think") && success;
+	if (m_dll) {
+	    good = try_load(m_init_fn, "bot_init");
+		good = try_load(m_think_fn, "bot_think") && good;
 
-		if (!success) {
+		if (!good) {
 		    spdlog::error("Failed to load dll");
 		}
-		return success;
+		return good;
 	}
 
 	spdlog::error("Tried to load methods from non-loaded dll \"{}\".", m_dll_path);

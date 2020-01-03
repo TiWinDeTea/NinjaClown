@@ -22,8 +22,6 @@ add_executable(ninja-clown ${OPTIONS}
 		src/model/world.cpp
 
 		src/view/viewer.cpp
-
-		src/utils/resource_manager.cpp
 )
 set_target_properties(
 	ninja-clown PROPERTIES
