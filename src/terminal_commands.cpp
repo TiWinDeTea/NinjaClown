@@ -1,5 +1,6 @@
 #include "terminal_commands.hpp"
-#include "bot/bot_api.hpp"
+#include "bot_interface/bot.h"
+#include "bot/bot_factory.hpp"
 #include "bot/bot_dll.hpp"
 #include "model/world.hpp"
 #include "utils/utils.hpp"
@@ -135,25 +136,19 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	if (!bot) {
 		arg.term.add_text("couldn't load bot library: " + bot.error());
 		return;
-	}
-
-	{
-		bot::bot_api api {
-			.log = &bot::ffi::log,
-			.go_right = &bot::ffi::go_right,
-		};
+	} else {
+		bot::bot_api api = bot::make_api(
+		    bot::go_right{&bot::ffi::go_right}
+        );
 
 		bot.bot_init(&api);
 		bot.bot_think();
 	}
 
-	bot.reload();
-
-	{
-		bot::bot_api api {
-			.log = &bot::ffi::log,
-			.go_right = &bot::ffi::go_right_dummy,
-		};
+	if (bot.reload()) {
+		bot::bot_api api = bot::make_api(
+		    bot::go_right{&bot::ffi::go_right_dummy}
+        );
 
 		bot.bot_init(&api);
 		bot.bot_think();
