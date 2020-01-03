@@ -21,9 +21,7 @@ add_executable(ninja-clown ${OPTIONS}
 
 		src/model/world.cpp
 
-		src/view/map.cpp
 		src/view/viewer.cpp
-		src/view/image.cpp
 
 		src/utils/resource_manager.cpp
 )
@@ -33,7 +31,7 @@ set_target_properties(
 	CXX_STANDARD_REQUIRED ON
 	CXX_EXTENSIONS OFF
 )
-target_include_directories(ninja-clown PUBLIC include/)
+target_include_directories(ninja-clown PUBLIC include/ ${CMAKE_CURRENT_LIST_DIR})
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}
         ${IMTERM_INCLUDE_DIR}
@@ -55,3 +53,7 @@ foreach(file ${files})
 	file(RELATIVE_PATH relative_file "${CMAKE_CURRENT_LIST_DIR}" "${file}")
     configure_file(${file} "${relative_file}" @ONLY)
 endforeach()
+
+
+add_library(ninja-clown-bot MODULE bots/test.c)
+target_include_directories(ninja-clown-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR})
