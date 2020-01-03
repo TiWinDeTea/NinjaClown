@@ -16,6 +16,9 @@ add_executable(ninja-clown ${OPTIONS}
 		src/dll.cpp
 		src/program_state.cpp
 
+		src/bot/bot_api.cpp
+		src/bot/bot_dll.cpp
+
 		src/model/world.cpp
 
 		src/view/map.cpp

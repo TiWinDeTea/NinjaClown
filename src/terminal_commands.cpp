@@ -1,5 +1,6 @@
 #include "terminal_commands.hpp"
-#include "dll.hpp"
+#include "bot/bot_api.hpp"
+#include "bot/bot_dll.hpp"
 #include "model/world.hpp"
 #include "utils/utils.hpp"
 
@@ -27,7 +28,7 @@ constexpr std::array local_command_list{
   terminal_commands::command_type{"help", "show this help", terminal_commands::help, terminal_commands::no_completion},
   terminal_commands::command_type{"print", "prints text", terminal_commands::echo, terminal_commands::no_completion},
   terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit, terminal_commands::no_completion},
-  terminal_commands::command_type{"load", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
+  terminal_commands::command_type{"load_dll", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
   terminal_commands::command_type{"load_map", "loads map from file", terminal_commands::load_map, autocomplete_map_path},
   terminal_commands::command_type{"fps_max", "sets the target fps", terminal_commands::set_fps,
                                   terminal_commands::no_completion}, // TODO: autocomplete with current value
@@ -122,40 +123,41 @@ void terminal_commands::quit(argument_type &arg)
 
 void terminal_commands::load_shared_library(argument_type &arg)
 {
-	using think_fn_type = int (*)(int);
-
-	if (arg.command_line.size() < 3) {
-		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path> <some_magic_int>");
+	if (arg.command_line.size() < 2) {
+		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path>");
 		return;
-	}
-
-	int think_param;
-	{
-		std::string think_param_str = arg.command_line[2];
-		auto [p, ec]                = std::from_chars(think_param_str.data(), think_param_str.data() + think_param_str.size(), think_param);
-		if (ec != std::errc()) {
-			arg.term.add_text_err("couldn't parse magic int");
-			return;
-		}
 	}
 
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path);
 
-	dll lib = dll(shared_library_path);
-	if (!lib) {
-		arg.term.add_text("couldn't load library: " + lib.error());
+	bot::bot_dll bot{shared_library_path};
+	if (!bot) {
+		arg.term.add_text("couldn't load bot library: " + bot.error());
 		return;
 	}
 
-	auto think = lib.get_address<think_fn_type>("think");
-	if (think == nullptr) {
-		arg.term.add_text("couldn't get function: " + lib.error());
-		return;
+	{
+		bot::bot_api api {
+			.log = &bot::ffi::log,
+			.go_right = &bot::ffi::go_right,
+		};
+
+		bot.bot_init(&api);
+		bot.bot_think();
 	}
 
-	int think_result = think(think_param);
-	arg.term.add_text("thinking about " + std::to_string(think_result));
+	bot.reload();
+
+	{
+		bot::bot_api api {
+			.log = &bot::ffi::log,
+			.go_right = &bot::ffi::go_right_dummy,
+		};
+
+		bot.bot_init(&api);
+		bot.bot_think();
+	}
 }
 
 void terminal_commands::load_map(argument_type &arg)
