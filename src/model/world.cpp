@@ -46,7 +46,7 @@ model::world::world(const std::string &map_path)
 					cell.type = cell_type::GROUND;
 					break;
 				default:
-					cell.type = cell_type::EMPTY;
+					cell.type = cell_type::CHASM;
 					break;
 			}
 		}
@@ -60,7 +60,7 @@ void model::world::update()
 	for (auto &row : m_grid) {
 		for (auto &cell : row) {
 			switch (cell.type) {
-				case cell_type::EMPTY:
+				case cell_type::CHASM:
 					std::cout << "X";
 					break;
 				case cell_type::GROUND:

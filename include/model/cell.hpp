@@ -7,7 +7,7 @@
 
 namespace model {
 enum class cell_type {
-	EMPTY,
+	CHASM,
 	GROUND,
 	WALL,
 };
@@ -32,7 +32,7 @@ struct cell {
 	{
 	}
 
-	cell_type type{cell_type::EMPTY};
+	cell_type type{cell_type::CHASM};
 	std::optional<size_t> interaction_handle{};
 };
 } // namespace model
