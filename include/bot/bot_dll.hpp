@@ -8,7 +8,7 @@
 namespace bot {
 struct bot_api; // forward declaration
 
-using init_fn_type = void (*)(bot_api*);
+using init_fn_type  = void (*)(bot_api *);
 using think_fn_type = void (*)();
 
 struct bot_dll {
@@ -19,22 +19,22 @@ struct bot_dll {
 	[[nodiscard]] std::string error() const;
 	[[nodiscard]] bool reload() noexcept;
 
-	void bot_init(bot_api* api);
+	void bot_init(bot_api *api);
 	void bot_think();
 
 private:
 	[[nodiscard]] bool h_load_api();
 
-    template <typename FuncPtr>
-    bool try_load(FuncPtr& ptr, const char* func_name);
+	template <typename FuncPtr>
+	bool h_try_load(FuncPtr &ptr, const char *func_name);
 
 	std::string m_dll_path;
 	dll m_dll;
-	bool good{false};
+	bool m_good{false};
 
 	init_fn_type m_init_fn{};
 	think_fn_type m_think_fn{};
 };
-}
+} // namespace bot
 
 #endif //NINJACLOWN_BOT_DLL_HPP
