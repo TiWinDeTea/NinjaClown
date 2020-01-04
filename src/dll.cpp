@@ -1,19 +1,5 @@
 #include "dll.hpp"
 
-dll::dll(const char *dll_path) noexcept
-{
-#if defined OS_WINDOWS
-	m_handle = LoadLibrary(dll_path);
-#elif defined OS_LINUX
-	m_handle = dlopen(dll_path, RTLD_NOW);
-#endif
-}
-
-dll::dll(const std::string &dll_path) noexcept
-    : dll(dll_path.c_str())
-{
-}
-
 dll::~dll()
 {
 	if (m_handle == nullptr) {
@@ -54,7 +40,7 @@ std::string dll::error() const
 #endif
 }
 
-void dll::reload(const char* dll_path) {
+bool dll::load(const char* dll_path) {
 #if defined OS_WINDOWS
 	if (m_handle != nullptr) {
 		FreeLibrary(m_handle);
@@ -66,8 +52,10 @@ void dll::reload(const char* dll_path) {
 	}
 	m_handle = dlopen(dll_path, RTLD_NOW);
 #endif
+
+	return m_handle != nullptr;
 }
 
-void dll::reload(const std::string& dll_path){
-	reload(dll_path.c_str());
+bool dll::load(const std::string& dll_path){
+	return load(dll_path.c_str());
 }

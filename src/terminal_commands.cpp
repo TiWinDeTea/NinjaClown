@@ -134,7 +134,6 @@ void terminal_commands::load_shared_library(argument_type &arg)
 
 	bot::bot_dll bot{shared_library_path};
 	if (!bot) {
-		arg.term.add_text("couldn't load bot library: " + bot.error());
 		return;
 	}
 	else {

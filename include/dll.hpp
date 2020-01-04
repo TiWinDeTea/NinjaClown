@@ -13,15 +13,14 @@
 
 class dll {
 public:
-	explicit dll(const char *dll_path) noexcept;
-	explicit dll(const std::string &dll_path) noexcept;
+	dll() noexcept = default;
 	~dll();
 
 	explicit operator bool() const;
 
 	[[nodiscard]] std::string error() const;
-	void reload(const char *dll_path);
-	void reload(const std::string &dll_path);
+	[[nodiscard]] bool load(const char *dll_path);
+	[[nodiscard]] bool load(const std::string &dll_path);
 
 	template <typename FuncPtr>
 	[[nodiscard]] FuncPtr get_address(const char *func_name)
@@ -41,9 +40,9 @@ public:
 
 private:
 #if defined OS_WINDOWS
-	HMODULE m_handle;
+	HMODULE m_handle{};
 #elif defined OS_LINUX
-	void *m_handle;
+	void *m_handle{};
 #endif
 };
 
