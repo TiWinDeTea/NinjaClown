@@ -6,8 +6,8 @@
 
 namespace bot {
 
-struct go_right {
-	decltype(bot_api::go_right) ptr;
+struct move_backward {
+	decltype(bot_api::move_backward) ptr;
 };
 
 template <typename... Funcs>

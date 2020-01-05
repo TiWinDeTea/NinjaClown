@@ -28,6 +28,7 @@ public:
 	static void quit(argument_type &);
 	static void load_shared_library(argument_type &);
 	static void load_map(argument_type &);
+	static void update_world(argument_type &);
 	static void set_fps(argument_type &);
 	static void valueof(argument_type &);
 

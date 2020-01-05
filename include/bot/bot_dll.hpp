@@ -1,6 +1,7 @@
 #ifndef NINJACLOWN_BOT_DLL_HPP
 #define NINJACLOWN_BOT_DLL_HPP
 
+#include <bot_interface/bot.h>
 #include <optional>
 
 #include "dll.hpp"
@@ -8,8 +9,8 @@
 namespace bot {
 struct bot_api; // forward declaration
 
-using init_fn_type  = void (*)(bot_api *);
-using think_fn_type = void (*)();
+using init_fn_type  = void(NINJACLOWN_STDCALL *)(bot_api);
+using think_fn_type = void(NINJACLOWN_STDCALL *)();
 
 struct bot_dll {
 	bot_dll() noexcept = default;
@@ -23,7 +24,7 @@ struct bot_dll {
 	[[nodiscard]] bool load(std::string &&dll_path) noexcept;
 	[[nodiscard]] bool reload() noexcept;
 
-	void bot_init(bot_api *api);
+	void bot_init(bot_api api);
 	void bot_think();
 
 private:

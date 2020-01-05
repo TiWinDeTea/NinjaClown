@@ -1,6 +1,8 @@
 #ifndef NINJACLOWN_PROGRAM_STATE_HPP
 #define NINJACLOWN_PROGRAM_STATE_HPP
 
+#include "bot/bot_dll.hpp"
+#include "model/world.hpp"
 #include "view/viewer.hpp"
 #include "utils/resource_manager.hpp"
 #include "terminal_commands.hpp"
@@ -15,10 +17,14 @@ struct program_state {
 
     utils::resource_manager resource_manager{};
 
-    bool close_request{false};
-    bool term_on_display{true};
+	model::world world{};
 
-    static program_state* global;
+	bot::bot_dll bot_dll{};
+
+	bool close_request{false};
+	bool term_on_display{true};
+
+	static program_state *global;
 };
 
 #endif //NINJACLOWN_PROGRAM_STATE_HPP

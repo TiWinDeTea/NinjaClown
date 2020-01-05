@@ -32,6 +32,7 @@ constexpr std::array local_command_list{
   terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit, terminal_commands::no_completion},
   terminal_commands::command_type{"load_dll", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
   terminal_commands::command_type{"load_map", "loads map from file", terminal_commands::load_map, autocomplete_map_path},
+  terminal_commands::command_type{"update_world", "update world once", terminal_commands::update_world, terminal_commands::no_completion},
   terminal_commands::command_type{"fps_max", "sets the target fps", terminal_commands::set_fps,
                                   terminal_commands::no_completion}, // TODO: autocomplete with current value
   terminal_commands::command_type{"valueof", "prints the value of a game variable", terminal_commands::valueof,
@@ -133,20 +134,8 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path);
 
-	bot::bot_dll bot{shared_library_path};
-	if (!bot) {
-		return;
-	}
-	else {
-		bot::bot_api api = bot::make_api(bot::go_right{&bot::ffi::go_right});
-		bot.bot_init(&api);
-		bot.bot_think();
-	}
-
-	if (bot.reload()) {
-		bot::bot_api api = bot::make_api(bot::go_right{&bot::ffi::go_right_dummy});
-		bot.bot_init(&api);
-		bot.bot_think();
+	if (!program_state::global->bot_dll.load(shared_library_path)) {
+		arg.term.add_text("error loading dll");
 	}
 }
 
@@ -157,8 +146,14 @@ void terminal_commands::load_map(argument_type &arg)
 		return;
 	}
 
-	model::world world{arg.command_line[1]};
-	world.update();
+	program_state::global->bot_dll.bot_init(bot::make_api());
+	program_state::global->world.load_map(arg.command_line[1]);
+}
+
+void terminal_commands::update_world(argument_type &arg)
+{
+	program_state::global->bot_dll.bot_think();
+	program_state::global->world.update();
 }
 
 void terminal_commands::set_fps(argument_type &arg)

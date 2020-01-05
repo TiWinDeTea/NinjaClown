@@ -59,7 +59,7 @@ bool bot::bot_dll::reload() noexcept
 	return true;
 }
 
-void bot::bot_dll::bot_init(bot::bot_api *api)
+void bot::bot_dll::bot_init(bot::bot_api api)
 {
 	m_init_fn(api);
 }
