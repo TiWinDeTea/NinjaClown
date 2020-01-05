@@ -50,9 +50,11 @@ int actual_main([[maybe_unused]] std::vector<std::string> &args)
 {
     program_state program;
     program_state::global = &program;
+
     program_state::global->viewer.run();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    program.resource_manager.load_config("resources/config.toml");
 
     program_state::global->viewer.wait();
     return 0;

@@ -21,7 +21,11 @@ add_executable(ninja-clown ${OPTIONS}
 
 		src/model/world.cpp
 
+		src/utils/resource_manager.cpp
+
 		src/view/viewer.cpp
+		src/view/map.cpp
+		src/view/mob_animations.cpp
 )
 set_target_properties(
 	ninja-clown PROPERTIES
@@ -46,10 +50,16 @@ target_link_libraries(
 		${THREADS_LIBRARIES}
 )
 
-file(GLOB_RECURSE files "resources/*")
+file(GLOB_RECURSE files "resources/configured_resources/*")
 foreach(file ${files})
-	file(RELATIVE_PATH relative_file "${CMAKE_CURRENT_LIST_DIR}" "${file}")
-    configure_file(${file} "${relative_file}" @ONLY)
+	file(RELATIVE_PATH relative_file "${CMAKE_CURRENT_LIST_DIR}/resources/configured_resources" "${file}")
+	configure_file(${file} "resources/${relative_file}" @ONLY)
+endforeach()
+
+file(GLOB_RECURSE files "resources/raw_resources/*")
+foreach(file ${files})
+	file(RELATIVE_PATH relative_file "${CMAKE_CURRENT_LIST_DIR}/resources/raw_resources" "${file}")
+	configure_file(${file} "resources/${relative_file}" COPYONLY)
 endforeach()
 
 

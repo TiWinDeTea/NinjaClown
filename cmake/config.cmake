@@ -32,3 +32,18 @@ add_compile_definitions(IMTERM_USE_FMT)
 add_compile_definitions(FMT_HEADER_ONLY)
 set(COMPILE_SFML_WITH_PROJECT OFF) # Use system SFML if present
 set(SFML_MINIMUM_SYSTEM_VERSION 2.5)
+
+
+#resources data
+set(MOBS_PLAYERID 0)
+add_compile_definitions(MOBS_PLAYERID=0)
+
+set(TILES_CHASMID 0)
+add_compile_definitions(TILES_CHASMID=0)
+set(TILES_IRONID 1)
+add_compile_definitions(TILES_IRONID=1)
+set(TILES_CONCRETEID 2)
+add_compile_definitions(TILES_CONCRETEID=2)
+
+set(OBJECTS_BUTTONID 0)
+add_compile_definitions(OBJECTS_BUTTONID=0)
