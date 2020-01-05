@@ -12,6 +12,7 @@
 #include <cpptoml.h>
 
 #include "utils/optional.hpp"
+#include "view/animation.hpp"
 #include "view/mob_animations.hpp"
 
 namespace utils {
@@ -47,7 +48,7 @@ public:
 
 	[[nodiscard]] utils::optional<const view::animation &> tile_animation(tile_id) const noexcept;
 
-	[[nodiscard]] utils::optional<const view::animation &> object_animation(object_id) const noexcept;
+	[[nodiscard]] utils::optional<const view::shifted_animation &> object_animation(object_id) const noexcept;
 
 	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(mob_id) const noexcept;
 
@@ -59,7 +60,7 @@ private:
 	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config) noexcept;
 
 	[[nodiscard]] bool load_mobs_anims(const std::shared_ptr<cpptoml::table>& mobs_config) noexcept;
-	[[nodiscard]] bool load_mob_anim(std::shared_ptr<cpptoml::table> mob_anim_config, std::string_view mob_name,
+	[[nodiscard]] bool load_mob_anim(const std::shared_ptr<cpptoml::table>& mob_anim_config, std::string_view mob_name,
 	                                 view::facing_direction::type dir, view::mob_animations &anims,  sf::Texture&) noexcept;
 
 	[[nodiscard]] bool load_tiles_anims(const std::shared_ptr<cpptoml::table>& tiles_config) noexcept;
@@ -72,7 +73,7 @@ private:
     std::forward_list<sf::Texture> m_textures_holder{};
 
 	std::unordered_map<tile_id, view::animation> m_tiles_anims{};
-	std::unordered_map<object_id, view::animation> m_objects_anims{};
+	std::unordered_map<object_id, view::shifted_animation> m_objects_anims{};
 	std::unordered_map<mob_id, view::mob_animations> m_mobs_anims{};
 };
 } // namespace utils

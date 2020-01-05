@@ -7,39 +7,39 @@
 
         [graphics.mobs.player.downwards]
             frame-count = 1
-            posx = 0
-            posy = 67
+            pos.x = 0
+            pos.y = 67
             width = 42
             height = 56
 
         [graphics.mobs.player.upwards]
             frame-count = 1
-            posx = 71
-            posy = 67
+            pos.x = 71
+            pos.y = 67
             width = 41
             height = 56
 
         [graphics.mobs.player.rightwards]
             frame-count = 1
-            posx = 112
-            posy = 67
+            pos.x = 112
+            pos.y = 67
             width = 29
             height = 56
 
         [graphics.mobs.player.leftwards]
             frame-count = 1
-            posx = 42
-            posy = 67
+            pos.x = 42
+            pos.y = 67
             width = 29
             height = 56
 
 
     [graphics.tiles]
         list = ["chasm", "iron-tile", "concrete-tile"]
-        xspacing = 51
+        spacing.x = 51
         x-yshift = 0 # when going one left (51px), go neither left nor right
 
-        yspacing = 31
+        spacing.y = 31
         y-xshift = 31 # when going one up (31px), also go 31px to the right
 
         width = 81
@@ -48,20 +48,20 @@
         [graphics.tiles.chasm]
             id = @TILES_CHASMID@
             frame-count = 1
-            posx = 162
-            posy = 0
+            pos.x = 162
+            pos.y = 0
 
         [graphics.tiles.iron-tile]
             id = @TILES_IRONID@
             frame-count = 1
-            posx = 0
-            posy = 0
+            pos.x = 0
+            pos.y = 0
 
         [graphics.tiles.concrete-tile]
             id = @TILES_CONCRETEID@
             frame-count = 1
-            posx = 81
-            posy = 0
+            pos.x = 81
+            pos.y = 0
 
     [graphics.objects]
         list = ["button"]
@@ -69,7 +69,8 @@
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
             frame-count = 1
-            posx = 0
-            posy = 31
+            pos.x = 0
+            pos.y = 31
             width = 81
-            height = 31
+            height = 35
+            shift.y = -4 # the button shall be printed with a sprite starting 4 extra upwards from usual

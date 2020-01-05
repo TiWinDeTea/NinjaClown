@@ -1,7 +1,7 @@
 #ifndef NINJACLOWN_VIEW_OBJECTS_HPP
 #define NINJACLOWN_VIEW_OBJECTS_HPP
 
-#include "animation.hpp"
+#include "view/animation.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <cassert>
@@ -15,19 +15,21 @@ public:
     }
 
     void set_pos(float x, float y) {
-        m_posx = x;
-        m_posy = y;
+        m_posx = x + m_xshift;
+        m_posy = y + m_yshift;
     }
 
-    void set_animation(const animation& animation)
+    void set_animation(const shifted_animation& animation)
     {
         m_animation = &animation;
     }
 
 private:
-    const animation *m_animation;
+    const shifted_animation *m_animation;
     float m_posx;
     float m_posy;
+    float m_xshift;
+    float m_yshift;
 };
 }
 

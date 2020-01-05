@@ -24,10 +24,12 @@ namespace config_keys {
 
 	namespace sprites {
 		constexpr const char frame_count[] = "frame-count";
-		constexpr const char pos_x[]       = "posx";
-		constexpr const char pos_y[]       = "posy";
+		constexpr const char pos_x[]       = "pos.x";
+		constexpr const char pos_y[]       = "pos.y";
 		constexpr const char width[]       = "width";
 		constexpr const char height[]      = "height";
+		constexpr const char xshift[]      = "shift.x";
+		constexpr const char yshift[]      = "shift.y";
 	} // namespace sprites
 
 	namespace mobs {
@@ -41,9 +43,9 @@ namespace config_keys {
 
 	namespace tiles {
 		constexpr const char anims[]    = "tiles";
-		constexpr const char xspacing[] = "xspacing";
+		constexpr const char xspacing[] = "spacing.x";
+		constexpr const char yspacing[] = "spacing.y";
 		constexpr const char x_yshift[] = "x-yshift";
-		constexpr const char yspacing[] = "yspacing";
 		constexpr const char y_xshift[] = "y-xshift";
 	} // namespace tiles
 
@@ -52,49 +54,48 @@ namespace config_keys {
 	}
 } // namespace config_keys
 
-
 optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &anim_config, sf::Texture &texture,
                                          std::string_view anim_type, std::string_view anim_name)
 {
-    optional<view::animation> ans{};
+	optional<view::animation> ans{};
 
-    namespace spr    = config_keys::sprites;
-    auto frame_count = anim_config->get_as<int>(spr::frame_count);
-    auto pos_x       = anim_config->get_as<int>(spr::pos_x);
-    auto pos_y       = anim_config->get_as<int>(spr::pos_y);
-    auto width       = anim_config->get_as<int>(spr::width);
-    auto height      = anim_config->get_as<int>(spr::height);
+	namespace spr    = config_keys::sprites;
+	auto frame_count = anim_config->get_qualified_as<int>(spr::frame_count);
+	auto pos_x       = anim_config->get_qualified_as<int>(spr::pos_x);
+	auto pos_y       = anim_config->get_qualified_as<int>(spr::pos_y);
+	auto width       = anim_config->get_qualified_as<int>(spr::width);
+	auto height      = anim_config->get_qualified_as<int>(spr::height);
 
-    auto missing_key = [&](std::string_view key) {
-        spdlog::error("{}: {}.{}.{}:{} {}", error_msgs::loading_failed, config_keys::graphics, anim_type, anim_name, key,
-                      error_msgs::missing_key);
-    };
-    if (!frame_count) {
-        missing_key(spr::frame_count);
-        return ans;
-    }
-    if (!pos_x) {
-        missing_key(spr::pos_x);
-        return ans;
-    }
-    if (!pos_y) {
-        missing_key(spr::pos_y);
-        return ans;
-    }
-    if (!width) {
-        missing_key(spr::width);
-        return ans;
-    }
-    if (!height) {
-        missing_key(spr::height);
-        return ans;
-    }
+	auto missing_key = [&](std::string_view key) {
+		spdlog::error("{}: {}.{}.{}:{} {}", error_msgs::loading_failed, config_keys::graphics, anim_type, anim_name, key,
+		              error_msgs::missing_key);
+	};
+	if (!frame_count) {
+		missing_key(spr::frame_count);
+		return ans;
+	}
+	if (!pos_x) {
+		missing_key(spr::pos_x);
+		return ans;
+	}
+	if (!pos_y) {
+		missing_key(spr::pos_y);
+		return ans;
+	}
+	if (!width) {
+		missing_key(spr::width);
+		return ans;
+	}
+	if (!height) {
+		missing_key(spr::height);
+		return ans;
+	}
 
-    view::animation &animation = ans.emplace();
-    for (int i = 0; i < *frame_count; ++i) {
-        animation.add_frame({texture, {*pos_x + *width * i, *pos_y, *width, *height}});
-    }
-    return {animation};
+	view::animation &animation = ans.emplace();
+	for (int i = 0; i < *frame_count; ++i) {
+		animation.add_frame({texture, {*pos_x + *width * i, *pos_y, *width, *height}});
+	}
+	return {animation};
 }
 
 } // namespace
@@ -114,7 +115,7 @@ optional<const view::animation &> resource_manager::tile_animation(tile_id tile)
 	return {it->second};
 }
 
-optional<const view::animation &> resource_manager::object_animation(object_id object) const noexcept
+optional<const view::shifted_animation &> resource_manager::object_animation(object_id object) const noexcept
 {
 	auto it = m_objects_anims.find(object);
 	if (it == m_objects_anims.end()) {
@@ -186,7 +187,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 			continue;
 		}
 
-		cpptoml::option id = current_mob->get_as<unsigned int>(config_keys::id);
+		cpptoml::option id = current_mob->get_qualified_as<unsigned int>(config_keys::id);
 		if (!id) {
 			spdlog::critical("{}: \"{}.{}.{}:{}\" {}", error_msgs::loading_failed, config_keys::graphics, mobs::anims, mob, config_keys::id,
 			                 error_msgs::missing_key);
@@ -194,7 +195,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_mob->get_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_mob->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
 		if (texture == nullptr) {
 			success = false;
 			continue;
@@ -224,7 +225,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 	return success;
 }
 
-bool resource_manager::load_mob_anim(std::shared_ptr<cpptoml::table> mob_anim_config, std::string_view mob_name,
+bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_anim_config, std::string_view mob_name,
                                      view::facing_direction::type dir, view::mob_animations &anims, sf::Texture &texture) noexcept
 {
 	auto anim = load_animation(mob_anim_config, texture, config_keys::mobs::anims, mob_name);
@@ -241,12 +242,12 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 	namespace spr   = config_keys::sprites;
 
 	auto tile_list = tiles_config->get_array_of<std::string>(config_keys::list);
-	auto xspacing  = tiles_config->get_as<int>(tiles::xspacing);
-	auto x_yshift  = tiles_config->get_as<int>(tiles::x_yshift);
-	auto yspacing  = tiles_config->get_as<int>(tiles::yspacing);
-	auto y_xshift  = tiles_config->get_as<int>(tiles::y_xshift);
-	auto width     = tiles_config->get_as<int>(spr::width);
-	auto height    = tiles_config->get_as<int>(spr::height);
+	auto xspacing  = tiles_config->get_qualified_as<int>(tiles::xspacing);
+	auto x_yshift  = tiles_config->get_qualified_as<int>(tiles::x_yshift);
+	auto yspacing  = tiles_config->get_qualified_as<int>(tiles::yspacing);
+	auto y_xshift  = tiles_config->get_qualified_as<int>(tiles::y_xshift);
+	auto width     = tiles_config->get_qualified_as<int>(spr::width);
+	auto height    = tiles_config->get_qualified_as<int>(spr::height);
 
 	auto missing_key = [](std::string_view key) {
 		spdlog::error("{}: \"{}.{}.{}\" {}", error_msgs::loading_failed, config_keys::graphics, tiles::anims, key, error_msgs::missing_key);
@@ -283,8 +284,8 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 	m_tiles_infos.x_yshift = *x_yshift;
 	m_tiles_infos.yspacing = *yspacing;
 	m_tiles_infos.y_xshift = *y_xshift;
-	m_tiles_infos.width = *width;
-	m_tiles_infos.height = *height;
+	m_tiles_infos.width    = *width;
+	m_tiles_infos.height   = *height;
 
 	bool success = true;
 	for (const std::string &tile : *tile_list) {
@@ -301,10 +302,10 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 			continue;
 		}
 
-		auto id          = current_tile->get_as<int>(config_keys::id);
-		auto frame_count = current_tile->get_as<int>(spr::frame_count);
-		auto pos_x       = current_tile->get_as<int>(spr::pos_x);
-		auto pos_y       = current_tile->get_as<int>(spr::pos_y);
+		auto id          = current_tile->get_qualified_as<int>(config_keys::id);
+		auto frame_count = current_tile->get_qualified_as<int>(spr::frame_count);
+		auto pos_x       = current_tile->get_qualified_as<int>(spr::pos_x);
+		auto pos_y       = current_tile->get_qualified_as<int>(spr::pos_y);
 		if (!id) {
 			missing_tile_key(config_keys::id);
 			success = false;
@@ -326,7 +327,7 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_tile->get_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_tile->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
 		if (texture == nullptr) {
 			success = false;
 			continue;
@@ -368,14 +369,14 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 			continue;
 		}
 
-		auto id          = current_object->get_as<int>(config_keys::id);
-		auto frame_count = current_object->get_as<int>(spr::frame_count);
-		auto pos_x       = current_object->get_as<int>(spr::pos_x);
-		auto pos_y       = current_object->get_as<int>(spr::pos_y);
-		auto width       = current_object->get_as<int>(spr::width);
-		auto height      = current_object->get_as<int>(spr::height);
+		auto id          = current_object->get_qualified_as<int>(config_keys::id);
+		auto frame_count = current_object->get_qualified_as<int>(spr::frame_count);
+		auto pos_x       = current_object->get_qualified_as<int>(spr::pos_x);
+		auto pos_y       = current_object->get_qualified_as<int>(spr::pos_y);
+		auto width       = current_object->get_qualified_as<int>(spr::width);
+		auto height      = current_object->get_qualified_as<int>(spr::height);
 		if (!id) {
-            missing_key(config_keys::id);
+			missing_key(config_keys::id);
 			success = false;
 			continue;
 		}
@@ -405,16 +406,20 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_object->get_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_object->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
 		if (texture == nullptr) {
 			success = false;
 			continue;
 		}
 
-		view::animation animation;
+		auto xshift = current_object->get_qualified_as<int>(spr::xshift);
+		auto yshift = current_object->get_qualified_as<int>(spr::yshift);
+
+		view::shifted_animation animation;
 		for (int i = 0; i < *frame_count; ++i) {
 			animation.add_frame({*texture, {*pos_x + *width * i, *pos_y, *width, *height}});
 		}
+		animation.set_shift(static_cast<float>(xshift.value_or(0)), static_cast<float>(yshift.value_or(0)));
 		m_objects_anims.emplace(static_cast<object_id>(*id), std::move(animation));
 	}
 	return success;
@@ -430,11 +435,11 @@ sf::Texture *resource_manager::get_texture(const std::string &file) noexcept
 	m_textures_holder.emplace_front();
 	sf::Texture *texture = &m_textures_holder.front();
 	if (!texture->loadFromFile(file)) {
-        if (std::filesystem::is_regular_file(file)) {
-            std::abort();
-        }
+		if (std::filesystem::is_regular_file(file)) {
+			std::abort();
+		}
 
-        m_textures_holder.pop_front();
+		m_textures_holder.pop_front();
 		spdlog::error("{}: \"{}\": {}", error_msgs::loading_failed, file, error_msgs::bad_image_file);
 		return nullptr;
 	}
