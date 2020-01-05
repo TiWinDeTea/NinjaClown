@@ -55,3 +55,5 @@ endforeach()
 
 add_library(ninja-clown-bot MODULE bots/test.c)
 target_include_directories(ninja-clown-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+
+add_dependencies(ninja-clown ninja-clown-bot)
