@@ -18,11 +18,14 @@ void model::world::load_map(const std::string &map_path)
 
 	size_t next_entity_handle  = 0;
 	bool ninja_clown_not_found = true;
-	grid.resize(height);
-	for (size_t row = 0; row < grid.size(); ++row) {
-		grid[row].resize(width);
-		for (size_t column = 0; column < grid[row].size(); ++column) {
-			cell &cell = grid[row][column];
+	grid.resize(width);
+	for (auto& column : grid) {
+		column.resize(height);
+	}
+
+	for (size_t row = 0; row < height; ++row) {
+		for (size_t column = 0; column < width; ++column) {
+			cell &cell = grid[column][row];
 
 			char type;
 			fs >> std::noskipws >> type;
@@ -84,7 +87,7 @@ void model::world::load_map(const std::string &map_path)
 	for (unsigned int x = 0 ; x < width ; ++x) {
 	    view_map[x].resize(height);
 	    for (unsigned int y = 0 ; y < height ; ++y) {
-	        switch (grid[y][x].type) {
+	        switch (grid[x][y].type) {
 	            case cell_type::CHASM:
 	                [[fallthrough]];
 	            case cell_type::WALL :
@@ -133,6 +136,7 @@ void model::world::update()
 					button_system(buttons[0], grid);
 					break;
 			}
+			components.decision[handle] = {};
 
             if (angle >= 3 * pi / 4) {
                 player.set_direction(view::facing_direction::W);
@@ -147,25 +151,4 @@ void model::world::update()
             }
 		}
 	}
-
-	std::ostringstream oss;
-	for (auto &row : grid) {
-		oss << "\n";
-		for (auto &cell : row) {
-			switch (cell.type) {
-				case cell_type::CHASM:
-					oss << "X";
-					break;
-				case cell_type::GROUND:
-					oss << " ";
-					break;
-				case cell_type::WALL:
-					oss << "#";
-					break;
-			}
-		}
-	}
-	spdlog::info("{}", oss.str());
-	spdlog::info("ninja clown at ({}, {}) with angle {} rad", components.hitbox[ninja_clown_handle]->center_x(),
-	             components.hitbox[ninja_clown_handle]->center_y(), components.angle[ninja_clown_handle]->rad);
 }
