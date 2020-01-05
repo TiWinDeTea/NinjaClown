@@ -15,7 +15,7 @@ public:
         m_frames.emplace_back(std::move(sprite));
     }
 
-    void print(sf::RenderWindow& window, int posx, int posy) const noexcept;
+    void print(sf::RenderWindow& window, float posx, float posy) const noexcept;
 
 private:
     mutable std::vector<sf::Sprite> m_frames;

@@ -13,7 +13,7 @@ namespace view {
 class mob_animations {
 public:
 
-    [[nodiscard]] std::optional<animation>& animation_for(facing_direction::type dir) noexcept {
+    [[nodiscard]] const std::optional<animation>& animation_for(facing_direction::type dir) const noexcept {
         assert(dir != facing_direction::MAX_VAL);
         return m_animations_by_direction[dir];
     }

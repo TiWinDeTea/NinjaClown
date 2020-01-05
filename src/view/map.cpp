@@ -20,7 +20,7 @@ void view::map::print(sf::RenderWindow &window) const noexcept {
         for (unsigned int y = 0 ; y < m_cells[x].size() ; ++y) {
             auto value = static_cast<int>(m_cells[x][y]);
             assert(animations[value]);
-            animations[value]->print(window, static_cast<int>(x), static_cast<int>(y));
+            animations[value]->print(window, static_cast<float>(x), static_cast<float>(y));
         }
     }
 }

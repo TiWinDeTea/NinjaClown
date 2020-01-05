@@ -76,7 +76,23 @@ void view::viewer::do_run() noexcept
 	for (auto &cell : cells[11]) {
 		cell = map::cell::abyss;
 	}
-	m_map.set(std::move(cells));
+	m_map.acquire()->set(std::move(cells));
+	m_level_size = {12, 5};
+
+    auto mob_anim = program_state::global->resource_manager.mob_animations(utils::resource_manager::mob_id::player);
+    assert(mob_anim);
+	mob m{};
+	m.set_animations(*mob_anim);
+	m.set_direction(facing_direction::S);
+	m.set_pos(8, 1);
+	m_mobs.acquire()->push_back(m);
+
+	object o{};
+	o.set_pos(7, 1);
+	auto obj_anim = program_state::global->resource_manager.object_animation(utils::resource_manager::object_id::button);
+	assert(obj_anim);
+	o.set_animation(*obj_anim);
+	m_objects.acquire()->push_back(o);
     /**********************</TEST>*****************************/
 
 	sf::Clock deltaClock;
@@ -126,7 +142,14 @@ void view::viewer::do_run() noexcept
 		}
 
 		window.clear();
-		m_map.print(window);
+		m_map.acquire()->print(window);
+		for (const mob& mob : *m_mobs.acquire()) {
+		    mob.print(window);
+		}
+		for (const auto& object : *m_objects.acquire()) {
+		    object.print(window);
+		}
+
 		ImGui::SFML::Render(window);
 		window.display();
 

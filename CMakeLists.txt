@@ -23,10 +23,12 @@ add_executable(ninja-clown ${OPTIONS}
 
 		src/utils/resource_manager.cpp
 
-		src/view/viewer.cpp
+		src/view/animation.cpp
 		src/view/map.cpp
 		src/view/mob_animations.cpp
+		src/view/viewer.cpp
 )
+
 set_target_properties(
 	ninja-clown PROPERTIES
 	CXX_STANDARD 17

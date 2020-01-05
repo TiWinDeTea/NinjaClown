@@ -3,8 +3,10 @@
 
 #include "utils/synchronized.hpp"
 
-#include "view/map.hpp"
 #include "view/fps_limiter.hpp"
+#include "view/map.hpp"
+#include "view/mob.hpp"
+#include "view/object.hpp"
 
 namespace view {
 class viewer {
@@ -29,7 +31,7 @@ public:
     }
 
     [[nodiscard]] std::pair<std::size_t, std::size_t> level_size() const noexcept {
-        return m_map.level_size();
+        return m_level_size;
     }
 
     // can be called concurrently
@@ -46,11 +48,29 @@ public:
         return m_fps_limiter.frame_count();
     }
 
+    auto acquire_mobs() noexcept {
+        return m_mobs.acquire();
+    }
+
+    auto acquire_objects() noexcept {
+        return m_objects.acquire();
+    }
+
+    void update_map(std::vector<std::vector<map::cell>>&& new_map) noexcept {
+        auto map = m_map.acquire();
+        map->set(std::move(new_map));
+        m_level_size = map->level_size();
+    }
+
 private:
 
     void do_run() noexcept;
 
-    view::map m_map{};
+    utils::synchronized<std::vector<object>> m_objects;
+    utils::synchronized<std::vector<mob>> m_mobs;
+    utils::synchronized<view::map, utils::spinlock> m_map{};
+    std::pair<std::size_t, std::size_t> m_level_size{};
+
     std::unique_ptr<std::thread> m_thread{};
     std::atomic_bool m_running{false};
 
