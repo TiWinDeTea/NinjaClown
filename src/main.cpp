@@ -1,10 +1,6 @@
-
-#include <imterm/terminal.hpp>
-
 #include <spdlog/spdlog.h>
 
 #include "program_state.hpp"
-#include "terminal_commands.hpp"
 
 #include "utils/optional.hpp"
 
@@ -48,14 +44,17 @@ int main(int argc, char *argv[])
 
 int actual_main([[maybe_unused]] std::vector<std::string> &args)
 {
-    program_state program;
+    program_state program{};
     program_state::global = &program;
 
-    program_state::global->viewer.run();
+    spdlog::default_logger()->sinks().push_back(program.terminal.get_terminal_helper());
+    spdlog::default_logger()->set_level(spdlog::level::trace);
+    spdlog::info("~ Ninja. Clown. ~");
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    program.resource_manager.load_config("resources/config.toml");
-
-    program_state::global->viewer.wait();
+    if (!program.resource_manager.load_config("resources/config.toml")) {
+        spdlog::critical("Failed to load resources.");
+    }
+    program.viewer.run();
+    program.viewer.wait();
     return 0;
 }

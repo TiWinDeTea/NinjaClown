@@ -28,6 +28,10 @@ public:
         m_fps_limiter.target_fps(fps);
     }
 
+    [[nodiscard]] std::pair<std::size_t, std::size_t> level_size() const noexcept {
+        return m_map.level_size();
+    }
+
     // can be called concurrently
     [[nodiscard]] unsigned int target_fps() const noexcept {
         return m_fps_limiter.target_fps();
@@ -36,6 +40,10 @@ public:
     // can be called concurrently
     [[nodiscard]] float average_fps() const noexcept {
         return m_fps_limiter.average_fps();
+    }
+
+    [[nodiscard]] unsigned int current_frame() const noexcept {
+        return m_fps_limiter.frame_count();
     }
 
 private:

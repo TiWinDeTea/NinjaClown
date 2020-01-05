@@ -15,8 +15,18 @@
 #include "view/mob_animations.hpp"
 
 namespace utils {
+
 class resource_manager {
     static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
+
+    struct tiles_infos_t {
+        int xspacing;
+        int x_yshift;
+        int yspacing;
+        int y_xshift;
+        int width;
+        int height;
+    } m_tiles_infos;
 
 public:
 	enum class mob_id {
@@ -40,6 +50,10 @@ public:
 	[[nodiscard]] utils::optional<const view::animation &> object_animation(object_id) const noexcept;
 
 	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(mob_id) const noexcept;
+
+	[[nodiscard]] const tiles_infos_t& tiles_infos() const noexcept {
+	    return m_tiles_infos;
+	}
 
 private:
 	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config) noexcept;

@@ -3,11 +3,17 @@
 
 #include "view/viewer.hpp"
 #include "utils/resource_manager.hpp"
+#include "terminal_commands.hpp"
+
+#include <imterm/terminal.hpp>
 
 struct program_state {
-    view::viewer viewer;
+    static struct empty_struct s_empty;
 
-    utils::resource_manager resource_manager;
+    ImTerm::terminal<terminal_commands> terminal{s_empty, "terminal"};
+    view::viewer viewer{};
+
+    utils::resource_manager resource_manager{};
 
     bool close_request{false};
     bool term_on_display{true};

@@ -279,6 +279,12 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 		missing_key(spr::height);
 		return false;
 	}
+	m_tiles_infos.xspacing = *xspacing;
+	m_tiles_infos.x_yshift = *x_yshift;
+	m_tiles_infos.yspacing = *yspacing;
+	m_tiles_infos.y_xshift = *y_xshift;
+	m_tiles_infos.width = *width;
+	m_tiles_infos.height = *height;
 
 	bool success = true;
 	for (const std::string &tile : *tile_list) {

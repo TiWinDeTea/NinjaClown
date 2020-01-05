@@ -10,6 +10,7 @@
 #include <array>
 #include <charconv>
 #include <filesystem>
+#include <program_state.hpp>
 
 namespace {
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg)
@@ -117,9 +118,9 @@ void terminal_commands::help(argument_type &arg)
 	arg.term.add_text("Additional information might be available using \"'command' --help\"");
 }
 
-void terminal_commands::quit(argument_type &arg)
+void terminal_commands::quit(argument_type&)
 {
-	arg.val.close_request = true;
+	program_state::global->close_request = true;
 }
 
 void terminal_commands::load_shared_library(argument_type &arg)
@@ -165,7 +166,7 @@ void terminal_commands::set_fps(argument_type &arg)
 	if (arg.command_line.size() == 2) {
 		auto value = utils::from_chars<unsigned int>(arg.command_line.back());
 		if (value) {
-			arg.val.viewer.target_fps(*value);
+            program_state::global->viewer.target_fps(*value);
 			return;
 		}
 	}
@@ -178,11 +179,11 @@ void terminal_commands::valueof(argument_type &arg)
 	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions membres
 	if (arg.command_line.size() == 2) {
 		if ("average_fps" == arg.command_line.back()) {
-			arg.term.add_formatted("average fps: {:.1f}", arg.val.viewer.average_fps());
+			arg.term.add_formatted("average fps: {:.1f}", program_state::global->viewer.average_fps());
 			return;
 		}
 		if ("target_fps" == arg.command_line.back()) {
-			arg.term.add_formatted("max fps: {}", arg.val.viewer.target_fps());
+			arg.term.add_formatted("max fps: {}", program_state::global->viewer.target_fps());
 			return;
 		}
 	}

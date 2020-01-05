@@ -38,19 +38,46 @@ void view::viewer::stop() noexcept
 
 void view::viewer::do_run() noexcept
 {
-    assert(program_state::global != nullptr);
+	assert(program_state::global != nullptr);
+	auto& terminal = program_state::global->terminal;
 
-	ImTerm::terminal<terminal_commands> terminal_log(*program_state::global, "terminal", cst::window_width);
-	terminal_log.theme() = ImTerm::themes::cherry;
-	terminal_log.log_level(ImTerm::message::severity::info);
-	terminal_log.set_flags(ImGuiWindowFlags_NoTitleBar);
-	terminal_log.disallow_x_resize();
-	terminal_log.filter_hint() = "regex filter...";
+	terminal.set_width(cst::window_width);
+    terminal.theme() = ImTerm::themes::cherry;
+    terminal.log_level(ImTerm::message::severity::info);
+    terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
+    terminal.disallow_x_resize();
+    terminal.filter_hint() = "regex filter...";
 
-	spdlog::default_logger()->sinks().push_back(terminal_log.get_terminal_helper());
-	spdlog::default_logger()->set_level(spdlog::level::trace);
-
-	spdlog::info("~ Ninja. Clown. ~");
+	/**********************<TEST>******************************/
+	std::vector<std::vector<map::cell>> cells;
+	cells.resize(12);
+	for (auto &v : cells) {
+		v.resize(5, map::cell::concrete_tile);
+	}
+	for (auto &cell : cells[4]) {
+		cell = map::cell::abyss;
+	}
+    for (auto it = std::next(cells[1].begin()) ; it != std::prev(cells[1].end()) ; ++it) {
+        *it = map::cell::iron_tile;
+    }
+    for (auto it = std::next(cells[2].begin()) ; it != std::prev(cells[2].end()) ; ++it) {
+        *it = map::cell::iron_tile;
+    }
+    for (auto it = std::next(cells[3].begin()) ; it != std::prev(cells[3].end()) ; ++it) {
+        *it = map::cell::iron_tile;
+    }
+	for (auto &cell : cells) {
+		cell[0] = map::cell::abyss;
+		cell[4] = map::cell::abyss;
+	}
+	for (auto &cell : cells[0]) {
+		cell = map::cell::abyss;
+	}
+	for (auto &cell : cells[11]) {
+		cell = map::cell::abyss;
+	}
+	m_map.set(std::move(cells));
+    /**********************</TEST>*****************************/
 
 	sf::Clock deltaClock;
 	sf::Clock musicOffsetClock;
@@ -79,11 +106,12 @@ void view::viewer::do_run() noexcept
 				}
 			}
 			else if (event.type == sf::Event::Resized) {
-				terminal_log.set_width(window.getSize().x);
+				terminal.set_width(window.getSize().x);
 				if (resized_once) {
-					terminal_log.set_height(std::min(window.getSize().y, static_cast<unsigned>(terminal_log.get_size().y)));
+					terminal.set_height(std::min(window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
 				}
 				resized_once = true;
+                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
 			}
 		}
 
@@ -91,13 +119,14 @@ void view::viewer::do_run() noexcept
 
 		if (program_state::global->term_on_display) {
 			ImGui::SetNextWindowPos({0.f, 0.f}, ImGuiCond_Always);
-			program_state::global->term_on_display = terminal_log.show();
+			program_state::global->term_on_display = terminal.show();
 			if (program_state::global->close_request) {
 				window.close();
 			}
 		}
 
 		window.clear();
+		m_map.print(window);
 		ImGui::SFML::Render(window);
 		window.display();
 
