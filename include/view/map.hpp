@@ -18,6 +18,10 @@ public:
         m_cells = std::move(cells);
     }
 
+    void set_cell(unsigned int x, unsigned int y, cell c) {
+        m_cells[x][y] = c;
+    }
+
     [[nodiscard]] std::pair<std::size_t, std::size_t> level_size() const noexcept {
         if (m_cells.empty()) {
             return {0u,0u};

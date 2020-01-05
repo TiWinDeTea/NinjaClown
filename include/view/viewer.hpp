@@ -56,6 +56,10 @@ public:
         return m_objects.acquire();
     }
 
+    auto acquire_map() noexcept {
+        return m_map.acquire();
+    }
+
     void update_map(std::vector<std::vector<map::cell>>&& new_map) noexcept {
         auto map = m_map.acquire();
         map->set(std::move(new_map));

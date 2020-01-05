@@ -48,53 +48,6 @@ void view::viewer::do_run() noexcept
     terminal.disallow_x_resize();
     terminal.filter_hint() = "regex filter...";
 
-	/**********************<TEST>******************************/
-	std::vector<std::vector<map::cell>> cells;
-	cells.resize(12);
-	for (auto &v : cells) {
-		v.resize(5, map::cell::concrete_tile);
-	}
-	for (auto &cell : cells[4]) {
-		cell = map::cell::abyss;
-	}
-    for (auto it = std::next(cells[1].begin()) ; it != std::prev(cells[1].end()) ; ++it) {
-        *it = map::cell::iron_tile;
-    }
-    for (auto it = std::next(cells[2].begin()) ; it != std::prev(cells[2].end()) ; ++it) {
-        *it = map::cell::iron_tile;
-    }
-    for (auto it = std::next(cells[3].begin()) ; it != std::prev(cells[3].end()) ; ++it) {
-        *it = map::cell::iron_tile;
-    }
-	for (auto &cell : cells) {
-		cell[0] = map::cell::abyss;
-		cell[4] = map::cell::abyss;
-	}
-	for (auto &cell : cells[0]) {
-		cell = map::cell::abyss;
-	}
-	for (auto &cell : cells[11]) {
-		cell = map::cell::abyss;
-	}
-	m_map.acquire()->set(std::move(cells));
-	m_level_size = {12, 5};
-
-    auto mob_anim = program_state::global->resource_manager.mob_animations(utils::resource_manager::mob_id::player);
-    assert(mob_anim);
-	mob m{};
-	m.set_animations(*mob_anim);
-	m.set_direction(facing_direction::S);
-	m.set_pos(8, 1);
-	m_mobs.acquire()->push_back(m);
-
-	object o{};
-	o.set_pos(7, 1);
-	auto obj_anim = program_state::global->resource_manager.object_animation(utils::resource_manager::object_id::button);
-	assert(obj_anim);
-	o.set_animation(*obj_anim);
-	m_objects.acquire()->push_back(o);
-    /**********************</TEST>*****************************/
-
 	sf::Clock deltaClock;
 	sf::Clock musicOffsetClock;
 
@@ -108,6 +61,12 @@ void view::viewer::do_run() noexcept
 
 	m_fps_limiter.start_now();
 
+	auto step_bot = [&terminal]() {
+        terminal_commands::argument_type arg{program_state::s_empty, terminal, {}};
+        terminal_commands::update_world(arg);
+	};
+	bool auto_step_bot = false;
+
 	while (window.isOpen() && m_running) {
 		sf::Event event{};
 		while (window.pollEvent(event)) {
@@ -119,6 +78,10 @@ void view::viewer::do_run() noexcept
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::F11) {
 					program_state::global->term_on_display = !program_state::global->term_on_display;
+				} else if (event.key.code == sf::Keyboard::F5) {
+				    step_bot();
+				} else if (event.key.code == sf::Keyboard::F4) {
+				    auto_step_bot = !auto_step_bot;
 				}
 			}
 			else if (event.type == sf::Event::Resized) {
@@ -139,6 +102,10 @@ void view::viewer::do_run() noexcept
 			if (program_state::global->close_request) {
 				window.close();
 			}
+		}
+
+		if (auto_step_bot && !(current_frame() % 15)) {
+		    step_bot();
 		}
 
 		window.clear();

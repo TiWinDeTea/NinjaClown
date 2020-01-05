@@ -1,6 +1,8 @@
 #ifndef NINJACLOWN_COMPONENTS_HPP
 #define NINJACLOWN_COMPONENTS_HPP
 
+#include <optional>
+
 namespace model::component {
 
 struct health {

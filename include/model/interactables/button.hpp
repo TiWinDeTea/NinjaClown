@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <view/map.hpp>
 
 #include "model/cell.hpp"
 
@@ -15,15 +16,7 @@ struct button {
 	} target;
 };
 
-inline void button_system(button &button, std::vector<std::vector<cell>> &grid)
-{
-	if (grid[button.target.column][button.target.row].type == cell_type::GROUND) {
-		grid[button.target.column][button.target.row].type = cell_type::WALL;
-	}
-	else {
-		grid[button.target.column][button.target.row].type = cell_type::GROUND;
-	}
-}
+void button_system(button &button, std::vector<std::vector<cell>> &grid);
 
 } // namespace model
 
