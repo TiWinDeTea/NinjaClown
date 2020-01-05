@@ -119,7 +119,7 @@ void terminal_commands::help(argument_type &arg)
 	arg.term.add_text("Additional information might be available using \"'command' --help\"");
 }
 
-void terminal_commands::quit(argument_type&)
+void terminal_commands::quit(argument_type &)
 {
 	program_state::global->close_request = true;
 }
@@ -134,7 +134,10 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path);
 
-	if (!program_state::global->bot_dll.load(shared_library_path)) {
+	if (program_state::global->bot_dll.load(shared_library_path)) {
+		program_state::global->bot_dll.bot_init(bot::make_api());
+	}
+	else {
 		arg.term.add_text("error loading dll");
 	}
 }
@@ -146,7 +149,6 @@ void terminal_commands::load_map(argument_type &arg)
 		return;
 	}
 
-	program_state::global->bot_dll.bot_init(bot::make_api());
 	program_state::global->world.load_map(arg.command_line[1]);
 }
 
@@ -161,7 +163,7 @@ void terminal_commands::set_fps(argument_type &arg)
 	if (arg.command_line.size() == 2) {
 		auto value = utils::from_chars<unsigned int>(arg.command_line.back());
 		if (value) {
-            program_state::global->viewer.target_fps(*value);
+			program_state::global->viewer.target_fps(*value);
 			return;
 		}
 	}

@@ -3,19 +3,19 @@
 
 #include "bot/bot_dll.hpp"
 #include "model/world.hpp"
-#include "view/viewer.hpp"
-#include "utils/resource_manager.hpp"
 #include "terminal_commands.hpp"
+#include "utils/resource_manager.hpp"
+#include "view/viewer.hpp"
 
 #include <imterm/terminal.hpp>
 
 struct program_state {
-    static struct empty_struct s_empty;
+	static struct empty_struct s_empty;
 
-    ImTerm::terminal<terminal_commands> terminal{s_empty, "terminal"};
-    view::viewer viewer{};
+	ImTerm::terminal<terminal_commands> terminal{s_empty, "terminal"};
+	view::viewer viewer{};
 
-    utils::resource_manager resource_manager{};
+	utils::resource_manager resource_manager{};
 
 	model::world world{};
 
