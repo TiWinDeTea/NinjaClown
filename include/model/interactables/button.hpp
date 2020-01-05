@@ -4,9 +4,10 @@
 #include <cstddef>
 #include <vector>
 
-#include "cell.hpp"
+#include "model/cell.hpp"
 
 namespace model {
+
 struct button {
 	struct {
 		size_t column;
@@ -23,6 +24,7 @@ inline void button_system(button &button, std::vector<std::vector<cell>> &grid)
 		grid[button.target.column][button.target.row].type = cell_type::GROUND;
 	}
 }
+
 } // namespace model
 
 #endif //NINJACLOWN_BUTTON_HPP

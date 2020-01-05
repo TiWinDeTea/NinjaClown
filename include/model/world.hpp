@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "button.hpp"
 #include "cell.hpp"
 #include "interaction.hpp"
+#include "interactables/button.hpp"
 
 namespace model {
 struct world {
