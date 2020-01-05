@@ -11,6 +11,8 @@
 #	error "Unsupported system"
 #endif
 
+namespace utils {
+
 class dll {
 public:
 	dll() noexcept = default;
@@ -45,5 +47,7 @@ private:
 	void *m_handle{};
 #endif
 };
+
+} // namespace utils
 
 #endif

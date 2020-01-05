@@ -4,7 +4,7 @@
 #include <bot_interface/bot.h>
 #include <optional>
 
-#include "dll.hpp"
+#include "utils/dll.hpp"
 
 namespace bot {
 struct bot_api; // forward declaration
@@ -34,7 +34,7 @@ private:
 	bool try_load_function(FuncPtr &ptr, const char *func_name);
 
 	std::optional<std::string> m_dll_path{};
-	dll m_dll{};
+	utils::dll m_dll{};
 	bool m_good{false};
 
 	init_fn_type m_init_fn{};

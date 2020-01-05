@@ -1,4 +1,6 @@
-#include "dll.hpp"
+#include "utils/dll.hpp"
+
+namespace utils {
 
 dll::~dll()
 {
@@ -59,3 +61,5 @@ bool dll::load(const char* dll_path) {
 bool dll::load(const std::string& dll_path){
 	return load(dll_path.c_str());
 }
+
+} // namespace utils

@@ -13,7 +13,6 @@ include(cmake/cpptoml.cmake)
 add_executable(ninja-clown ${OPTIONS}
 		src/main.cpp
 		src/terminal_commands.cpp
-		src/dll.cpp
 		src/program_state.cpp
 
 		src/bot/bot_api.cpp
@@ -21,6 +20,7 @@ add_executable(ninja-clown ${OPTIONS}
 
 		src/model/world.cpp
 
+		src/utils/dll.cpp
 		src/utils/resource_manager.cpp
 
 		src/view/animation.cpp
