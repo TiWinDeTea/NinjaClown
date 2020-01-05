@@ -6,10 +6,11 @@
 #include "model/interaction.hpp"
 
 namespace model {
+
 enum class cell_type {
-	CHASM,
-	GROUND,
-	WALL,
+	CHASM  = 0,
+	GROUND = 1,
+	WALL   = 2,
 };
 
 struct cell {
@@ -35,6 +36,7 @@ struct cell {
 	cell_type type{cell_type::CHASM};
 	std::optional<size_t> interaction_handle{};
 };
+
 } // namespace model
 
 #endif //NINJACLOWN_CELL_HPP
