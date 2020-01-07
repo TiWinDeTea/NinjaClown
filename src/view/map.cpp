@@ -24,3 +24,32 @@ void view::map::print(sf::RenderWindow &window) const noexcept {
         }
     }
 }
+
+void view::map::highlight_tile(sf::RenderWindow& window, size_t x, size_t y) const noexcept {
+    auto& rm = program_state::global->resource_manager;
+
+    utils::optional<const view::animation&> anim;
+    switch(m_cells[x][y]) {
+        case cell::iron_tile:
+            anim = rm.tile_animation(utils::resource_manager::tile_id::iron);
+            break;
+        case cell::concrete_tile:
+            anim = rm.tile_animation(utils::resource_manager::tile_id::concrete);
+            break;
+        case cell::abyss:
+            break;
+    }
+
+    if (anim) {
+		anim->highlight(window, static_cast<float>(x), static_cast<float>(y));
+	}
+    frame_tile(window, x, y);
+}
+
+
+void view::map::frame_tile(sf::RenderWindow& window, size_t x, size_t y) const noexcept {
+    auto animation = program_state::global->resource_manager.tile_animation(utils::resource_manager::tile_id::frame);
+    if (animation) {
+		animation->print(window, static_cast<float>(x), static_cast<float>(y));
+	}
+}

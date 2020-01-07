@@ -29,7 +29,7 @@ public:
 	static void load_shared_library(argument_type &);
 	static void load_map(argument_type &);
 	static void update_world(argument_type &);
-	static void set_fps(argument_type &);
+	static void set(argument_type &);
 	static void valueof(argument_type &);
 
 	static std::vector<std::string> autocomplete_path(argument_type &, const std::initializer_list<std::string_view> &extensions);

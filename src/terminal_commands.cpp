@@ -33,10 +33,10 @@ constexpr std::array local_command_list{
   terminal_commands::command_type{"load_dll", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
   terminal_commands::command_type{"load_map", "loads map from file", terminal_commands::load_map, autocomplete_map_path},
   terminal_commands::command_type{"update_world", "update world once", terminal_commands::update_world, terminal_commands::no_completion},
-  terminal_commands::command_type{"fps_max", "sets the target fps", terminal_commands::set_fps,
-                                  terminal_commands::no_completion}, // TODO: autocomplete with current value
+  terminal_commands::command_type{"set", "sets a variable", terminal_commands::set,
+                                  terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
   terminal_commands::command_type{"valueof", "prints the value of a game variable", terminal_commands::valueof,
-                                  terminal_commands::autocomplete_variable}};
+                                  terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
 } // namespace
 
 terminal_commands::terminal_commands()
@@ -149,7 +149,7 @@ void terminal_commands::load_map(argument_type &arg)
 		return;
 	}
 
-	program_state::global->world.load_map(arg.command_line[1]);
+	program_state::global->adapter.load_map(arg.command_line[1]);
 }
 
 void terminal_commands::update_world(argument_type &arg)
@@ -158,22 +158,58 @@ void terminal_commands::update_world(argument_type &arg)
 	program_state::global->world.update();
 }
 
-void terminal_commands::set_fps(argument_type &arg)
+void terminal_commands::set(argument_type &arg)
 {
-	if (arg.command_line.size() == 2) {
-		auto value = utils::from_chars<unsigned int>(arg.command_line.back());
-		if (value) {
-			program_state::global->viewer.target_fps(*value);
-			return;
+    auto show_usage = [&](){
+        arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());
+    };
+
+    // todo: std::map & lower_bound + higher_bound, ptr vers fonctions
+	if (arg.command_line.size() == 3) {
+        auto value = utils::from_chars<int>(arg.command_line.back());
+	    if ("display_debug_data" == arg.command_line[1]) {
+	        if (value && *value != 0 && *value != 1) {
+				arg.term.add_text("display_debug_data must be either 0 (no) or 1 (yes)");
+			} else {
+	            if (value) {
+					program_state::global->viewer.show_debug_data = (*value == 1);
+				} else {
+                    if (arg.command_line.back() == "true") {
+                        program_state::global->viewer.show_debug_data = true;
+                    } else if (arg.command_line.back() == "false") {
+                        program_state::global->viewer.show_debug_data = false;
+                    } else {
+                        show_usage();
+                    }
+	            }
+	        }
+            return;
+	    }
+	    if ("target_fps" == arg.command_line[1]) {
+            if (!value) {
+                show_usage();
+                return;
+            }
+			if (*value < 0) {
+			    arg.term.add_text("target_fps must be positive");
+			} else {
+				program_state::global->viewer.target_fps(*value);
+			}
+            return;
 		}
+	    if ("average_fps" == arg.command_line[1]) {
+	        arg.term.add_text("average_fps can not be set");
+	        return;
+	    }
 	}
 
-	arg.term.add_formatted("usage: {} <unsigned integer value>", arg.command_line.front());
+	show_usage();
+
 }
 
 void terminal_commands::valueof(argument_type &arg)
 {
-	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions membres
+	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 2) {
 		if ("average_fps" == arg.command_line.back()) {
 			arg.term.add_formatted("average fps: {:.1f}", program_state::global->viewer.average_fps());
@@ -182,6 +218,10 @@ void terminal_commands::valueof(argument_type &arg)
 		if ("target_fps" == arg.command_line.back()) {
 			arg.term.add_formatted("max fps: {}", program_state::global->viewer.target_fps());
 			return;
+		}
+		if ("display_debug_data" == arg.command_line.back()) {
+		    arg.term.add_formatted("display debug data: {}", program_state::global->viewer.show_debug_data.load());
+		    return;
 		}
 	}
 
@@ -256,6 +296,9 @@ std::vector<std::string> terminal_commands::autocomplete_variable(argument_type 
 	}
 	if (utils::starts_with("target_fps", arg.command_line.back())) {
 		ans.emplace_back("target_fps");
+	}
+	if (utils::starts_with("display_debug_data", arg.command_line.back())) {
+	    ans.emplace_back("display_debug_data");
 	}
 	return ans;
 }

@@ -15,7 +15,6 @@ namespace model {
 struct world {
 	world() noexcept = default;
 
-	void load_map(const std::string &map_path);
 	void update();
 
 	std::vector<std::vector<cell>> grid{};

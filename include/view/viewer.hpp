@@ -8,6 +8,14 @@
 #include "view/mob.hpp"
 #include "view/object.hpp"
 
+namespace sf {
+class RenderWindow;
+}
+
+namespace adapter {
+struct view_handle;
+}
+
 namespace view {
 class viewer {
 public:
@@ -60,15 +68,26 @@ public:
         return m_map.acquire();
     }
 
-    void update_map(std::vector<std::vector<map::cell>>&& new_map) noexcept {
+    void set_map(std::vector<std::vector<map::cell>>&& new_map) noexcept {
         auto map = m_map.acquire();
         map->set(std::move(new_map));
         m_level_size = map->level_size();
     }
 
+    std::pair<float, float> to_screen_coords(float x, float y) const noexcept;
+
+    const std::chrono::system_clock::time_point starting_time{std::chrono::system_clock::now()};
+
+    std::atomic_bool show_debug_data{true};
 private:
 
+    std::pair<float, float> to_screen_coords_base(float x, float y) const noexcept;
+
     void do_run() noexcept;
+
+    void do_tooltip(sf::RenderWindow&, adapter::view_handle) noexcept;
+
+    std::pair<std::size_t, std::size_t> m_window_size;
 
     utils::synchronized<std::vector<object>> m_objects;
     utils::synchronized<std::vector<mob>> m_mobs;

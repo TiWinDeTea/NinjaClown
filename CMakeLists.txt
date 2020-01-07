@@ -15,6 +15,8 @@ add_executable(ninja-clown ${OPTIONS}
 		src/terminal_commands.cpp
 		src/program_state.cpp
 
+		src/adapter/adapter.cpp
+
 		src/bot/bot_api.cpp
 		src/bot/bot_dll.cpp
 

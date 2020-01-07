@@ -1,3 +1,4 @@
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Clock.hpp>
@@ -8,6 +9,7 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 
+#include <adapter/adapter.hpp>
 #include <imterm/terminal.hpp>
 
 #include "program_state.hpp"
@@ -39,19 +41,21 @@ void view::viewer::stop() noexcept
 void view::viewer::do_run() noexcept
 {
 	assert(program_state::global != nullptr);
-	auto& terminal = program_state::global->terminal;
+	auto &terminal = program_state::global->terminal;
 
 	terminal.set_width(cst::window_width);
-    terminal.theme() = ImTerm::themes::cherry;
-    terminal.log_level(ImTerm::message::severity::info);
-    terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
-    terminal.disallow_x_resize();
-    terminal.filter_hint() = "regex filter...";
+	terminal.theme() = ImTerm::themes::cherry;
+	terminal.log_level(ImTerm::message::severity::info);
+	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
+	terminal.disallow_x_resize();
+	terminal.filter_hint() = "regex filter...";
 
 	sf::Clock deltaClock;
 	sf::Clock musicOffsetClock;
 
 	sf::RenderWindow window({cst::window_width, cst::window_height}, "Ninja clown !");
+	m_window_size = {cst::window_width, cst::window_height};
+
 	bool resized_once = false;
 	window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
 	ImGui::SFML::Init(window);
@@ -62,8 +66,8 @@ void view::viewer::do_run() noexcept
 	m_fps_limiter.start_now();
 
 	auto step_bot = [&terminal]() {
-        terminal_commands::argument_type arg{program_state::s_empty, terminal, {}};
-        terminal_commands::update_world(arg);
+		terminal_commands::argument_type arg{program_state::s_empty, terminal, {}};
+		terminal_commands::update_world(arg);
 	};
 	bool auto_step_bot = false;
 
@@ -78,19 +82,24 @@ void view::viewer::do_run() noexcept
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::F11) {
 					program_state::global->term_on_display = !program_state::global->term_on_display;
-				} else if (event.key.code == sf::Keyboard::F5) {
-				    step_bot();
-				} else if (event.key.code == sf::Keyboard::F4) {
-				    auto_step_bot = !auto_step_bot;
+				}
+				else if (event.key.code == sf::Keyboard::F5) {
+					step_bot();
+				}
+				else if (event.key.code == sf::Keyboard::F4) {
+					auto_step_bot = !auto_step_bot;
 				}
 			}
 			else if (event.type == sf::Event::Resized) {
+				m_window_size.first  = event.size.width;
+				m_window_size.second = event.size.height;
 				terminal.set_width(window.getSize().x);
 				if (resized_once) {
 					terminal.set_height(std::min(window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
 				}
 				resized_once = true;
-                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+				window.setView(
+				  sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(event.size.width), static_cast<float>(event.size.height))));
 			}
 		}
 
@@ -105,16 +114,30 @@ void view::viewer::do_run() noexcept
 		}
 
 		if (auto_step_bot && !(current_frame() % 15)) {
-		    step_bot();
+			step_bot();
 		}
 
 		window.clear();
 		m_map.acquire()->print(window);
-		for (const mob& mob : *m_mobs.acquire()) {
-		    mob.print(window);
+		{
+			auto mobs = m_mobs.acquire();
+			for (auto idx = 0u; idx < mobs->size(); ++idx) {
+				const auto &mob = (*mobs)[idx];
+				mob.print(window);
+				if (show_debug_data && mob.is_hovered(window)) {
+					do_tooltip(window, adapter::view_handle{true, idx});
+				}
+			}
 		}
-		for (const auto& object : *m_objects.acquire()) {
-		    object.print(window);
+		{
+			auto objects = m_objects.acquire();
+			for (auto idx = 0u; idx < objects->size(); ++idx) {
+				const auto &object = (*objects)[idx];
+				object.print(window);
+				if (show_debug_data && object.is_hovered(window)) {
+					do_tooltip(window, adapter::view_handle{false, idx});
+				}
+			}
 		}
 
 		ImGui::SFML::Render(window);
@@ -126,4 +149,58 @@ void view::viewer::do_run() noexcept
 		window.close();
 	}
 	ImGui::SFML::Shutdown();
+}
+
+std::pair<float, float> view::viewer::to_screen_coords(float x, float y) const noexcept
+{
+    auto [screen_x, screen_y] = to_screen_coords_base(x, y);
+
+    const auto &tiles = program_state::global->resource_manager.tiles_infos();
+	auto max_x = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
+    auto max_y = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
+
+    float extra_width = static_cast<float>(m_window_size.first) - max_x;
+	float extra_height = static_cast<float>(m_window_size.second) - max_y;
+
+	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
+}
+
+std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept
+{
+	const auto &tiles = program_state::global->resource_manager.tiles_infos();
+	auto xshift       = static_cast<float>(m_level_size.second * tiles.y_xshift);
+	auto screen_x     = x * static_cast<float>(tiles.xspacing) + y * static_cast<float>(-tiles.y_xshift) + xshift;
+	auto screen_y     = y * static_cast<float>(tiles.yspacing) + x * static_cast<float>(tiles.x_yshift);
+
+	return {screen_x, screen_y};
+}
+
+void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept
+{
+
+	auto draw_request = program_state::global->adapter.tooltip_for(handle);
+	if (draw_request) {
+		switch (draw_request->request_type) {
+			case adapter::draw_request::request_type_t::hitbox_highlight: {
+				float width  = draw_request->data.hitbox.width;
+				float height = draw_request->data.hitbox.height;
+				float x      = draw_request->data.hitbox.x;
+				float y      = draw_request->data.hitbox.y;
+
+				auto [screen_x, screen_y]          = to_screen_coords(x, y);
+				auto [screen_width, screen_height] = to_screen_coords(x + width, y + height);
+				screen_width -= screen_x;
+				screen_height -= screen_y;
+
+				sf::RectangleShape hitbox{{screen_width, screen_height}};
+				hitbox.setPosition(screen_x, screen_y);
+				hitbox.setFillColor(sf::Color{128, 255, 128, 128});
+
+				window.draw(hitbox);
+			} break;
+			case adapter::draw_request::request_type_t::tile_highlight: {
+				m_map.acquire()->highlight_tile(window, draw_request->data.coords.x, draw_request->data.coords.y);
+			} break;
+		}
+	}
 }

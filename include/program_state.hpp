@@ -6,6 +6,7 @@
 #include "terminal_commands.hpp"
 #include "utils/resource_manager.hpp"
 #include "view/viewer.hpp"
+#include "adapter/adapter.hpp"
 
 #include <imterm/terminal.hpp>
 
@@ -20,6 +21,8 @@ struct program_state {
 	model::world world{};
 
 	bot::bot_dll bot_dll{};
+
+    adapter::adapter adapter{};
 
 	bool close_request{false};
 	bool term_on_display{true};

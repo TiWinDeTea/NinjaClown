@@ -59,7 +59,7 @@ struct [[nodiscard]] optional<T &>
 	}
 	constexpr optional &operator=(const optional &other)
 	{
-		m_value = other.value;
+		m_value = other.m_value;
 		return *this;
 	}
 

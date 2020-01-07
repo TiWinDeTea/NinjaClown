@@ -42,6 +42,7 @@ public:
 		chasm    = TILES_CHASMID,
 		iron     = TILES_IRONID,
 		concrete = TILES_CONCRETEID,
+		frame    = TILES_FRAMEID,
 	};
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;

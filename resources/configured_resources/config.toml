@@ -8,34 +8,34 @@
         [graphics.mobs.player.downwards]
             frame-count = 1
             pos.x = 0
-            pos.y = 67
+            pos.y = 62
             width = 42
             height = 56
 
         [graphics.mobs.player.upwards]
             frame-count = 1
             pos.x = 71
-            pos.y = 67
+            pos.y = 62
             width = 41
             height = 56
 
         [graphics.mobs.player.rightwards]
             frame-count = 1
-            pos.x = 112
-            pos.y = 67
+            pos.x = 113
+            pos.y = 62
             width = 29
             height = 56
 
         [graphics.mobs.player.leftwards]
             frame-count = 1
             pos.x = 42
-            pos.y = 67
+            pos.y = 62
             width = 29
             height = 56
 
 
     [graphics.tiles]
-        list = ["chasm", "iron-tile", "concrete-tile"]
+        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
         spacing.x = 51
         x-yshift = 0 # when going one left (51px), go neither left nor right
 
@@ -63,14 +63,21 @@
             pos.x = 81
             pos.y = 0
 
+        [graphics.tiles.tile-frame]
+            id = @TILES_FRAMEID@
+            frame-count = 2
+            pos.x = 0
+            pos.y = 31
+
     [graphics.objects]
         list = ["button"]
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
             frame-count = 1
-            pos.x = 0
+            pos.x = 162
             pos.y = 31
-            width = 81
-            height = 35
+            width = 17
+            height = 24
             shift.y = -4 # the button shall be printed with a sprite starting 4 extra upwards from usual
+            shift.x = 33

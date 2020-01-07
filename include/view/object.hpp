@@ -14,6 +14,11 @@ public:
         m_animation->print(window, m_posx, m_posy);
     }
 
+    bool is_hovered(sf::RenderWindow& window) const noexcept {
+        assert(m_animation);
+        return m_animation->is_hovered(window);
+    }
+
     void set_pos(float x, float y) {
         m_posx = x + m_xshift;
         m_posy = y + m_yshift;

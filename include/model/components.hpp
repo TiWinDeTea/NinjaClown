@@ -45,6 +45,21 @@ enum class decision {
 	ACTIVATE_BUTTON,
 };
 
+constexpr const char* to_string(decision d) {
+#define COMPONENTS_DECISION_CASE(x) case decision::x: return #x
+    // TODO: use resource_manager::to_string(decision);
+    switch (d) {
+        COMPONENTS_DECISION_CASE(TURN_LEFT);
+        COMPONENTS_DECISION_CASE(TURN_RIGHT);
+        COMPONENTS_DECISION_CASE(MOVE_FORWARD);
+        COMPONENTS_DECISION_CASE(MOVE_BACKWARD);
+        COMPONENTS_DECISION_CASE(ACTIVATE_BUTTON);
+        default:
+            return "UNKNOWN";
+    }
+#undef COMPONENTS_DECISION_CASE
+}
+
 } // namespace model::component
 
 namespace model {

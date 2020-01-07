@@ -5,6 +5,10 @@
 
 #include <vector>
 
+namespace adapter {
+class adapter;
+}
+
 namespace view {
 class map {
 public:
@@ -18,10 +22,6 @@ public:
         m_cells = std::move(cells);
     }
 
-    void set_cell(unsigned int x, unsigned int y, cell c) {
-        m_cells[x][y] = c;
-    }
-
     [[nodiscard]] std::pair<std::size_t, std::size_t> level_size() const noexcept {
         if (m_cells.empty()) {
             return {0u,0u};
@@ -31,8 +31,14 @@ public:
 
     void print(sf::RenderWindow& window) const noexcept;
 
+    void highlight_tile(sf::RenderWindow& window, size_t x, size_t y) const noexcept;
+
+    void frame_tile(sf::RenderWindow& window, size_t x, size_t y) const noexcept;
+
 private:
     std::vector<std::vector<cell>> m_cells;
+
+    friend class adapter::adapter;
 };
 } // namespace view
 

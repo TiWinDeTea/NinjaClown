@@ -161,10 +161,10 @@ bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noe
 		return false;
 	}
 
-	bool success = load_mobs_anims(mobs_config);
-	success      = load_tiles_anims(tiles_config) && success;
-	success      = load_objects_anims(objects_config) && success;
-	return success;
+	bool success = load_tiles_anims(tiles_config);
+    success      = load_mobs_anims(mobs_config) && success;
+    success      = load_objects_anims(objects_config) && success;
+    return success;
 }
 
 bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config) noexcept

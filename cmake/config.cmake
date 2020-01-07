@@ -44,6 +44,8 @@ set(TILES_IRONID 1)
 add_compile_definitions(TILES_IRONID=1)
 set(TILES_CONCRETEID 2)
 add_compile_definitions(TILES_CONCRETEID=2)
+set(TILES_FRAMEID 3)
+add_compile_definitions(TILES_FRAMEID=3)
 
 set(OBJECTS_BUTTONID 0)
 add_compile_definitions(OBJECTS_BUTTONID=0)

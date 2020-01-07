@@ -6,12 +6,14 @@
 
 void model::button_system(button &button, std::vector<std::vector<cell>> &grid)
 {
-	if (grid[button.target.column][button.target.row].type == cell_type::GROUND) {
-		grid[button.target.column][button.target.row].type = cell_type::WALL;
-		program_state::global->viewer.acquire_map()->set_cell(button.target.row, button.target.column, view::map::cell::abyss);
+    cell_type& current = grid[button.target.column][button.target.row].type;
+    cell_type new_value;
+	if (current == cell_type::GROUND) {
+        new_value = cell_type::WALL;
 	}
 	else {
-		grid[button.target.column][button.target.row].type = cell_type::GROUND;
-		program_state::global->viewer.acquire_map()->set_cell(button.target.row, button.target.column, view::map::cell::concrete_tile);
+        new_value = cell_type::GROUND;
 	}
+	current = new_value;
+	program_state::global->adapter.update_map(button.target.column, button.target.row, new_value);
 }
