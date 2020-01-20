@@ -53,6 +53,7 @@ target_link_libraries(
 		${SFML_LIBRARIES}
 		${DLL_LOADING_TARGET_LIBRARY}
 		${THREADS_LIBRARIES}
+		${FILESYSTEM_LIBRARIES}
 )
 
 file(GLOB_RECURSE files RELATIVE "${CMAKE_CURRENT_LIST_DIR}/resources/configured_resources/" "resources/configured_resources/*")

@@ -7,6 +7,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     endif(MSVC)
 
     set(THREADS_LIBRARIES)
+    set(FILESYSTEM_LIBRARIES)
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_compile_definitions(OS_LINUX)
@@ -16,6 +17,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     set(THREADS_LIBRARIES Threads::Threads)
+    set(FILESYSTEM_LIBRARIES stdc++fs)
 else()
     message(FATAL_ERROR "unsupported OS")
 
