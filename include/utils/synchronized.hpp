@@ -43,11 +43,11 @@ public:
     {
     }
 
-    [[nodiscard]] acquired_t acquire() noexcept(noexcept(acquired_t{*this})) {
+    [[nodiscard]] acquired_t acquire() noexcept(noexcept(acquired_t{std::declval<synchronized&>()})) {
         return acquired_t{*this};
     }
 
-    [[nodiscard]] const_acquired_t acquire() const noexcept(noexcept(const_acquired_t{*this})) {
+    [[nodiscard]] const_acquired_t acquire() const noexcept(noexcept(const_acquired_t{std::declval<const synchronized&>()})) {
         return const_acquired_t{*this};
     }
 
