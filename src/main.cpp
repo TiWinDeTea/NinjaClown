@@ -42,10 +42,16 @@ int main(int argc, char *argv[])
 }
 #endif
 
+#include <iostream>
 int actual_main([[maybe_unused]] std::vector<std::string> &args)
 {
-    program_state program{};
+    union {
+        alignas(program_state) char data[sizeof(program_state)];
+    } prog_union;
+    program_state& program = *reinterpret_cast<program_state*>(prog_union.data);
     program_state::global = &program;
+
+    new (&program) program_state;
 
     spdlog::default_logger()->sinks().push_back(program.terminal.get_terminal_helper());
     spdlog::default_logger()->set_level(spdlog::level::trace);
@@ -56,5 +62,7 @@ int actual_main([[maybe_unused]] std::vector<std::string> &args)
     }
     program.viewer.run();
     program.viewer.wait();
+
+    program.~program_state();
     return 0;
 }

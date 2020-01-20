@@ -167,7 +167,7 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 {
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
-			spdlog::trace("Rotating mob {} to a target angle of {}", new_rad);
+			spdlog::trace("Rotating mob {} to a target angle of {}", it->first.handle, new_rad);
 			(*program_state::global->viewer.acquire_mobs())[it->second.handle].set_direction(view::facing_direction::from_angle(new_rad));
 		}
 		else {
