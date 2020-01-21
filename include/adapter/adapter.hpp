@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <unordered_map>
+#include <variant>
 
 #include "model/cell.hpp"
 
@@ -38,22 +39,16 @@ struct view_hhash {
 	size_t operator()(const view_handle &h) const noexcept;
 };
 
-struct draw_request {
-	enum class request_type_t { hitbox_highlight, tile_highlight };
-	struct coords_t {
-		size_t x, y;
-	};
-	struct hitbox_t {
-		float x, y;
-		float width, height;
-	};
-
-	request_type_t request_type;
-	union {
-		coords_t coords;
-		hitbox_t hitbox;
-	} data;
+namespace request {
+struct coords {
+    size_t x, y;
 };
+struct hitbox {
+    float x, y;
+    float width, height;
+};
+}
+using draw_request = std::variant<std::monostate, request::coords, request::hitbox>;
 
 class adapter {
 public:
@@ -65,7 +60,7 @@ public:
 
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
 
-	[[nodiscard]] std::optional<draw_request> tooltip_for(view_handle entity) noexcept;
+	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
 private:
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;

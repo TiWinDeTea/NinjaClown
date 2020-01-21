@@ -1,9 +1,11 @@
+#include <string>
+#include <vector>
+
 #include <spdlog/spdlog.h>
 
 #include "program_state.hpp"
-
-#include "utils/optional.hpp"
 #include "utils/scope_guards.hpp"
+#include "view/viewer.hpp"
 
 int actual_main(std::vector<std::string> &);
 
@@ -41,7 +43,6 @@ int main(int argc, char *argv[]) {
 }
 #endif
 
-#include <iostream>
 int actual_main([[maybe_unused]] std::vector<std::string> &args) {
 	union {
 		alignas(program_state) char data[sizeof(program_state)];

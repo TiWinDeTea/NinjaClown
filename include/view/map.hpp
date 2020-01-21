@@ -1,12 +1,14 @@
 #ifndef NINJACLOWN_VIEW_MAP_HPP
 #define NINJACLOWN_VIEW_MAP_HPP
 
-#include <SFML/Graphics/RenderWindow.hpp>
-
 #include <vector>
 
 namespace adapter {
 class adapter;
+}
+
+namespace sf {
+class RenderWindow;
 }
 
 namespace view {

@@ -14,6 +14,7 @@
 
 #include "program_state.hpp"
 #include "terminal_commands.hpp"
+#include "utils/visitor.hpp"
 
 #include "view/viewer.hpp"
 
@@ -171,30 +172,24 @@ std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) co
 }
 
 void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept {
+    using namespace adapter;
+    utils::visitor request_visitor{
+        [&](const request::hitbox& hitbox) {
+            auto [screen_x, screen_y]          = to_screen_coords(hitbox.x, hitbox.y);
+            auto [screen_width, screen_height] = to_screen_coords(hitbox.x + hitbox.width, hitbox.y + hitbox.height);
+            screen_width -= screen_x;
+            screen_height -= screen_y;
 
-	auto draw_request = program_state::global->adapter.tooltip_for(handle);
-	if (draw_request) {
-		switch (draw_request->request_type) {
-			case adapter::draw_request::request_type_t::hitbox_highlight: {
-				float width  = draw_request->data.hitbox.width;
-				float height = draw_request->data.hitbox.height;
-				float x      = draw_request->data.hitbox.x;
-				float y      = draw_request->data.hitbox.y;
+            sf::RectangleShape rect{{screen_width, screen_height}};
+            rect.setPosition(screen_x, screen_y);
+            rect.setFillColor(sf::Color{128, 255, 128, 128}); // todo externalize
 
-				auto [screen_x, screen_y]          = to_screen_coords(x, y);
-				auto [screen_width, screen_height] = to_screen_coords(x + width, y + height);
-				screen_width -= screen_x;
-				screen_height -= screen_y;
-
-				sf::RectangleShape hitbox{{screen_width, screen_height}};
-				hitbox.setPosition(screen_x, screen_y);
-				hitbox.setFillColor(sf::Color{128, 255, 128, 128});
-
-				window.draw(hitbox);
-			} break;
-			case adapter::draw_request::request_type_t::tile_highlight: {
-				m_map.acquire()->highlight_tile(window, draw_request->data.coords.x, draw_request->data.coords.y);
-			} break;
-		}
-	}
+            window.draw(rect);
+        },
+        [&](const request::coords& coords) {
+            m_map.acquire()->highlight_tile(window, coords.x, coords.y);
+        },
+        [](std::monostate /* ignored */) {}
+    };
+    std::visit(request_visitor, program_state::global->adapter.tooltip_for(handle));
 }

@@ -17,6 +17,7 @@
 
 namespace utils {
 
+// todo: resource hot-swap (Pausing ui is probably sufficient. Pausing model might be desirable)
 class resource_manager {
 	static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
 

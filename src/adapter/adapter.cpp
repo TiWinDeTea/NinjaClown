@@ -146,11 +146,11 @@ void adapter::adapter::update_map(size_t y, size_t x, model::cell_type new_cell)
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
-			spdlog::trace("Moving mob {} to ({} ; {})", new_x, new_y);
+			spdlog::trace("Moving mob {} to ({} ; {})", handle.handle, new_x, new_y);
 			(*program_state::global->viewer.acquire_mobs())[it->second.handle].set_pos(new_x, new_y);
 		}
 		else {
-			spdlog::trace("Moving object {} to ({} ; {})", new_x, new_y);
+			spdlog::trace("Moving object {} to ({} ; {})", handle.handle, new_x, new_y);
 			(*program_state::global->viewer.acquire_objects())[it->second.handle].set_pos(new_x, new_y);
 		}
 	}
@@ -174,7 +174,7 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	}
 }
 
-std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle entity) noexcept {
+adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
 		auto &components = program_state::global->world.components;
 		auto handle      = it->second.handle;
@@ -198,22 +198,16 @@ std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle e
 
 			if (components.hitbox[handle]) {
 				const auto &box = *components.hitbox[handle];
-				draw_request rq{};
-				rq.request_type = draw_request::request_type_t::hitbox_highlight;
-				rq.data.hitbox  = {box.x, box.y, box.width, box.height};
-				return rq;
+				return request::hitbox{box.x, box.y, box.width, box.height};
 			}
 		}
 		else {
 			ImGui::BeginTooltip();
 			// FIXME: why buttons and not something else ?
 			auto target = program_state::global->world.buttons[it->second.handle].target;
-			ImGui::Text("Button target: (%u ; %u)", target.row, target.column);
+			ImGui::Text("Button target: (%zu ; %zu)", target.row, target.column);
 			ImGui::EndTooltip();
-			draw_request rq{};
-			rq.request_type = draw_request::request_type_t::tile_highlight;
-			rq.data.coords  = {target.row, target.column};
-			return rq;
+			return request::coords{target.row, target.column};
 		}
 	}
 	else {

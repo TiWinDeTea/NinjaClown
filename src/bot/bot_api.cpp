@@ -1,10 +1,8 @@
-#include <algorithm>
 #include <spdlog/spdlog.h>
 
 #include "bot/bot_api.hpp"
 #include "model/components.hpp"
 #include "program_state.hpp"
-#include "utils/optional.hpp"
 
 namespace {
 

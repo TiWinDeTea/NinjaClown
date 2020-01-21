@@ -1,10 +1,5 @@
 #include <cmath>
-#include <fstream> // ifstream
-#include <iostream> // FIXME: tmp
-#include <iterator>
 #include <spdlog/spdlog.h>
-#include <sstream> // ostreamstring
-#include <stdexcept> // std::runtime_error
 
 #include "model/world.hpp"
 #include "program_state.hpp"

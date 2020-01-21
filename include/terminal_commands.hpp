@@ -1,7 +1,6 @@
 #ifndef NINJACLOWN_TERMINAL_COMMANDS_HPP
 #define NINJACLOWN_TERMINAL_COMMANDS_HPP
 
-#include <array>
 #include <initializer_list>
 #include <mutex>
 #include <string>
