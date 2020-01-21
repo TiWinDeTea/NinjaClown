@@ -3,6 +3,7 @@
 #include "program_state.hpp"
 
 #include "utils/optional.hpp"
+#include "utils/scope_guards.hpp"
 
 int actual_main(std::vector<std::string> &);
 
@@ -52,6 +53,7 @@ int actual_main([[maybe_unused]] std::vector<std::string> &args)
     program_state::global = &program;
 
     new (&program) program_state;
+    ON_SCOPE_EXIT { program.~program_state(); };
 
     spdlog::default_logger()->sinks().push_back(program.terminal.get_terminal_helper());
     spdlog::default_logger()->set_level(spdlog::level::trace);
@@ -63,6 +65,5 @@ int actual_main([[maybe_unused]] std::vector<std::string> &args)
     program.viewer.run();
     program.viewer.wait();
 
-    program.~program_state();
     return 0;
 }
