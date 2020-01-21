@@ -12,21 +12,20 @@
 namespace view {
 class mob_animations {
 public:
+	[[nodiscard]] const std::optional<shifted_animation> &animation_for(facing_direction::type dir) const noexcept {
+		assert(dir != facing_direction::MAX_VAL);
+		return m_animations_by_direction[dir];
+	}
 
-    [[nodiscard]] const std::optional<shifted_animation>& animation_for(facing_direction::type dir) const noexcept {
-        assert(dir != facing_direction::MAX_VAL);
-        return m_animations_by_direction[dir];
-    }
-
-    void add_animation(shifted_animation&& anim, facing_direction::type dir) noexcept {
-        assert(dir != facing_direction::MAX_VAL);
-        assert(!m_animations_by_direction[dir]);
-        anim.adjust_for_mobs();
-        m_animations_by_direction[dir] = std::move(anim);
-    }
+	void add_animation(shifted_animation &&anim, facing_direction::type dir) noexcept {
+		assert(dir != facing_direction::MAX_VAL);
+		assert(!m_animations_by_direction[dir]);
+		anim.adjust_for_mobs();
+		m_animations_by_direction[dir] = std::move(anim);
+	}
 
 private:
-    std::array<std::optional<shifted_animation>, facing_direction::MAX_VAL> m_animations_by_direction{};
+	std::array<std::optional<shifted_animation>, facing_direction::MAX_VAL> m_animations_by_direction{};
 };
-}
+} // namespace view
 #endif //NINJACLOWN_VIEW_SPRITES_HPP

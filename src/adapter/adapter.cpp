@@ -4,11 +4,9 @@
 #include "adapter/adapter.hpp"
 #include "program_state.hpp"
 
-namespace {
-}
+namespace {}
 
-bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept
-{
+bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	if (!std::filesystem::is_regular_file(path)) {
 		spdlog::error("Request to load map failed: \"{}\" is not a regular file.", path.generic_string());
 		return false;
@@ -128,8 +126,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept
 	return true;
 }
 
-void adapter::adapter::update_map(size_t y, size_t x, model::cell_type new_cell) noexcept
-{
+void adapter::adapter::update_map(size_t y, size_t x, model::cell_type new_cell) noexcept {
 	view::map::cell current_cell = program_state::global->viewer.acquire_map()->m_cells[x][y];
 	view::map::cell output_cell;
 	switch (new_cell) {
@@ -146,8 +143,7 @@ void adapter::adapter::update_map(size_t y, size_t x, model::cell_type new_cell)
 	              static_cast<int>(output_cell)); // TODO: res_manager::to_string(cell)
 }
 
-void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept
-{
+void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
 			spdlog::trace("Moving mob {} to ({} ; {})", new_x, new_y);
@@ -163,8 +159,7 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 	}
 }
 
-void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept
-{
+void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
 			spdlog::trace("Rotating mob {} to a target angle of {}", it->first.handle, new_rad);
@@ -179,8 +174,7 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	}
 }
 
-std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle entity) noexcept
-{
+std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
 		auto &components = program_state::global->world.components;
 		auto handle      = it->second.handle;
@@ -203,11 +197,11 @@ std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle e
 			ImGui::EndTooltip();
 
 			if (components.hitbox[handle]) {
-			    const auto& box = *components.hitbox[handle];
-                draw_request rq{};
-                rq.request_type = draw_request::request_type_t::hitbox_highlight;
-                rq.data.hitbox = {box.x, box.y, box.width, box.height};
-                return rq;
+				const auto &box = *components.hitbox[handle];
+				draw_request rq{};
+				rq.request_type = draw_request::request_type_t::hitbox_highlight;
+				rq.data.hitbox  = {box.x, box.y, box.width, box.height};
+				return rq;
 			}
 		}
 		else {
@@ -218,17 +212,16 @@ std::optional<adapter::draw_request> adapter::adapter::tooltip_for(view_handle e
 			ImGui::EndTooltip();
 			draw_request rq{};
 			rq.request_type = draw_request::request_type_t::tile_highlight;
-			rq.data.coords = {target.row, target.column};
+			rq.data.coords  = {target.row, target.column};
 			return rq;
 		}
 	}
 	else {
 		spdlog::error("Tried to fetch data for unknown view entity with handle {}", entity.handle);
 	}
-    return {};
+	return {};
 }
-size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept
-{
+size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
 	if (h.is_mob) {
 		return h.handle;
 	}

@@ -10,14 +10,12 @@
 #include <imterm/terminal.hpp>
 #include <imterm/terminal_helpers.hpp>
 
-struct empty_struct {
-};
+struct empty_struct {};
 class terminal_commands: public ImTerm::basic_spdlog_terminal_helper<terminal_commands, empty_struct, misc::no_mutex> {
 public:
 	terminal_commands();
 
-	static std::vector<std::string> no_completion(argument_type &)
-	{
+	static std::vector<std::string> no_completion(argument_type &) {
 		return {};
 	}
 

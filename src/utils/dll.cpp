@@ -2,8 +2,7 @@
 
 namespace utils {
 
-dll::~dll()
-{
+dll::~dll() {
 	if (m_handle == nullptr) {
 		return;
 	}
@@ -15,13 +14,11 @@ dll::~dll()
 #endif
 }
 
-dll::operator bool() const
-{
+dll::operator bool() const {
 	return m_handle != nullptr;
 }
 
-std::string dll::error() const
-{
+std::string dll::error() const {
 #if defined OS_WINDOWS
 	DWORD errorMessageID = ::GetLastError();
 	if (errorMessageID == 0) {
@@ -42,7 +39,7 @@ std::string dll::error() const
 #endif
 }
 
-bool dll::load(const char* dll_path) {
+bool dll::load(const char *dll_path) {
 #if defined OS_WINDOWS
 	if (m_handle != nullptr) {
 		FreeLibrary(m_handle);
@@ -58,7 +55,7 @@ bool dll::load(const char* dll_path) {
 	return m_handle != nullptr;
 }
 
-bool dll::load(const std::string& dll_path){
+bool dll::load(const std::string &dll_path) {
 	return load(dll_path.c_str());
 }
 

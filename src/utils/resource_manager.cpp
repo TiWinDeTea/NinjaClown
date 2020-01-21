@@ -55,8 +55,7 @@ namespace config_keys {
 } // namespace config_keys
 
 optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &anim_config, sf::Texture &texture,
-                                         std::string_view anim_type, std::string_view anim_name)
-{
+                                         std::string_view anim_type, std::string_view anim_name) {
 	optional<view::animation> ans{};
 
 	namespace spr    = config_keys::sprites;
@@ -100,14 +99,12 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 
 } // namespace
 
-bool resource_manager::load_config(const std::filesystem::path &path) noexcept
-{
+bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	auto config = cpptoml::parse_file(path.generic_u8string());
 	return load_graphics(config);
 }
 
-optional<const view::animation &> resource_manager::tile_animation(tile_id tile) const noexcept
-{
+optional<const view::animation &> resource_manager::tile_animation(tile_id tile) const noexcept {
 	auto it = m_tiles_anims.find(tile);
 	if (it == m_tiles_anims.end()) {
 		return {};
@@ -115,8 +112,7 @@ optional<const view::animation &> resource_manager::tile_animation(tile_id tile)
 	return {it->second};
 }
 
-optional<const view::shifted_animation &> resource_manager::object_animation(object_id object) const noexcept
-{
+optional<const view::shifted_animation &> resource_manager::object_animation(object_id object) const noexcept {
 	auto it = m_objects_anims.find(object);
 	if (it == m_objects_anims.end()) {
 		return {};
@@ -124,8 +120,7 @@ optional<const view::shifted_animation &> resource_manager::object_animation(obj
 	return {it->second};
 }
 
-optional<const view::mob_animations &> resource_manager::mob_animations(mob_id mob) const noexcept
-{
+optional<const view::mob_animations &> resource_manager::mob_animations(mob_id mob) const noexcept {
 	auto it = m_mobs_anims.find(mob);
 	if (it == m_mobs_anims.end()) {
 		return {};
@@ -133,8 +128,7 @@ optional<const view::mob_animations &> resource_manager::mob_animations(mob_id m
 	return {it->second};
 }
 
-bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept
-{
+bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {
 	config = config->get_table(config_keys::graphics);
 	if (!config) {
 		spdlog::critical("{}: \"{}\" {}", error_msgs::loading_failed, config_keys::graphics, error_msgs::missing_table);
@@ -162,13 +156,12 @@ bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noe
 	}
 
 	bool success = load_tiles_anims(tiles_config);
-    success      = load_mobs_anims(mobs_config) && success;
-    success      = load_objects_anims(objects_config) && success;
-    return success;
+	success      = load_mobs_anims(mobs_config) && success;
+	success      = load_objects_anims(objects_config) && success;
+	return success;
 }
 
-bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config) noexcept
-{
+bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config) noexcept {
 	namespace mobs = config_keys::mobs;
 
 	cpptoml::option<std::vector<std::string>> mob_list = mobs_config->get_array_of<std::string>(config_keys::list);
@@ -226,8 +219,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 }
 
 bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_anim_config, std::string_view mob_name,
-                                     view::facing_direction::type dir, view::mob_animations &anims, sf::Texture &texture) noexcept
-{
+                                     view::facing_direction::type dir, view::mob_animations &anims, sf::Texture &texture) noexcept {
 	auto anim = load_animation(mob_anim_config, texture, config_keys::mobs::anims, mob_name);
 	if (!anim) {
 		return false;
@@ -236,8 +228,7 @@ bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_
 	return true;
 }
 
-bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config) noexcept
-{
+bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config) noexcept {
 	namespace tiles = config_keys::tiles;
 	namespace spr   = config_keys::sprites;
 
@@ -342,8 +333,7 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 	return success;
 }
 
-bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config) noexcept
-{
+bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config) noexcept {
 	namespace objects = config_keys::objects;
 	namespace spr     = config_keys::sprites;
 
@@ -425,8 +415,7 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 	return success;
 }
 
-sf::Texture *resource_manager::get_texture(const std::string &file) noexcept
-{
+sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
 	auto it = m_textures_by_file.find(file);
 	if (it != m_textures_by_file.end()) {
 		return it->second;

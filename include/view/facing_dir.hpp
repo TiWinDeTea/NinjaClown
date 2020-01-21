@@ -1,10 +1,10 @@
 #ifndef NINJACLOWN_VIEW_FACING_DIR_HPP
 #define NINJACLOWN_VIEW_FACING_DIR_HPP
 
-#include <cassert>
 #include <array>
-#include <string_view>
+#include <cassert>
 #include <optional>
+#include <string_view>
 
 #include "utils/utils.hpp"
 
@@ -15,8 +15,7 @@ enum type : unsigned int { N, S, E, W, NE, NW, SE, SW, MAX_VAL };
 constexpr std::array values = {N, S, E, W, NE, NW, SE, SW, MAX_VAL};
 static_assert(utils::has_all_sorted(values, MAX_VAL), "values array might not contain every enum value");
 
-constexpr std::string_view to_string(facing_direction::type val) noexcept
-{
+constexpr std::string_view to_string(facing_direction::type val) noexcept {
 	constexpr std::array<std::string_view, MAX_VAL + 1> direction_map = {
 	  "N", "S", "E", "W", "NE", "NW", "SE", "SW", "MAX_VAL",
 	};
@@ -24,12 +23,11 @@ constexpr std::string_view to_string(facing_direction::type val) noexcept
 }
 
 // TODO: add NE/NW/SE/SW
-constexpr type from_angle(float rad)
-{
+constexpr type from_angle(float rad) {
 #define NCFD_PI 3.14159265359f
 	if (rad <= 0) {
 		if (rad <= -3.f * NCFD_PI / 4.f) {
-		    assert(rad >= -NCFD_PI);
+			assert(rad >= -NCFD_PI);
 			return W;
 		}
 		else if (rad <= -NCFD_PI / 4.f) {
@@ -41,7 +39,7 @@ constexpr type from_angle(float rad)
 	}
 	else {
 		if (rad >= 3.f * NCFD_PI / 4.f) {
-            assert(rad <= NCFD_PI);
+			assert(rad <= NCFD_PI);
 			return W;
 		}
 		else if (rad >= NCFD_PI / 4.f) {
@@ -54,8 +52,7 @@ constexpr type from_angle(float rad)
 #undef NCFD_PI
 }
 
-constexpr std::optional<facing_direction::type> from_string(std::string_view str) noexcept
-{
+constexpr std::optional<facing_direction::type> from_string(std::string_view str) noexcept {
 	for (auto val : values) {
 		if (to_string(val) == str) {
 			return val;

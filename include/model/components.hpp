@@ -15,20 +15,16 @@ struct hitbox {
 	float width;
 	float height;
 
-	float right_x() const
-	{
+	float right_x() const {
 		return x + width;
 	}
-	float bottom_y() const
-	{
+	float bottom_y() const {
 		return y + height;
 	}
-	float center_x() const
-	{
+	float center_x() const {
 		return x + (width / 2);
 	}
-	float center_y() const
-	{
+	float center_y() const {
 		return y + (height / 2);
 	}
 };
@@ -45,18 +41,20 @@ enum class decision {
 	ACTIVATE_BUTTON,
 };
 
-constexpr const char* to_string(decision d) {
-#define COMPONENTS_DECISION_CASE(x) case decision::x: return #x
-    // TODO: use resource_manager::to_string(decision);
-    switch (d) {
-        COMPONENTS_DECISION_CASE(TURN_LEFT);
-        COMPONENTS_DECISION_CASE(TURN_RIGHT);
-        COMPONENTS_DECISION_CASE(MOVE_FORWARD);
-        COMPONENTS_DECISION_CASE(MOVE_BACKWARD);
-        COMPONENTS_DECISION_CASE(ACTIVATE_BUTTON);
-        default:
-            return "UNKNOWN";
-    }
+constexpr const char *to_string(decision d) {
+#define COMPONENTS_DECISION_CASE(x)                                                                                                        \
+	case decision::x:                                                                                                                      \
+		return #x
+	// TODO: use resource_manager::to_string(decision);
+	switch (d) {
+		COMPONENTS_DECISION_CASE(TURN_LEFT);
+		COMPONENTS_DECISION_CASE(TURN_RIGHT);
+		COMPONENTS_DECISION_CASE(MOVE_FORWARD);
+		COMPONENTS_DECISION_CASE(MOVE_BACKWARD);
+		COMPONENTS_DECISION_CASE(ACTIVATE_BUTTON);
+		default:
+			return "UNKNOWN";
+	}
 #undef COMPONENTS_DECISION_CASE
 }
 

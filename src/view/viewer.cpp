@@ -24,22 +24,19 @@ namespace cst {
 } // namespace cst
 } // namespace
 
-void view::viewer::run()
-{
+void view::viewer::run() {
 	m_thread  = std::make_unique<std::thread>(&viewer::do_run, this);
 	m_running = true;
 }
 
-void view::viewer::stop() noexcept
-{
+void view::viewer::stop() noexcept {
 	m_running = false;
 	if (m_thread && m_thread->joinable()) {
 		m_thread->join();
 	}
 }
 
-void view::viewer::do_run() noexcept
-{
+void view::viewer::do_run() noexcept {
 	assert(program_state::global != nullptr);
 	auto &terminal = program_state::global->terminal;
 
@@ -151,22 +148,20 @@ void view::viewer::do_run() noexcept
 	ImGui::SFML::Shutdown();
 }
 
-std::pair<float, float> view::viewer::to_screen_coords(float x, float y) const noexcept
-{
-    auto [screen_x, screen_y] = to_screen_coords_base(x, y);
+std::pair<float, float> view::viewer::to_screen_coords(float x, float y) const noexcept {
+	auto [screen_x, screen_y] = to_screen_coords_base(x, y);
 
-    const auto &tiles = program_state::global->resource_manager.tiles_infos();
-	auto max_x = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
-    auto max_y = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
+	const auto &tiles = program_state::global->resource_manager.tiles_infos();
+	auto max_x        = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
+	auto max_y        = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
 
-    float extra_width = static_cast<float>(m_window_size.first) - max_x;
+	float extra_width  = static_cast<float>(m_window_size.first) - max_x;
 	float extra_height = static_cast<float>(m_window_size.second) - max_y;
 
 	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
 }
 
-std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept
-{
+std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept {
 	const auto &tiles = program_state::global->resource_manager.tiles_infos();
 	auto xshift       = static_cast<float>(m_level_size.second * tiles.y_xshift);
 	auto screen_x     = x * static_cast<float>(tiles.xspacing) + y * static_cast<float>(-tiles.y_xshift) + xshift;
@@ -175,8 +170,7 @@ std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) co
 	return {screen_x, screen_y};
 }
 
-void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept
-{
+void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept {
 
 	auto draw_request = program_state::global->adapter.tooltip_for(handle);
 	if (draw_request) {

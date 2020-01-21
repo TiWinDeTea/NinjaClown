@@ -25,8 +25,7 @@ public:
 	[[nodiscard]] bool load(const std::string &dll_path);
 
 	template <typename FuncPtr>
-	[[nodiscard]] FuncPtr get_address(const char *func_name)
-	{
+	[[nodiscard]] FuncPtr get_address(const char *func_name) {
 #if defined OS_WINDOWS
 		return reinterpret_cast<FuncPtr>(GetProcAddress(m_handle, func_name));
 #elif defined OS_LINUX
@@ -35,8 +34,7 @@ public:
 	}
 
 	template <typename FuncPtr>
-	[[nodiscard]] FuncPtr get_address(const std::string &func_name)
-	{
+	[[nodiscard]] FuncPtr get_address(const std::string &func_name) {
 		return get_address<FuncPtr>(func_name.c_str());
 	}
 

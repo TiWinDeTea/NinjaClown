@@ -9,8 +9,7 @@
 #include "model/world.hpp"
 #include "program_state.hpp"
 
-void model::world::update()
-{
+void model::world::update() {
 	const float pi            = 3.14159f;
 	adapter::adapter &adapter = program_state::global->adapter;
 

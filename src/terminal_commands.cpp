@@ -13,13 +13,11 @@
 #include <program_state.hpp>
 
 namespace {
-std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg)
-{
+std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
 }
 
-std::vector<std::string> autocomplete_map_path(terminal_commands::argument_type &arg)
-{
+std::vector<std::string> autocomplete_map_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".map"});
 }
 
@@ -39,20 +37,17 @@ constexpr std::array local_command_list{
                                   terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
 } // namespace
 
-terminal_commands::terminal_commands()
-{
+terminal_commands::terminal_commands() {
 	for (const command_type &cmd : local_command_list) {
 		add_command_(cmd);
 	}
 }
 
-void terminal_commands::clear(argument_type &arg)
-{
+void terminal_commands::clear(argument_type &arg) {
 	arg.term.clear();
 }
 
-void terminal_commands::echo(argument_type &arg)
-{
+void terminal_commands::echo(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
 		arg.term.add_text("");
 		return;
@@ -86,13 +81,11 @@ void terminal_commands::echo(argument_type &arg)
 	}
 }
 
-void terminal_commands::exit(argument_type &arg)
-{
+void terminal_commands::exit(argument_type &arg) {
 	arg.term.set_should_close();
 }
 
-void terminal_commands::help(argument_type &arg)
-{
+void terminal_commands::help(argument_type &arg) {
 	constexpr static unsigned long list_element_name_max_size
 	  = misc::max_size(local_command_list.begin(), local_command_list.end(), [](const command_type &cmd) {
 		    return cmd.name.size();
@@ -119,13 +112,11 @@ void terminal_commands::help(argument_type &arg)
 	arg.term.add_text("Additional information might be available using \"'command' --help\"");
 }
 
-void terminal_commands::quit(argument_type &)
-{
+void terminal_commands::quit(argument_type &) {
 	program_state::global->close_request = true;
 }
 
-void terminal_commands::load_shared_library(argument_type &arg)
-{
+void terminal_commands::load_shared_library(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
 		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path>");
 		return;
@@ -142,8 +133,7 @@ void terminal_commands::load_shared_library(argument_type &arg)
 	}
 }
 
-void terminal_commands::load_map(argument_type &arg)
-{
+void terminal_commands::load_map(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
 		arg.term.add_text("usage: " + arg.command_line[0] + " <map_path>");
 		return;
@@ -152,63 +142,64 @@ void terminal_commands::load_map(argument_type &arg)
 	program_state::global->adapter.load_map(arg.command_line[1]);
 }
 
-void terminal_commands::update_world(argument_type &arg)
-{
+void terminal_commands::update_world(argument_type &arg) {
 	program_state::global->bot_dll.bot_think();
 	program_state::global->world.update();
 }
 
-void terminal_commands::set(argument_type &arg)
-{
-    auto show_usage = [&](){
-        arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());
-    };
+void terminal_commands::set(argument_type &arg) {
+	auto show_usage = [&]() {
+		arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());
+	};
 
-    // todo: std::map & lower_bound + higher_bound, ptr vers fonctions
+	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 3) {
-        auto value = utils::from_chars<int>(arg.command_line.back());
-	    if ("display_debug_data" == arg.command_line[1]) {
-	        if (value && *value != 0 && *value != 1) {
+		auto value = utils::from_chars<int>(arg.command_line.back());
+		if ("display_debug_data" == arg.command_line[1]) {
+			if (value && *value != 0 && *value != 1) {
 				arg.term.add_text("display_debug_data must be either 0 (no) or 1 (yes)");
-			} else {
-	            if (value) {
+			}
+			else {
+				if (value) {
 					program_state::global->viewer.show_debug_data = (*value == 1);
-				} else {
-                    if (arg.command_line.back() == "true") {
-                        program_state::global->viewer.show_debug_data = true;
-                    } else if (arg.command_line.back() == "false") {
-                        program_state::global->viewer.show_debug_data = false;
-                    } else {
-                        show_usage();
-                    }
-	            }
-	        }
-            return;
-	    }
-	    if ("target_fps" == arg.command_line[1]) {
-            if (!value) {
-                show_usage();
-                return;
-            }
+				}
+				else {
+					if (arg.command_line.back() == "true") {
+						program_state::global->viewer.show_debug_data = true;
+					}
+					else if (arg.command_line.back() == "false") {
+						program_state::global->viewer.show_debug_data = false;
+					}
+					else {
+						show_usage();
+					}
+				}
+			}
+			return;
+		}
+		if ("target_fps" == arg.command_line[1]) {
+			if (!value) {
+				show_usage();
+				return;
+			}
 			if (*value < 0) {
-			    arg.term.add_text("target_fps must be positive");
-			} else {
+				arg.term.add_text("target_fps must be positive");
+			}
+			else {
 				program_state::global->viewer.target_fps(*value);
 			}
-            return;
+			return;
 		}
-	    if ("average_fps" == arg.command_line[1]) {
-	        arg.term.add_text("average_fps can not be set");
-	        return;
-	    }
+		if ("average_fps" == arg.command_line[1]) {
+			arg.term.add_text("average_fps can not be set");
+			return;
+		}
 	}
 
 	show_usage();
-
 }
 
-void terminal_commands::valueof(argument_type &arg)
-{
+void terminal_commands::valueof(argument_type &arg) {
 	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 2) {
 		if ("average_fps" == arg.command_line.back()) {
@@ -220,16 +211,16 @@ void terminal_commands::valueof(argument_type &arg)
 			return;
 		}
 		if ("display_debug_data" == arg.command_line.back()) {
-		    arg.term.add_formatted("display debug data: {}", program_state::global->viewer.show_debug_data.load());
-		    return;
+			arg.term.add_formatted("display debug data: {}", program_state::global->viewer.show_debug_data.load());
+			return;
 		}
 	}
 
 	arg.term.add_formatted("usage: {} <variable>", arg.command_line.front());
 }
 
-std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg, const std::initializer_list<std::string_view> &extensions)
-{
+std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg,
+                                                              const std::initializer_list<std::string_view> &extensions) {
 	auto escape = [](std::string &&str) -> std::string && {
 		std::string::size_type pos = str.find('\\');
 		while (pos != std::string::npos) {
@@ -284,8 +275,7 @@ std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg
 	}
 	return paths;
 }
-std::vector<std::string> terminal_commands::autocomplete_variable(argument_type &arg)
-{
+std::vector<std::string> terminal_commands::autocomplete_variable(argument_type &arg) {
 	std::vector<std::string> ans;
 	if (arg.command_line.size() != 2) {
 		return ans;
@@ -298,7 +288,7 @@ std::vector<std::string> terminal_commands::autocomplete_variable(argument_type 
 		ans.emplace_back("target_fps");
 	}
 	if (utils::starts_with("display_debug_data", arg.command_line.back())) {
-	    ans.emplace_back("display_debug_data");
+		ans.emplace_back("display_debug_data");
 	}
 	return ans;
 }

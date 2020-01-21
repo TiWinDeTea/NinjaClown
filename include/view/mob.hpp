@@ -9,29 +9,28 @@ namespace view {
 class mob {
 public:
 	void print(sf::RenderWindow &window) const {
-	    const auto& anim = m_animations->animation_for(m_dir);
-	    assert(anim);
-	    anim->print(window, m_posx, m_posy);
+		const auto &anim = m_animations->animation_for(m_dir);
+		assert(anim);
+		anim->print(window, m_posx, m_posy);
 	}
 
-	bool is_hovered(sf::RenderWindow& window) const noexcept {
-	    const auto& anim = m_animations->animation_for(m_dir);
-	    assert(anim);
-        return anim->is_hovered(window);
+	bool is_hovered(sf::RenderWindow &window) const noexcept {
+		const auto &anim = m_animations->animation_for(m_dir);
+		assert(anim);
+		return anim->is_hovered(window);
 	}
 
 	void set_pos(float x, float y) {
-	    m_posx = x;
-	    m_posy = y;
+		m_posx = x;
+		m_posy = y;
 	}
 
-	void set_animations(const mob_animations &animations)
-	{
+	void set_animations(const mob_animations &animations) {
 		m_animations = &animations;
 	}
 
 	void set_direction(facing_direction::type dir) {
-	    m_dir = dir;
+		m_dir = dir;
 	}
 
 private:

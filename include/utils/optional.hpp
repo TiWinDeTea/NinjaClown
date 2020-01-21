@@ -12,8 +12,7 @@ template <typename T>
 struct [[nodiscard]] optional: std::optional<T>{};
 
 template <typename T>
-struct [[nodiscard]] optional<T &>
-{
+struct [[nodiscard]] optional<T &> {
 	using value_type = T &;
 
 	constexpr optional() noexcept = default;
@@ -23,8 +22,7 @@ struct [[nodiscard]] optional<T &>
 	    : m_value{&val} {};
 
 	template <typename U>
-	optional(U & val)
-	{
+	optional(U & val) {
 		static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
 		m_value = dynamic_cast<T *>(&val);
 		if (m_value == nullptr) {
@@ -33,13 +31,10 @@ struct [[nodiscard]] optional<T &>
 	}
 
 	constexpr optional(const optional &other) noexcept
-	    : m_value{other.m_value}
-	{
-	}
+	    : m_value{other.m_value} {}
 
 	template <typename U>
-	optional(const optional<U *> &other)
-	{
+	optional(const optional<U *> &other) {
 		static_assert(std::is_base_of_v<U, T> || std::is_base_of_v<T, U>);
 		if (other.has_value()) {
 			m_value = dynamic_cast<T *>(other.value);
@@ -52,26 +47,22 @@ struct [[nodiscard]] optional<T &>
 		}
 	}
 
-	optional &operator=(std::nullopt_t) noexcept
-	{
+	optional &operator=(std::nullopt_t) noexcept {
 		m_value = nullptr;
 		return *this;
 	}
-	constexpr optional &operator=(const optional &other)
-	{
+	constexpr optional &operator=(const optional &other) {
 		m_value = other.m_value;
 		return *this;
 	}
 
-	optional &operator=(T &val)
-	{
+	optional &operator=(T &val) {
 		m_value = &val;
 		return *this;
 	}
 
 	template <typename U>
-	optional &operator=(U &val)
-	{
+	optional &operator=(U &val) {
 		if constexpr (std::is_base_of_v<U, T> || std::is_base_of_v<T, U>) {
 			m_value = dynamic_cast<T *>(&val);
 			if (m_value == nullptr) {
@@ -87,8 +78,7 @@ struct [[nodiscard]] optional<T &>
 	}
 
 	template <class U>
-	optional &operator=(const optional<U *> &other)
-	{
+	optional &operator=(const optional<U *> &other) {
 		m_value = dynamic_cast<T *>(other.m_value);
 		if (other.has_value() && m_value == nullptr) {
 			throw std::bad_cast{};
@@ -96,61 +86,50 @@ struct [[nodiscard]] optional<T &>
 		return *this;
 	}
 
-	[[nodiscard]] constexpr T *operator->() noexcept
-	{
+	[[nodiscard]] constexpr T *operator->() noexcept {
 		return m_value;
 	}
-	[[nodiscard]] constexpr const T *operator->() const noexcept
-	{
+	[[nodiscard]] constexpr const T *operator->() const noexcept {
 		return m_value;
 	}
 
-	[[nodiscard]] constexpr T &operator*() noexcept
-	{
+	[[nodiscard]] constexpr T &operator*() noexcept {
 		return *m_value;
 	}
-	[[nodiscard]] constexpr const T &operator*() const noexcept
-	{
+	[[nodiscard]] constexpr const T &operator*() const noexcept {
 		return *m_value;
 	}
 
-	[[nodiscard]] constexpr explicit operator bool() const noexcept
-	{
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return m_value != nullptr;
 	}
 
-	[[nodiscard]] constexpr bool has_value() const noexcept
-	{
+	[[nodiscard]] constexpr bool has_value() const noexcept {
 		return m_value != nullptr;
 	}
 
-	[[nodiscard]] constexpr T &value()
-	{
+	[[nodiscard]] constexpr T &value() {
 		if (!has_value()) {
 			throw std::bad_optional_access{};
 		}
 		return *m_value;
 	}
-	[[nodiscard]] constexpr const T &value() const
-	{
+	[[nodiscard]] constexpr const T &value() const {
 		if (!has_value()) {
 			throw std::bad_optional_access{};
 		}
 		return *m_value;
 	}
 
-	[[nodiscard]] constexpr T &value_or(T & default_value) const noexcept
-	{
+	[[nodiscard]] constexpr T &value_or(T & default_value) const noexcept {
 		return has_value() ? *m_value : default_value;
 	}
 
-	void swap(optional & other) noexcept
-	{
+	void swap(optional & other) noexcept {
 		std::swap(other.m_value, m_value);
 	}
 
-	void reset() noexcept
-	{
+	void reset() noexcept {
 		m_value = nullptr;
 	}
 
@@ -159,8 +138,7 @@ private:
 };
 
 template <typename T>
-[[nodiscard]] bool operator==(const optional<T *> &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator==(const optional<T *> &lhs, const optional<T *> &rhs) {
 	if (lhs.has_value()) {
 		return rhs.has_value() && *lhs == *rhs;
 	}
@@ -170,82 +148,68 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] bool operator==(const T &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator==(const T &lhs, const optional<T *> &rhs) {
 	return rhs.has_value() && lhs == *rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator==(const optional<T *> &lhs, const T &rhs)
-{
+[[nodiscard]] bool operator==(const optional<T *> &lhs, const T &rhs) {
 	return lhs.has_value() && *lhs == rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator<(const optional<T *> &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator<(const optional<T *> &lhs, const optional<T *> &rhs) {
 	return rhs.has_value() && (!lhs.has_value() || *lhs < *rhs);
 }
 
 template <typename T>
-[[nodiscard]] bool operator<(const T &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator<(const T &lhs, const optional<T *> &rhs) {
 	return rhs.has_value() && lhs < *rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator<(const optional<T *> &lhs, const T &rhs)
-{
+[[nodiscard]] bool operator<(const optional<T *> &lhs, const T &rhs) {
 	return !lhs.has_value() || *lhs < rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator<=(const optional<T *> &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator<=(const optional<T *> &lhs, const optional<T *> &rhs) {
 	return rhs.has_value() && (!lhs.has_value() || *lhs <= *rhs);
 }
 template <typename T>
-[[nodiscard]] bool operator<=(const T &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator<=(const T &lhs, const optional<T *> &rhs) {
 	return rhs.has_value() && lhs <= *rhs;
 }
 template <typename T>
-[[nodiscard]] bool operator<=(const optional<T *> &lhs, const T &rhs)
-{
+[[nodiscard]] bool operator<=(const optional<T *> &lhs, const T &rhs) {
 	return !lhs.has_value() || *lhs <= rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator>(const optional<T *> &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator>(const optional<T *> &lhs, const optional<T *> &rhs) {
 	return lhs.has_value() && (!rhs.has_value() || *lhs > *rhs);
 }
 
 template <typename T>
-[[nodiscard]] bool operator>(const T &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator>(const T &lhs, const optional<T *> &rhs) {
 	return !rhs.has_value() || lhs > *rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator>(const optional<T *> &lhs, const T &rhs)
-{
+[[nodiscard]] bool operator>(const optional<T *> &lhs, const T &rhs) {
 	return lhs.has_value() && *lhs > rhs;
 }
 
 template <typename T>
-[[nodiscard]] bool operator>=(const optional<T *> &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator>=(const optional<T *> &lhs, const optional<T *> &rhs) {
 	return lhs.has_value() && (!rhs.has_value() || *lhs >= *rhs);
 }
 template <typename T>
-[[nodiscard]] bool operator>=(const T &lhs, const optional<T *> &rhs)
-{
+[[nodiscard]] bool operator>=(const T &lhs, const optional<T *> &rhs) {
 	return lhs.has_value() && lhs >= *rhs;
 }
 template <typename T>
-[[nodiscard]] bool operator>=(const optional<T *> &lhs, const T &rhs)
-{
+[[nodiscard]] bool operator>=(const optional<T *> &lhs, const T &rhs) {
 	return lhs.has_value() && *lhs >= rhs;
 }
 

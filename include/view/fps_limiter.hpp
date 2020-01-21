@@ -4,8 +4,8 @@
 #include <chrono>
 #include <thread>
 
-#include "utils/synchronized.hpp"
 #include "utils/spinlock.hpp"
+#include "utils/synchronized.hpp"
 
 namespace view {
 class fps_limiter {
@@ -13,21 +13,19 @@ public:
 	fps_limiter() noexcept {}
 
 	// Do not call this method concurrently with itself or with .wait
-	void start_now() noexcept
-	{
-		m_frame_count   = 0u;
-		m_last_tick     = std::chrono::system_clock::now();
+	void start_now() noexcept {
+		m_frame_count              = 0u;
+		m_last_tick                = std::chrono::system_clock::now();
 		*m_starting_time.acquire() = m_last_tick;
 	}
 
 	// Do not call this method concurrently with itself or with .start_now
-	void wait() noexcept
-	{
+	void wait() noexcept {
 		if (m_refresh_frame_duration.exchange(false)) {
-			m_frame_count   = 0;
+			m_frame_count              = 0;
 			*m_starting_time.acquire() = m_last_tick;
-            m_frame_duration = std::chrono::milliseconds(1000) / m_target_fps.load();
-        }
+			m_frame_duration           = std::chrono::milliseconds(1000) / m_target_fps.load();
+		}
 		++m_frame_count;
 
 		auto now                 = std::chrono::system_clock::now();
@@ -45,35 +43,31 @@ public:
 			m_frame_duration += std::chrono::milliseconds(1);
 		}
 		else if (current_fps + .05f < target_fps) {
-            if (m_frame_duration >= std::chrono::milliseconds(1)) {
+			if (m_frame_duration >= std::chrono::milliseconds(1)) {
 				m_frame_duration -= std::chrono::milliseconds(1);
 			}
 		}
 	}
 
 	// can be called concurrently with any other method
-	[[nodiscard]] unsigned int frame_count() const
-	{
+	[[nodiscard]] unsigned int frame_count() const {
 		return m_frame_count;
 	}
 
 	// can be called concurrently with any other method
-	[[nodiscard]] float average_fps() const
-	{
+	[[nodiscard]] float average_fps() const {
 		using namespace std::chrono;
 		auto display_duration = duration_cast<milliseconds>(system_clock::now() - *m_starting_time.acquire());
 		return static_cast<float>(m_frame_count.load()) * 1000.f / display_duration.count();
 	}
 
 	// can be called concurrently with any other method
-	[[nodiscard]] unsigned int target_fps() const
-	{
+	[[nodiscard]] unsigned int target_fps() const {
 		return m_target_fps;
 	}
 
 	// can be called concurrently with any other method
-	void target_fps(unsigned int new_val) noexcept
-	{
+	void target_fps(unsigned int new_val) noexcept {
 		m_target_fps             = new_val;
 		m_refresh_frame_duration = true;
 	}
