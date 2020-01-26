@@ -6,12 +6,12 @@
 static struct bot_api BOT;
 static int finished = 0;
 
-void NINJACLOWN_DLLEXPORT NINJACLOWN_STDCALL bot_init(struct bot_api api)
+void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init(struct bot_api api)
 {
 	BOT = api;
 }
 
-void NINJACLOWN_DLLEXPORT NINJACLOWN_STDCALL bot_think()
+void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think()
 {
 	if (finished) {
 		BOT.log("mission accomplished!");

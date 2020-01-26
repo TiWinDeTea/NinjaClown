@@ -3,10 +3,10 @@
 
 #ifdef OS_WINDOWS
 #	define NINJACLOWN_DLLEXPORT __declspec(dllexport)
-#	define NINJACLOWN_STDCALL   __stdcall
+#	define NINJACLOWN_CALLCONV  __stdcall
 #else
 #	define NINJACLOWN_DLLEXPORT
-#	define NINJACLOWN_STDCALL __attribute((stdcall))
+#	define NINJACLOWN_CALLCONV  __attribute((sysv_abi))
 #endif
 
 #ifdef __cplusplus
@@ -35,20 +35,20 @@ struct cell {
 };
 
 struct bot_api {
-	void(NINJACLOWN_STDCALL *log)(const char *);
+	void(NINJACLOWN_CALLCONV *log)(const char *);
 
-	struct cell **(NINJACLOWN_STDCALL *vision)();
+	struct cell **(NINJACLOWN_CALLCONV *vision)();
 
-	float(NINJACLOWN_STDCALL *get_angle)();
-	float(NINJACLOWN_STDCALL *get_x_position)();
-	float(NINJACLOWN_STDCALL *get_y_position)();
+	float(NINJACLOWN_CALLCONV *get_angle)();
+	float(NINJACLOWN_CALLCONV *get_x_position)();
+	float(NINJACLOWN_CALLCONV *get_y_position)();
 
-	void(NINJACLOWN_STDCALL *turn_left)();
-	void(NINJACLOWN_STDCALL *turn_right)();
-	void(NINJACLOWN_STDCALL *move_forward)();
-	void(NINJACLOWN_STDCALL *move_backward)();
+	void(NINJACLOWN_CALLCONV *turn_left)();
+	void(NINJACLOWN_CALLCONV *turn_right)();
+	void(NINJACLOWN_CALLCONV *move_forward)();
+	void(NINJACLOWN_CALLCONV *move_backward)();
 
-	void(NINJACLOWN_STDCALL *activate_button)();
+	void(NINJACLOWN_CALLCONV *activate_button)();
 };
 
 #ifdef __cplusplus

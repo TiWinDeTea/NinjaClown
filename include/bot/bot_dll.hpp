@@ -9,8 +9,8 @@
 namespace bot {
 struct bot_api; // forward declaration
 
-using init_fn_type  = void(NINJACLOWN_STDCALL *)(bot_api);
-using think_fn_type = void(NINJACLOWN_STDCALL *)();
+using init_fn_type  = void(NINJACLOWN_CALLCONV *)(bot_api);
+using think_fn_type = void(NINJACLOWN_CALLCONV *)();
 
 struct bot_dll {
 	bot_dll() noexcept = default;
