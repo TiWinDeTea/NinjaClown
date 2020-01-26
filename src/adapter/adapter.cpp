@@ -50,7 +50,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					cell.interaction_handle = {world.interactions.size()};
 					world.interactions.push_back(
 					  {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.buttons.size()});
-					world.buttons.push_back(model::button{2, 4}); // FIXME
+					world.buttons.push_back(model::button{4, 2});
 
 					view::object o{};
 					o.set_pos(static_cast<float>(column), static_cast<float>(row));
@@ -126,7 +126,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	return true;
 }
 
-void adapter::adapter::update_map(size_t y, size_t x, model::cell_type new_cell) noexcept {
+void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
 	view::map::cell current_cell = program_state::global->viewer.acquire_map()->m_cells[x][y];
 	view::map::cell output_cell;
 	switch (new_cell) {
@@ -205,9 +205,9 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			ImGui::BeginTooltip();
 			// FIXME: why buttons and not something else ?
 			auto target = program_state::global->world.buttons[it->second.handle].target;
-			ImGui::Text("Button target: (%zu ; %zu)", target.row, target.column);
+			ImGui::Text("Button target: (%zu ; %zu)", target.column, target.row);
 			ImGui::EndTooltip();
-			return request::coords{target.row, target.column};
+			return request::coords{target.column, target.row};
 		}
 	}
 	else {
