@@ -1,5 +1,6 @@
 #include <cmath>
 #include <spdlog/spdlog.h>
+#include <array>
 
 #include "model/world.hpp"
 #include "program_state.hpp"
@@ -40,7 +41,26 @@ void model::world::update() {
 					adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->x, components.hitbox[handle]->y);
 					break;
 				case component::decision::ACTIVATE_BUTTON:
-					button_system(buttons[0], grid);
+					const float center_x = components.hitbox[handle]->center_x();
+					const float center_y = components.hitbox[handle]->center_y();
+					bool done = false;
+					for (float diff_x: std::array{-0.5f, 0.f, 0.5f}) {
+						for (float diff_y: std::array{-0.5f, 0.f, 0.5f}) {
+							const auto tile_x = static_cast<size_t>(center_x + diff_x);
+							const auto tile_y = static_cast<size_t>(center_y + diff_y);
+							if (grid[tile_x][tile_y].interaction_handle) {
+								interaction& i = interactions[grid[tile_x][tile_y].interaction_handle.value()];
+								if (i.interactable == interactable_kind::BUTTON) {
+									toggle_button(buttons[i.interactable_handler], grid);
+									done = true;
+									break;
+								}
+							}
+						}
+						if (done) {
+							break;
+						}
+					}
 					break;
 			}
 			components.decision[handle] = {};
