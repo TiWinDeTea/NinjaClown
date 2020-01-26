@@ -1,0 +1,41 @@
+[internal]
+    [internal.commands.@COMMANDS_CLEARID@]
+        name = "clear"
+        desc = "clears the terminal screen"
+    [internal.commands.@COMMANDS_ECHOID@]
+        name = "echo"
+        desc = "prints text"
+    [internal.commands.@COMMANDS_EXITID@]
+        name = "exit"
+        desc = "closes this terminal"
+    [internal.commands.@COMMANDS_HELPID@]
+        name = "help"
+        desc = "show this help"
+    [internal.commands.@COMMANDS_PRINTID@]
+        name = "print"
+        desc = "prints text"
+    [internal.commands.@COMMANDS_QUITID@]
+        name = "quit"
+        desc = "closes this application"
+    [internal.commands.@COMMANDS_LOAD_DLLID@]
+        name = "load_dll"
+        desc = "loads a shared library"
+    [internal.commands.@COMMANDS_LOAD_MAPID@]
+        name = "load_map"
+        desc = "loads map from file"
+    [internal.commands.@COMMANDS_UPDATE_WORLDID@]
+        name = "update_world"
+        desc = "update world once"
+    [internal.commands.@COMMANDS_SETID@]
+        name = "set"
+        desc = "sets a variable"
+    [internal.commands.@COMMANDS_VALUEOFID@]
+        name = "valueof"
+        desc = "prints the value of a game variable"
+
+    [internal.variables.@VARIABLES_AVERAGE_FPSID@]
+        name = "average_fps"
+    [internal.variables.@VARIABLES_TARGET_FPSID@]
+        name = "target_fps"
+    [internal.variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
+        name = "display_dbg_data"

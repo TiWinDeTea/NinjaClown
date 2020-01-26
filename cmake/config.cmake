@@ -35,11 +35,17 @@ add_compile_definitions(FMT_HEADER_ONLY)
 set(COMPILE_SFML_WITH_PROJECT OFF) # Use system SFML if present
 set(SFML_MINIMUM_SYSTEM_VERSION 2.5)
 
+##################################################################################################
+########################################                  ########################################
+########################################  resources data  ########################################
+########################################                  ########################################
+##################################################################################################
 
-#resources data
+# mobs
 set(MOBS_PLAYERID 0)
 add_compile_definitions(MOBS_PLAYERID=0)
 
+# tiles
 set(TILES_CHASMID 0)
 add_compile_definitions(TILES_CHASMID=0)
 set(TILES_IRONID 1)
@@ -49,5 +55,40 @@ add_compile_definitions(TILES_CONCRETEID=2)
 set(TILES_FRAMEID 3)
 add_compile_definitions(TILES_FRAMEID=3)
 
+# objects
 set(OBJECTS_BUTTONID 0)
 add_compile_definitions(OBJECTS_BUTTONID=0)
+
+# command ids
+set(COMMANDS_CLEARID 0)
+add_compile_definitions(COMMANDS_CLEARID=0)
+set(COMMANDS_ECHOID 1)
+add_compile_definitions(COMMANDS_ECHOID=1)
+set(COMMANDS_EXITID 2)
+add_compile_definitions(COMMANDS_EXITID=2)
+set(COMMANDS_HELPID 3)
+add_compile_definitions(COMMANDS_HELPID=3)
+set(COMMANDS_PRINTID 4)
+add_compile_definitions(COMMANDS_PRINTID=4)
+set(COMMANDS_QUITID 5)
+add_compile_definitions(COMMANDS_QUITID=5)
+set(COMMANDS_LOAD_DLLID 6)
+add_compile_definitions(COMMANDS_LOAD_DLLID=6)
+set(COMMANDS_LOAD_MAPID 7)
+add_compile_definitions(COMMANDS_LOAD_MAPID=7)
+set(COMMANDS_UPDATE_WORLDID 8)
+add_compile_definitions(COMMANDS_UPDATE_WORLDID=8)
+set(COMMANDS_SETID 9)
+add_compile_definitions(COMMANDS_SETID=9)
+set(COMMANDS_VALUEOFID 10)
+add_compile_definitions(COMMANDS_VALUEOFID=10)
+
+# variable names
+set(VARIABLES_AVERAGE_FPSID 0)
+add_compile_definitions(VARIABLES_AVERAGE_FPSID=0)
+set(VARIABLES_TARGET_FPSID 1)
+add_compile_definitions(VARIABLES_TARGET_FPSID=1)
+set(VARIABLES_DISPLAY_DEBUG_DATAID 2)
+add_compile_definitions(VARIABLES_DISPLAY_DEBUG_DATAID=2)
+
+

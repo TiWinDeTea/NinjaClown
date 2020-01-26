@@ -5,6 +5,7 @@
 #include "model/world.hpp"
 #include "utils/utils.hpp"
 
+#include <spdlog/spdlog.h>
 #include <imterm/misc.hpp>
 
 #include <array>
@@ -21,25 +22,44 @@ std::vector<std::string> autocomplete_map_path(terminal_commands::argument_type 
 	return terminal_commands::autocomplete_path(arg, {".map"});
 }
 
+struct cmd {
+    command_id cmd;
+    void(*cmd_ptr)(terminal_commands::argument_type&);
+    std::vector<std::string>(*complete_ptr)(terminal_commands::argument_type&);
+};
+
+cmd c{command_id::clear, terminal_commands::clear, terminal_commands::no_completion};
+
 constexpr std::array local_command_list{
-  terminal_commands::command_type{"clear", "clears the terminal screen", terminal_commands::clear, terminal_commands::no_completion},
-  terminal_commands::command_type{"echo", "prints text", terminal_commands::echo, terminal_commands::no_completion},
-  terminal_commands::command_type{"exit", "closes this terminal", terminal_commands::exit, terminal_commands::no_completion},
-  terminal_commands::command_type{"help", "show this help", terminal_commands::help, terminal_commands::no_completion},
-  terminal_commands::command_type{"print", "prints text", terminal_commands::echo, terminal_commands::no_completion},
-  terminal_commands::command_type{"quit", "closes this application", terminal_commands::quit, terminal_commands::no_completion},
-  terminal_commands::command_type{"load_dll", "loads a shared library", terminal_commands::load_shared_library, autocomplete_library_path},
-  terminal_commands::command_type{"load_map", "loads map from file", terminal_commands::load_map, autocomplete_map_path},
-  terminal_commands::command_type{"update_world", "update world once", terminal_commands::update_world, terminal_commands::no_completion},
-  terminal_commands::command_type{"set", "sets a variable", terminal_commands::set,
-                                  terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
-  terminal_commands::command_type{"valueof", "prints the value of a game variable", terminal_commands::valueof,
-                                  terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
+  cmd{command_id::clear, &terminal_commands::clear, terminal_commands::no_completion},
+  cmd{command_id::echo, terminal_commands::echo, terminal_commands::no_completion},
+  cmd{command_id::exit, terminal_commands::exit, terminal_commands::no_completion},
+  cmd{command_id::help, terminal_commands::help, terminal_commands::no_completion},
+  cmd{command_id::print, terminal_commands::echo, terminal_commands::no_completion},
+  cmd{command_id::quit, terminal_commands::quit, terminal_commands::no_completion},
+  cmd{command_id::load_shared_library, terminal_commands::load_shared_library, autocomplete_library_path},
+  cmd{command_id::load_map, terminal_commands::load_map, autocomplete_map_path},
+  cmd{command_id::update_world, terminal_commands::update_world, terminal_commands::no_completion},
+  cmd{command_id::set, terminal_commands::set, terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
+  cmd{command_id::valueof, terminal_commands::valueof, terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
 } // namespace
 
-terminal_commands::terminal_commands() {
-	for (const command_type &cmd : local_command_list) {
-		add_command_(cmd);
+terminal_commands::terminal_commands()
+{
+	for (const auto &cmd : local_command_list) {
+	    auto opt = program_state::global->resource_manager.text_for(cmd.cmd);
+	    if (!opt) {
+	        spdlog::error("No name found for command {}", static_cast<int>(cmd.cmd)); // TODO: not logged in terminal
+	        continue;
+	    }
+	    auto [name, desc] = *opt;
+
+        command_type command;
+        command.call = cmd.cmd_ptr;
+        command.complete = cmd.complete_ptr;
+        command.description = desc;
+        command.name = name;
+		add_command_(command);
 	}
 }
 
@@ -85,17 +105,28 @@ void terminal_commands::exit(argument_type &arg) {
 	arg.term.set_should_close();
 }
 
-void terminal_commands::help(argument_type &arg) {
-	constexpr static unsigned long list_element_name_max_size
-	  = misc::max_size(local_command_list.begin(), local_command_list.end(), [](const command_type &cmd) {
-		    return cmd.name.size();
-	    });
+void terminal_commands::help(argument_type &arg)
+{
+    std::vector<std::pair<std::string_view, std::string_view>> commands; // name, description
+    for (const auto &cmd : local_command_list) {
+        auto opt = program_state::global->resource_manager.text_for(cmd.cmd);
+        if (!opt) {
+            spdlog::error("No name found for command {}", static_cast<int>(cmd.cmd)); // TODO: not logged in terminal
+            continue;
+        }
+        auto [name, desc] = *opt;
+        commands.emplace_back(name, desc);
+    }
 
-	auto add_cmd = [&arg](std::string_view command_name, std::string_view description) {
+    const unsigned int element_max_name_size = misc::max_size(
+        commands.begin(), commands.end(), [](const auto& str) { return str.first.size(); }
+      );
+
+	auto add_cmd = [&arg, &element_max_name_size](std::string_view command_name, std::string_view description) {
 		std::string str;
-		str.reserve(12 + list_element_name_max_size + description.size());
+		str.reserve(12 + element_max_name_size + description.size());
 		str = "        ";
-		for (unsigned int i = list_element_name_max_size; i > command_name.size(); --i) {
+		for (unsigned int i = element_max_name_size; i > command_name.size(); --i) {
 			str += ' ';
 		}
 		str += command_name;
@@ -105,9 +136,10 @@ void terminal_commands::help(argument_type &arg) {
 	};
 
 	arg.term.add_text("Available commands:");
-	for (const command_type &cmd : local_command_list) {
-		add_cmd(cmd.name, cmd.description);
+	for (const auto &cmd : commands) {
+		add_cmd(cmd.first, cmd.second);
 	}
+
 	arg.term.add_text("");
 	arg.term.add_text("Additional information might be available using \"'command' --help\"");
 }
@@ -152,7 +184,8 @@ void terminal_commands::set(argument_type &arg) {
 		arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());
 	};
 
-	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
+    // todo: utiliser le gestionnaire de resources pour les noms
+    // todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 3) {
 		auto value = utils::from_chars<int>(arg.command_line.back());
 		if ("display_debug_data" == arg.command_line[1]) {
@@ -200,6 +233,7 @@ void terminal_commands::set(argument_type &arg) {
 }
 
 void terminal_commands::valueof(argument_type &arg) {
+    // todo: utiliser le gestionnaire de resources pour les noms
 	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 2) {
 		if ("average_fps" == arg.command_line.back()) {
@@ -275,12 +309,14 @@ std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg
 	}
 	return paths;
 }
-std::vector<std::string> terminal_commands::autocomplete_variable(argument_type &arg) {
-	std::vector<std::string> ans;
+std::vector<std::string> terminal_commands::autocomplete_variable(argument_type &arg)
+{
+    std::vector<std::string> ans;
 	if (arg.command_line.size() != 2) {
 		return ans;
 	}
 
+	// todo: utiliser le gestionnaire de resources pour les noms
 	if (utils::starts_with("average_fps", arg.command_line.back())) { // todo: std::map + lower_bound & higher_bound
 		ans.emplace_back("average_fps");
 	}

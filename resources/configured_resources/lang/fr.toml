@@ -1,0 +1,41 @@
+[internal]
+    [internal.commands.@COMMANDS_CLEARID@]
+        name = "éponge"
+        desc = "nettoie l’écran"
+    [internal.commands.@COMMANDS_ECHOID@]
+        name = "echo"
+        desc = "affiche du texte à l’écran"
+    [internal.commands.@COMMANDS_EXITID@]
+        name = "sortir"
+        desc = "ferme le terminal"
+    [internal.commands.@COMMANDS_HELPID@]
+        name = "aide"
+        desc = "affiche cette aide"
+    [internal.commands.@COMMANDS_PRINTID@]
+        name = "impression"
+        desc = "affiche du texte à l’écran"
+    [internal.commands.@COMMANDS_QUITID@]
+        name = "quitter"
+        desc = "ferme l’application"
+    [internal.commands.@COMMANDS_LOAD_DLLID@]
+        name = "charge_dll"
+        desc = "charge une bilbiothèque pour gérer le roBot"
+    [internal.commands.@COMMANDS_LOAD_MAPID@]
+        name = "charge_carte"
+        desc = "charge une carte depuis un fichier"
+    [internal.commands.@COMMANDS_UPDATE_WORLDID@]
+        name = "maj_monde"
+        desc = "avance le monde d’un tick dans le temps"
+    [internal.commands.@COMMANDS_SETID@]
+        name = "maj"
+        desc = "met à jour la valeur d’une variable"
+    [internal.commands.@COMMANDS_VALUEOFID@]
+        name = "val"
+        desc = "affiche la valeur d’une variable"
+
+    [internal.variables.@VARIABLES_AVERAGE_FPSID@]
+        name = "fps_moyen"
+    [internal.variables.@VARIABLES_TARGET_FPSID@]
+        name = "fps_cible"
+    [internal.variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
+        name = "afficher_indices_debogage"

@@ -3,7 +3,7 @@
 
 #ifdef OS_WINDOWS
 #	define NINJACLOWN_DLLEXPORT __declspec(dllexport)
-#	define NINJACLOWN_CALLCONV  __stdcall
+#	define NINJACLOWN_CALLCONV  __cdecl
 #else
 #	define NINJACLOWN_DLLEXPORT
 #	define NINJACLOWN_CALLCONV  __attribute((sysv_abi))

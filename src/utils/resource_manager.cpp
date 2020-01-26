@@ -7,6 +7,19 @@ using utils::optional;
 using utils::resource_manager;
 
 namespace {
+std::shared_ptr<cpptoml::table> parse_file(const std::string& path) {
+    try {
+        return cpptoml::parse_file(path);
+    } catch (const cpptoml::parse_exception&) {
+        return {};
+    }
+}
+
+auto parse_file(const std::filesystem::path& path) {
+    return parse_file(path.generic_string());
+}
+
+constexpr const char lang_folder[] = "lang/";
 
 namespace error_msgs {
 	constexpr const char loading_failed[] = "Error parsing config file";
@@ -52,6 +65,24 @@ namespace config_keys {
 	namespace objects {
 		constexpr const char anims[] = "objects";
 	}
+
+	namespace user {
+		constexpr const char main_table[]    = "user";
+		constexpr const char general_lang[]  = "language.general";
+		constexpr const char commands_lang[] = "language.commands";
+	} // namespace user
+
+	namespace lang::internal::commands {
+		constexpr const char main_name[]   = "internal.commands";
+		constexpr const char name[]        = "name";
+		constexpr const char description[] = "desc";
+	} // namespace lang::internal::commands
+
+	namespace lang::internal::variables {
+		constexpr const char main_name[] = "internal.variables";
+		constexpr const char name[]      = "name";
+	} // namespace lang::internal::variables
+
 } // namespace config_keys
 
 optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &anim_config, sf::Texture &texture,
@@ -99,9 +130,14 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 
 } // namespace
 
-bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
-	auto config = cpptoml::parse_file(path.generic_u8string());
-	return load_graphics(config);
+bool resource_manager::load_config(const std::filesystem::path &path) noexcept
+{
+	auto config = parse_file(path.generic_u8string());
+	if (!config) {
+	    spdlog::error("OHNO"); // TODO
+	    return false;
+	}
+	return load_graphics(config) && load_texts(config, path.parent_path());
 }
 
 optional<const view::animation &> resource_manager::tile_animation(tile_id tile) const noexcept {
@@ -128,7 +164,17 @@ optional<const view::mob_animations &> resource_manager::mob_animations(mob_id m
 	return {it->second};
 }
 
-bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {
+std::optional<std::pair<std::string_view, std::string_view>> resource_manager::text_for(command_id cmd) const noexcept
+{
+	auto it = m_commands_strings.find(cmd);
+	if (it == m_commands_strings.end()) {
+		return {};
+	}
+	return {it->second};
+}
+
+bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept
+{
 	config = config->get_table(config_keys::graphics);
 	if (!config) {
 		spdlog::critical("{}: \"{}\" {}", error_msgs::loading_failed, config_keys::graphics, error_msgs::missing_table);
@@ -415,7 +461,69 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 	return success;
 }
 
-sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
+bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept
+{
+	namespace user = config_keys::user;
+
+	auto lang_config = config->get_table(config_keys::user::main_table);
+	if (!lang_config) {
+		spdlog::error("{}: \"{}\" {}", error_msgs::loading_failed, user::main_table, error_msgs::missing_table);
+		return false;
+	}
+
+	auto general_lang  = lang_config->get_qualified_as<std::string>(user::general_lang);
+	auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
+
+	if (!commands_lang) {
+		if (!general_lang) {
+			spdlog::error(R"({}: "{}.{}" AND "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::commands_lang,
+			              user::main_table, user::general_lang, error_msgs::missing_key);
+			return false;
+		}
+		commands_lang = general_lang;
+	}
+
+	auto path = resources_directory / lang_folder / (*commands_lang + ".toml");
+	auto commands_text_file = parse_file(path.generic_string());
+	if (!commands_text_file) {
+	    spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
+	    return false;
+	}
+	return load_command_texts(commands_text_file);
+}
+
+bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept
+{
+	namespace cmds = config_keys::lang::internal::commands;
+
+	for (int i = 0; i < static_cast<int>(command_id::OUTOFRANGE); ++i) {
+		auto cmd = lang_file->get_table_qualified(cmds::main_name + ("." + std::to_string(i)));
+		if (!cmd) {
+			spdlog::error(R"({}: cmd lang file: "{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, error_msgs::missing_key);
+			return false;
+		}
+
+		auto name = cmd->get_qualified_as<std::string>(cmds::name);
+		auto desc = cmd->get_qualified_as<std::string>(cmds::description);
+
+		if (!name) {
+			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::name,
+			              error_msgs::missing_key);
+			return false;
+		}
+		if (!desc) {
+			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::description,
+			              error_msgs::missing_key);
+			return false;
+		}
+
+		m_commands_strings.emplace(static_cast<command_id>(i), std::pair{*name, *desc});
+	}
+	return true;
+}
+
+sf::Texture *resource_manager::get_texture(const std::string &file) noexcept
+{
 	auto it = m_textures_by_file.find(file);
 	if (it != m_textures_by_file.end()) {
 		return it->second;
@@ -424,10 +532,6 @@ sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
 	m_textures_holder.emplace_front();
 	sf::Texture *texture = &m_textures_holder.front();
 	if (!texture->loadFromFile(file)) {
-		if (std::filesystem::is_regular_file(file)) {
-			std::abort();
-		}
-
 		m_textures_holder.pop_front();
 		spdlog::error("{}: \"{}\": {}", error_msgs::loading_failed, file, error_msgs::bad_image_file);
 		return nullptr;

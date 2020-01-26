@@ -13,10 +13,10 @@
 struct program_state {
 	static struct empty_struct s_empty;
 
+    utils::resource_manager resource_manager{};
+
 	ImTerm::terminal<terminal_commands> terminal{s_empty, "terminal"};
 	view::viewer viewer{};
-
-	utils::resource_manager resource_manager{};
 
 	model::world world{};
 
