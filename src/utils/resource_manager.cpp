@@ -496,11 +496,13 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 {
 	namespace cmds = config_keys::lang::internal::commands;
 
+	bool result = true;
 	for (int i = 0; i < static_cast<int>(command_id::OUTOFRANGE); ++i) {
 		auto cmd = lang_file->get_table_qualified(cmds::main_name + ("." + std::to_string(i)));
 		if (!cmd) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, error_msgs::missing_key);
-			return false;
+			result = false;
+			continue;
 		}
 
 		auto name = cmd->get_qualified_as<std::string>(cmds::name);
@@ -509,12 +511,14 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 		if (!name) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::name,
 			              error_msgs::missing_key);
-			return false;
+            result = false;
+            continue;
 		}
 		if (!desc) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::description,
 			              error_msgs::missing_key);
-			return false;
+            result = false;
+            continue;
 		}
 
 		m_commands_strings.emplace(static_cast<command_id>(i), std::pair{*name, *desc});

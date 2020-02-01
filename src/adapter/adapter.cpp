@@ -2,7 +2,10 @@
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
-#include "program_state.hpp"
+
+#include "model/cell.hpp"
+#include "view/facing_dir.hpp"
+#include "state_holder.hpp"
 
 namespace {}
 
@@ -12,11 +15,11 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		return false;
 	}
 
-	auto &viewer = program_state::global->viewer;
-	auto &world  = program_state::global->world;
+	view::viewer &view   = state::access<adapter>::view(m_state);
+	model::world &world  = state::access<adapter>::model(m_state).world;
 
-	viewer.acquire_mobs()->clear();
-	viewer.acquire_objects()->clear();
+	view.acquire_mobs()->clear();
+	view.acquire_objects()->clear();
 
 	std::ifstream fs{path};
 
@@ -54,10 +57,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 					view::object o{};
 					o.set_pos(static_cast<float>(column), static_cast<float>(row));
-					auto obj_anim = program_state::global->resource_manager.object_animation(utils::resource_manager::object_id::button);
+					auto obj_anim = m_state.resources.object_animation(utils::resource_manager::object_id::button);
 					assert(obj_anim);
 					o.set_animation(*obj_anim);
-					auto objects = viewer.acquire_objects();
+					auto objects = view.acquire_objects();
 					objects->push_back(o);
 
 					view_handle view{false, objects->size() - 1};
@@ -74,11 +77,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					world.components.angle[world.ninja_clown_handle]  = {0.f};
 
 					view::mob m{};
-					m.set_animations(
-					  program_state::global->resource_manager.mob_animations(utils::resource_manager::mob_id::player).value());
+					m.set_animations(m_state.resources.mob_animations(utils::resource_manager::mob_id::player).value());
 					m.set_direction(view::facing_direction::E);
 					m.set_pos(static_cast<float>(column), static_cast<float>(row));
-					auto mobs = viewer.acquire_mobs();
+					auto mobs = view.acquire_mobs();
 					mobs->emplace_back(m);
 
 					model_handle model{world.ninja_clown_handle};
@@ -120,14 +122,16 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 			}
 		}
 	}
-	viewer.set_map(std::move(view_map));
+	view.set_map(std::move(view_map));
 
 	spdlog::info("Loaded map \"{}\"", path.generic_string());
 	return true;
 }
 
 void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
-	view::map::cell current_cell = program_state::global->viewer.acquire_map()->m_cells[x][y];
+	view::viewer& view = state::access<adapter>::view(m_state);
+
+	view::map::cell current_cell = view.acquire_map()->m_cells[x][y];
 	view::map::cell output_cell;
 	switch (new_cell) {
 		case model::cell_type::WALL:
@@ -138,20 +142,22 @@ void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell)
 		case model::cell_type::GROUND:
 			output_cell = view::map::cell::concrete_tile; // FIXME
 	}
-	program_state::global->viewer.acquire_map()->m_cells[x][y] = output_cell;
+	view.acquire_map()->m_cells[x][y] = output_cell;
 	spdlog::trace("Changed tile ({} ; {}) from {} to {}", x, y, static_cast<int>(current_cell),
 	              static_cast<int>(output_cell)); // TODO: res_manager::to_string(cell)
 }
 
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
+    view::viewer& view = state::access<adapter>::view(m_state);
+
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
 			spdlog::trace("Moving mob {} to ({} ; {})", handle.handle, new_x, new_y);
-			(*program_state::global->viewer.acquire_mobs())[it->second.handle].set_pos(new_x, new_y);
+			(*view.acquire_mobs())[it->second.handle].set_pos(new_x, new_y);
 		}
 		else {
 			spdlog::trace("Moving object {} to ({} ; {})", handle.handle, new_x, new_y);
-			(*program_state::global->viewer.acquire_objects())[it->second.handle].set_pos(new_x, new_y);
+			(*view.acquire_objects())[it->second.handle].set_pos(new_x, new_y);
 		}
 	}
 	else {
@@ -160,10 +166,12 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 }
 
 void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
+    view::viewer& view = state::access<adapter>::view(m_state);
+
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		if (it->second.is_mob) {
 			spdlog::trace("Rotating mob {} to a target angle of {}", it->first.handle, new_rad);
-			(*program_state::global->viewer.acquire_mobs())[it->second.handle].set_direction(view::facing_direction::from_angle(new_rad));
+			(*view.acquire_mobs())[it->second.handle].set_direction(view::facing_direction::from_angle(new_rad));
 		}
 		else {
 			spdlog::error("Rotate request for non-compatible object {}", handle.handle);
@@ -175,8 +183,10 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 }
 
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
+	model::world& world = state::access<adapter>::model(m_state).world;
+
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
-		auto &components = program_state::global->world.components;
+		auto &components = world.components;
 		auto handle      = it->second.handle;
 
 		if (entity.is_mob) {
@@ -204,7 +214,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 		else {
 			ImGui::BeginTooltip();
 			// FIXME: why buttons and not something else ?
-			auto target = program_state::global->world.buttons[it->second.handle].target;
+			auto target = world.buttons[it->second.handle].target;
 			ImGui::Text("Button target: (%zu ; %zu)", target.column, target.row);
 			ImGui::EndTooltip();
 			return request::coords{target.column, target.row};

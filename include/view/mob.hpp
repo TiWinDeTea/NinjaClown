@@ -6,18 +6,20 @@
 #include "view/mob_animations.hpp"
 
 namespace view {
+class viewer;
+
 class mob {
 public:
-	void print(sf::RenderWindow &window) const {
+	void print(view::viewer &view) const {
 		const auto &anim = m_animations->animation_for(m_dir);
 		assert(anim);
-		anim->print(window, m_posx, m_posy);
+		anim->print(view, m_posx, m_posy);
 	}
 
-	bool is_hovered(sf::RenderWindow &window) const noexcept {
+	bool is_hovered(view::viewer &view) const noexcept {
 		const auto &anim = m_animations->animation_for(m_dir);
 		assert(anim);
-		return anim->is_hovered(window);
+		return anim->is_hovered(view);
 	}
 
 	void set_pos(float x, float y) {

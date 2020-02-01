@@ -52,11 +52,11 @@ bool bot::bot_dll::reload() noexcept {
 	return true;
 }
 
-void bot::bot_dll::bot_init(bot::bot_api api) {
+void bot::bot_dll::bot_init(bot::bot_api api) noexcept {
 	m_init_fn(api);
 }
 
-void bot::bot_dll::bot_think() {
+void bot::bot_dll::bot_think() noexcept {
 	m_think_fn();
 }
 

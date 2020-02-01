@@ -15,7 +15,7 @@ namespace model {
 struct world {
 	world() noexcept = default;
 
-	void update();
+	void update(adapter::adapter&);
 
 	std::vector<std::vector<cell>> grid{};
 

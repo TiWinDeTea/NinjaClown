@@ -32,6 +32,7 @@ class resource_manager {
 	} m_tiles_infos;
 
 public:
+
 	enum class mob_id {
 		player = MOBS_PLAYERID,
 	};

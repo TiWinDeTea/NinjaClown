@@ -7,16 +7,18 @@
 #include <cassert>
 
 namespace view {
+class viewer;
+
 class object {
 public:
-	void print(sf::RenderWindow &window) const {
+	void print(view::viewer &view) const {
 		assert(m_animation);
-		m_animation->print(window, m_posx, m_posy);
+		m_animation->print(view, m_posx, m_posy);
 	}
 
-	bool is_hovered(sf::RenderWindow &window) const noexcept {
+	bool is_hovered(view::viewer &view) const noexcept {
 		assert(m_animation);
-		return m_animation->is_hovered(window);
+		return m_animation->is_hovered(view);
 	}
 
 	void set_pos(float x, float y) {

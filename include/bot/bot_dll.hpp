@@ -24,8 +24,8 @@ struct bot_dll {
 	[[nodiscard]] bool load(std::string &&dll_path) noexcept;
 	[[nodiscard]] bool reload() noexcept;
 
-	void bot_init(bot_api api);
-	void bot_think();
+	void bot_init(bot_api api) noexcept;
+	void bot_think() noexcept;
 
 private:
 	[[nodiscard]] bool load_all_api_functions();

@@ -5,7 +5,13 @@
 #include <unordered_map>
 #include <variant>
 
-#include "model/cell.hpp"
+namespace model {
+enum class cell_type;
+}
+
+namespace state {
+class holder;
+}
 
 namespace adapter {
 struct model_handle {
@@ -52,6 +58,8 @@ using draw_request = std::variant<std::monostate, request::coords, request::hitb
 
 class adapter {
 public:
+    explicit adapter(state::holder* state_holder) noexcept : m_state{*state_holder} {}
+
 	bool load_map(const std::filesystem::path &path) noexcept;
 
 	void update_map(size_t y, size_t x, model::cell_type new_cell) noexcept;
@@ -63,6 +71,8 @@ public:
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
 private:
+	state::holder& m_state;
+
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 };

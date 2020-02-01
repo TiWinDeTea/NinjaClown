@@ -15,10 +15,15 @@ class RenderWindow;
 namespace adapter {
 struct view_handle;
 }
+namespace state {
+class holder;
+}
 
 namespace view {
 class viewer {
 public:
+	explicit viewer(state::holder* state_holder) noexcept;
+
 	~viewer() {
 		stop();
 	}
@@ -74,11 +79,16 @@ public:
 		m_level_size = map->level_size();
 	}
 
+
+
 	std::pair<float, float> to_screen_coords(float x, float y) const noexcept;
 
 	const std::chrono::system_clock::time_point starting_time{std::chrono::system_clock::now()};
 
 	std::atomic_bool show_debug_data{true};
+    bool close_requested{false};
+
+	sf::RenderWindow* window;
 
 private:
 	std::pair<float, float> to_screen_coords_base(float x, float y) const noexcept;
@@ -86,6 +96,8 @@ private:
 	void do_run() noexcept;
 
 	void do_tooltip(sf::RenderWindow &, adapter::view_handle) noexcept;
+
+	state::holder& m_state_holder;
 
 	std::pair<std::size_t, std::size_t> m_window_size;
 

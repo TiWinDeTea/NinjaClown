@@ -3,9 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "program_state.hpp"
-#include "utils/scope_guards.hpp"
-#include "view/viewer.hpp"
+#include "state_holder.hpp"
 
 int actual_main(std::vector<std::string> &);
 
@@ -43,41 +41,13 @@ int main(int argc, char *argv[]) {
 }
 #endif
 
-#include <array>
-#include <tuple>
-
 int actual_main([[maybe_unused]] std::vector<std::string> &args) {
-    // FIXME
-    // Ce code a besoin d’amour
-
-	union {
-		alignas(program_state) char data[sizeof(program_state)];
-	} prog_union;
-	program_state &program = *reinterpret_cast<program_state *>(prog_union.data);
-	program_state::global  = &program;
-
-	new (&program.resource_manager) utils::resource_manager;
-    if (!program.resource_manager.load_config("resources/config.toml")) {
-        spdlog::critical("Failed to load resources.");
-    }
-
-	new (&program.terminal) ImTerm::terminal<terminal_commands>{program_state::s_empty, "terminal"};
-	new (&program.viewer) view::viewer;
-	new (&program.world) model::world;
-	new (&program.bot_dll) bot::bot_dll;
-	new (&program.adapter) adapter::adapter;
-	new (&program.close_request) bool{false};
-	new (&program.term_on_display) bool{true};
-	ON_SCOPE_EXIT {
-		program.~program_state();
-	};
-
-	spdlog::default_logger()->sinks().push_back(program.terminal.get_terminal_helper());
 	spdlog::default_logger()->set_level(spdlog::level::trace);
 	spdlog::info("~ Ninja. Clown. ~");
 
-	program.viewer.run();
-	program.viewer.wait();
+    state::holder game{"resources/config.toml"};
+    game.run();
+    game.wait();
 
 	return 0;
 }

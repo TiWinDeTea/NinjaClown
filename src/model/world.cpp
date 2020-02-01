@@ -1,17 +1,15 @@
+#include <array>
 #include <cmath>
 #include <spdlog/spdlog.h>
-#include <array>
 
+#include "adapter/adapter.hpp"
 #include "model/world.hpp"
-#include "program_state.hpp"
 
-void model::world::update() {
-	const float pi            = 3.14159f;
-	adapter::adapter &adapter = program_state::global->adapter;
+void model::world::update(adapter::adapter &adapter) {
+	const float pi = 3.14159f;
 
 	for (size_t handle = MAX_ENTITIES; handle--;) {
 		if (components.decision[handle]) {
-			auto &player = program_state::global->viewer.acquire_mobs()->back();
 			float &angle = components.angle[handle]->rad;
 			switch (*components.decision[handle]) {
 				case component::decision::TURN_LEFT:
@@ -31,27 +29,25 @@ void model::world::update() {
 				case component::decision::MOVE_FORWARD:
 					components.hitbox[handle]->x += 0.1f * std::cos(components.angle[handle]->rad);
 					components.hitbox[handle]->y -= 0.1f * std::sin(components.angle[handle]->rad);
-					player.set_pos(components.hitbox[handle]->x, components.hitbox[handle]->y);
 					adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->x, components.hitbox[handle]->y);
 					break;
 				case component::decision::MOVE_BACKWARD:
 					components.hitbox[handle]->x -= 0.1f * std::cos(components.angle[handle]->rad);
 					components.hitbox[handle]->y += 0.1f * std::sin(components.angle[handle]->rad);
-					player.set_pos(components.hitbox[handle]->x, components.hitbox[handle]->y);
 					adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->x, components.hitbox[handle]->y);
 					break;
 				case component::decision::ACTIVATE_BUTTON:
 					const float center_x = components.hitbox[handle]->center_x();
 					const float center_y = components.hitbox[handle]->center_y();
-					bool done = false;
-					for (float diff_x: std::array{-0.5f, 0.f, 0.5f}) {
-						for (float diff_y: std::array{-0.5f, 0.f, 0.5f}) {
+					bool done            = false;
+					for (float diff_x : std::array{-0.5f, 0.f, 0.5f}) {
+						for (float diff_y : std::array{-0.5f, 0.f, 0.5f}) {
 							const auto tile_x = static_cast<size_t>(center_x + diff_x);
 							const auto tile_y = static_cast<size_t>(center_y + diff_y);
 							if (grid[tile_x][tile_y].interaction_handle) {
-								interaction& i = interactions[grid[tile_x][tile_y].interaction_handle.value()];
+								interaction &i = interactions[grid[tile_x][tile_y].interaction_handle.value()];
 								if (i.interactable == interactable_kind::BUTTON) {
-									toggle_button(buttons[i.interactable_handler], grid);
+									toggle_button(adapter, buttons[i.interactable_handler], grid);
 									done = true;
 									break;
 								}

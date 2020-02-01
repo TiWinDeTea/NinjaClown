@@ -3,27 +3,24 @@
 
 #include "bot_interface/bot.h"
 
-static struct bot_api BOT;
-static int finished = 0;
+#define NINJAHELPER_IMPLEMENT
+#include "bot_interface/helpers.h"
 
-void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init(struct bot_api api)
-{
-	BOT = api;
-}
+static _Bool finished = 0;
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think()
 {
 	if (finished) {
-		BOT.log("mission accomplished!");
+		ninja_log("mission accomplished!");
 		return;
 	}
 
-	if (BOT.get_angle() < 2.5f) {
-		BOT.turn_left();
-	} else if (BOT.get_x_position() > 7.5) {
-		BOT.move_forward();
+	if (ninja_get_angle() < 2.5f) {
+		ninja_turn_left();
+	} else if (ninja_get_x() > 7.5) {
+		ninja_move_forward();
 	} else {
-		BOT.activate_button();
+		ninja_activate_button();
 		finished = 1;
 	}
 }

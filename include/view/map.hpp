@@ -11,7 +11,13 @@ namespace sf {
 class RenderWindow;
 }
 
+namespace utils {
+class resource_manager;
+}
+
 namespace view {
+class viewer;
+
 class map {
 public:
 	enum class cell {
@@ -31,11 +37,11 @@ public:
 		return {m_cells.size(), m_cells.front().size()};
 	}
 
-	void print(sf::RenderWindow &window) const noexcept;
+	void print(view::viewer& view, utils::resource_manager& resources) const noexcept;
 
-	void highlight_tile(sf::RenderWindow &window, size_t x, size_t y) const noexcept;
+	void highlight_tile(view::viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
 
-	void frame_tile(sf::RenderWindow &window, size_t x, size_t y) const noexcept;
+	void frame_tile(view::viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
 
 private:
 	std::vector<std::vector<cell>> m_cells;

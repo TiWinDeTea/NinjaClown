@@ -7,6 +7,8 @@
 #include <SFML/Graphics/Sprite.hpp>
 
 namespace view {
+class viewer;
+
 class animation {
 public:
 	static constexpr unsigned int SINGLE_IMAGE_DURATION = 500;
@@ -15,9 +17,9 @@ public:
 		m_frames.emplace_back(std::move(sprite));
 	}
 
-	void print(sf::RenderWindow &window, float posx, float posy) const noexcept;
+	void print(view::viewer& viewer, float posx, float posy) const noexcept;
 
-	void highlight(sf::RenderWindow &window, float posx, float posy) const noexcept;
+	void highlight(view::viewer& viewer, float posx, float posy) const noexcept;
 
 	friend class shifted_animation;
 
@@ -37,7 +39,7 @@ public:
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
 	shifted_animation &operator=(const shifted_animation &) noexcept = default;
 
-	bool is_hovered(sf::RenderWindow &window) const noexcept;
+	bool is_hovered(view::viewer& viewer) const noexcept;
 
 	void add_frame(sf::Sprite &&sprite) {
 		m_frames.emplace_back(std::move(sprite));
@@ -48,9 +50,7 @@ public:
 		m_yshift = yshift;
 	}
 
-	void adjust_for_mobs() noexcept;
-
-	void print(sf::RenderWindow &window, float posx, float posy) const noexcept;
+	void print(view::viewer& viewer, float posx, float posy) const noexcept;
 
 private:
 	mutable std::vector<sf::Sprite> m_frames;

@@ -13,7 +13,7 @@ include(cmake/cpptoml.cmake)
 add_executable(ninja-clown ${OPTIONS}
 		src/main.cpp
 		src/terminal_commands.cpp
-		src/program_state.cpp
+		src/state_holder.cpp
 
 		src/adapter/adapter.cpp
 

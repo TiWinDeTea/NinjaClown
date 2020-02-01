@@ -20,7 +20,6 @@ public:
 	void add_animation(shifted_animation &&anim, facing_direction::type dir) noexcept {
 		assert(dir != facing_direction::MAX_VAL);
 		assert(!m_animations_by_direction[dir]);
-		anim.adjust_for_mobs();
 		m_animations_by_direction[dir] = std::move(anim);
 	}
 
