@@ -20,7 +20,8 @@ public:
 		m_dll.bot_think();
 	}
 
-    ::model::world world{};
+	::model::world world{};
+
 private:
 	bot::bot_dll m_dll{};
 };

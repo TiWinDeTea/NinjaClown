@@ -7,8 +7,7 @@ constexpr bool dependant_false = false;
 constexpr void make_api_impl(bot_api &) {} // ends template recursion
 
 template <typename Func, typename... OtherFuncs>
-void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others)
-{
+void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others) {
 	if constexpr (std::is_same_v<Func, move_backward>) {
 		api.move_backward = f.ptr;
 	}
@@ -20,8 +19,7 @@ void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others)
 } // namespace bot::details
 
 template <typename... Funcs>
-bot::bot_api bot::make_api(Funcs &&... funcs)
-{
+bot::bot_api bot::make_api(Funcs &&... funcs) {
 	bot_api api;
 
 	api.log = &ffi::log;

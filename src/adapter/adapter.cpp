@@ -197,7 +197,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			if (components.angle[handle]) {
 				ImGui::Text("Current angle: %f", components.angle[handle]->rad);
 			}
-			if (components.decision[handle]) {
+			if (components.decision[handle]) { // FIXME: this component is reset before this function call
 				ImGui::Text("Current decision: %s", to_string(*components.decision[entity.handle]));
 			}
 			if (components.hitbox[handle]) {

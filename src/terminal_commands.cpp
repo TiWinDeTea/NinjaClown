@@ -66,12 +66,11 @@ void terminal_commands::load_commands(const utils::resource_manager &resources) 
 
 void terminal_commands::set_terminal(term_t &term) noexcept {
 	terminal_ = &term;
-	for (ImTerm::message& msg : m_pre_logged_messages) {
+	for (ImTerm::message &msg : m_pre_logged_messages) {
 		term.add_message(std::move(msg));
 	}
 	m_pre_logged_messages.clear();
 }
-
 
 void terminal_commands::sink_it_(const spdlog::details::log_msg &msg) {
 	if (msg.level == spdlog::level::off) {
@@ -80,10 +79,12 @@ void terminal_commands::sink_it_(const spdlog::details::log_msg &msg) {
 	spdlog::memory_buf_t buff{};
 	spdlog::sinks::base_sink<misc::no_mutex>::formatter_->format(msg, buff);
 
-	ImTerm::message imsg{ImTerm::details::to_imterm_severity(msg.level), fmt::to_string(buff), msg.color_range_start, msg.color_range_end, false};
+	ImTerm::message imsg{ImTerm::details::to_imterm_severity(msg.level), fmt::to_string(buff), msg.color_range_start, msg.color_range_end,
+	                     false};
 	if (terminal_ != nullptr) {
 		terminal_->add_message(std::move(imsg));
-	} else {
+	}
+	else {
 		m_pre_logged_messages.emplace_back(std::move(imsg));
 	}
 }

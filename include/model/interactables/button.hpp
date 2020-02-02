@@ -17,7 +17,7 @@ struct button {
 	} target;
 };
 
-void toggle_button(adapter::adapter& adapter, button &button, std::vector<std::vector<cell>> &grid);
+void toggle_button(adapter::adapter &adapter, button &button, std::vector<std::vector<cell>> &grid);
 
 } // namespace model
 
