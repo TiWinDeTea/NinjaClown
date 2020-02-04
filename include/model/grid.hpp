@@ -3,6 +3,7 @@
 
 #include <iterator> // std::iterator, std::input_iterator_tag
 #include <vector>
+#include <algorithm>
 
 #include "cell.hpp"
 

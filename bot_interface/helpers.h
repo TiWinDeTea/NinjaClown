@@ -17,7 +17,7 @@ extern struct bot_api BOT;
 #define ninja_activate_button() BOT.activate_button(BOT.ninja_descriptor)
 
 #ifdef NINJAHELPER_IMPLEMENT
-static struct bot_api BOT;
+struct bot_api BOT;
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init(struct bot_api api)
 {
