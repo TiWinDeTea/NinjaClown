@@ -7,6 +7,7 @@
 
 #include "model/cell.hpp"
 #include "model/components.hpp"
+#include "model/grid.hpp"
 
 namespace model {
 
@@ -17,7 +18,7 @@ struct button {
 	} target;
 };
 
-void toggle_button(adapter::adapter &adapter, button &button, std::vector<std::vector<cell>> &grid);
+void toggle_button(adapter::adapter &adapter, button &button, grid_t &grid);
 
 } // namespace model
 

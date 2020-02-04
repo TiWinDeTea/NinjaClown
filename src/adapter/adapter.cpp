@@ -25,14 +25,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 	size_t width, height;
 	fs >> width >> height;
+	world.grid.resize(width, height);
 
 	size_t next_entity_handle  = 0;
 	bool ninja_clown_not_found = true;
-	world.grid.resize(width);
-	for (auto &column : world.grid) {
-		column.resize(height);
-	}
-
 	for (size_t row = 0; row < height; ++row) {
 		for (size_t column = 0; column < width; ++column) {
 			model::cell &cell = world.grid[column][row];
