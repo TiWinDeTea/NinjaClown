@@ -37,7 +37,8 @@ void model::world::update(adapter::adapter &adapter) {
 					adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->x, components.hitbox[handle]->y);
 					break;
 				case component::decision::ACTIVATE_BUTTON:
-					for (cell &c : grid.radius(components.hitbox[handle]->center_x(), components.hitbox[handle]->center_y(), 0.5f)) {
+					component::hitbox& hitbox = components.hitbox[handle].value();
+					for (cell &c : grid.radius(hitbox.center_x(), hitbox.center_y(), 0.5f)) {
 						if (c.interaction_handle) {
 							interaction &i = interactions[c.interaction_handle.value()];
 							if (i.interactable == interactable_kind::BUTTON) {

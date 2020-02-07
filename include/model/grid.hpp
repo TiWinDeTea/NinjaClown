@@ -1,7 +1,7 @@
 #ifndef NINJACLOWN_GRID_HPP
 #define NINJACLOWN_GRID_HPP
 
-#include <iterator> // std::iterator, std::input_iterator_tag
+#include <iterator> // std::input_iterator_tag
 #include <vector>
 #include <algorithm>
 
@@ -9,7 +9,13 @@
 
 namespace model {
 
-class grid_iterator: public std::iterator<std::input_iterator_tag, int> {
+class grid_iterator {
+	using iterator_category = std::input_iterator_tag;
+	using value_type = cell;
+	using difference_type = std::pair<int, int>;
+	using pointer = cell*;
+	using reference = cell&;
+
 public:
 	grid_iterator(std::vector<std::vector<cell>> &grid, size_t start_x, size_t start_y, size_t target_x, size_t target_y)
 	    : m_grid{grid}
@@ -19,13 +25,7 @@ public:
 	    , m_right_x{target_x}
 	    , m_bottom_y{target_y} {}
 
-	grid_iterator(const grid_iterator &other)
-	    : m_grid{other.m_grid}
-	    , m_left_x{other.m_left_x}
-	    , m_cur_x{other.m_cur_x}
-	    , m_cur_y{other.m_cur_y}
-	    , m_right_x{other.m_right_x}
-	    , m_bottom_y{other.m_bottom_y} {}
+	grid_iterator(const grid_iterator &other) = default;
 
 	grid_iterator(grid_iterator &&other) noexcept
 	    : m_grid{other.m_grid}
@@ -58,22 +58,13 @@ public:
 		return !operator==(rhs);
 	}
 
-	cell &operator*() {
+	reference operator*() {
 		return m_grid[m_cur_x][m_cur_y];
-	}
-
-	grid_iterator end() {
-		grid_iterator end{*this};
-		end.m_cur_x = m_right_x;
-		end.m_cur_y = m_bottom_y;
-		return end;
 	}
 
 private:
 	std::vector<std::vector<cell>> &m_grid;
 	size_t m_left_x, m_cur_x, m_cur_y, m_right_x, m_bottom_y;
-
-	friend class grid_view;
 };
 
 class grid_view {
@@ -83,8 +74,8 @@ public:
 	using const_reference = cell const &;
 	using iterator        = grid_iterator;
 	using const_iterator  = const grid_iterator;
-	using difference_type = long;
-	using size_type       = size_t;
+	using difference_type = std::pair<long, long>;
+	using size_type       = std::pair<size_t, size_t>;
 
 	grid_view(std::vector<std::vector<cell>> &grid, size_t left_x, size_t top_y, size_t right_x, size_t bottom_y)
 	    : m_grid{grid}
@@ -102,27 +93,27 @@ public:
 	    , m_right_x{other.m_right_x}
 	    , m_bottom_y{other.m_bottom_y} {}
 
-	grid_iterator begin() {
+	iterator begin() {
 		return grid_iterator{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
-	const grid_iterator begin() const {
+	const_iterator begin() const {
 		return grid_iterator{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
-	const grid_iterator cbegin() const {
+	const_iterator cbegin() const {
 		return begin();
 	}
 
-	grid_iterator end() {
+	iterator end() {
 		return grid_iterator{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
 	}
 
-	const grid_iterator end() const {
+	const_iterator end() const {
 		return grid_iterator{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
 	}
 
-	const grid_iterator cend() const {
+	const_iterator cend() const {
 		return end();
 	}
 
