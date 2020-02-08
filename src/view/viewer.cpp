@@ -55,8 +55,7 @@ void view::viewer::do_run() noexcept {
 	sf::Clock music_offset_clock;
 
 	sf::RenderWindow local_window{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"};
-	sf::Vector2u windows_old_size = local_window.getSize();
-	m_viewport                    = sf::FloatRect(0.F, 0.F, cst::window_width, cst::window_height);
+	m_viewport = sf::FloatRect(0.F, 0.F, cst::window_width, cst::window_height);
 	sf::Vector2i mouse_pos{0, 0};
 
 	window = &local_window;
@@ -99,16 +98,24 @@ void view::viewer::do_run() noexcept {
 						auto_step_bot = !auto_step_bot;
 					}
 					break;
-				case sf::Event::Resized:
-					m_window_size.first  = event.size.width;
-					m_window_size.second = event.size.height;
+				case sf::Event::Resized: {
 					terminal.set_width(local_window.getSize().x);
 					if (resized_once) {
 						terminal.set_height(std::min(local_window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
 					}
 					resized_once = true;
-					local_window.setView(sf::View{m_viewport});
+
+					const float XRATIO = static_cast<float>(event.size.width) / m_window_size.first;
+					const float YRATIO = static_cast<float>(event.size.height) / m_window_size.second;
+
+					m_viewport.width *= XRATIO;
+					m_viewport.height *= YRATIO;
+
+					m_window_size.first  = event.size.width;
+					m_window_size.second = event.size.height;
+					window->setView(sf::View{m_viewport});
 					break;
+				}
 				case sf::Event::MouseWheelScrolled:
 					if (event.mouseWheelScroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
 						const auto MOUSE_POS = to_viewport_coord(sf::Vector2i{event.mouseWheelScroll.x, event.mouseWheelScroll.y});
@@ -141,12 +148,12 @@ void view::viewer::do_run() noexcept {
 
 						m_viewport.left += (mouse_pos.x - event.mouseMove.x) / zoom_factor;
 						m_viewport.top += (mouse_pos.y - event.mouseMove.y) / zoom_factor;
-                        local_window.setView(sf::View{m_viewport});
+						local_window.setView(sf::View{m_viewport});
 					}
 					mouse_pos = {event.mouseMove.x, event.mouseMove.y};
 					break;
-                default:
-                    break;
+				default:
+					break;
 			}
 		}
 
