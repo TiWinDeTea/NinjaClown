@@ -9,12 +9,13 @@
 
 namespace model {
 
+template<typename T>
 class grid_iterator {
 	using iterator_category = std::input_iterator_tag;
-	using value_type = cell;
+	using value_type = T;
 	using difference_type = std::pair<int, int>;
-	using pointer = cell*;
-	using reference = cell&;
+	using pointer = T*;
+	using reference = T&;
 
 public:
 	grid_iterator(std::vector<std::vector<cell>> &grid, size_t start_x, size_t start_y, size_t target_x, size_t target_y)
@@ -24,16 +25,6 @@ public:
 	    , m_cur_y{start_y}
 	    , m_right_x{target_x}
 	    , m_bottom_y{target_y} {}
-
-	grid_iterator(const grid_iterator &other) = default;
-
-	grid_iterator(grid_iterator &&other) noexcept
-	    : m_grid{other.m_grid}
-	    , m_left_x{other.m_left_x}
-	    , m_cur_x{other.m_cur_x}
-	    , m_cur_y{other.m_cur_y}
-	    , m_right_x{other.m_right_x}
-	    , m_bottom_y{other.m_bottom_y} {}
 
 	grid_iterator &operator++() {
 		++m_cur_x;
@@ -72,8 +63,8 @@ public:
 	using value_type      = cell;
 	using reference       = cell &;
 	using const_reference = cell const &;
-	using iterator        = grid_iterator;
-	using const_iterator  = const grid_iterator;
+	using iterator        = grid_iterator<cell>;
+	using const_iterator  = const grid_iterator<const cell>;
 	using difference_type = std::pair<long, long>;
 	using size_type       = std::pair<size_t, size_t>;
 
@@ -84,21 +75,12 @@ public:
 	    , m_right_x{right_x}
 	    , m_bottom_y{bottom_y} {}
 
-	grid_view(const grid_view &other) = default;
-
-	grid_view(grid_view &&other) noexcept
-	    : m_grid{other.m_grid}
-	    , m_left_x{other.m_left_x}
-	    , m_top_y{other.m_top_y}
-	    , m_right_x{other.m_right_x}
-	    , m_bottom_y{other.m_bottom_y} {}
-
 	iterator begin() {
-		return grid_iterator{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
+		return grid_iterator<cell>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
 	const_iterator begin() const {
-		return grid_iterator{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
+		return grid_iterator<const cell>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
 	const_iterator cbegin() const {
@@ -106,11 +88,11 @@ public:
 	}
 
 	iterator end() {
-		return grid_iterator{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
+		return grid_iterator<cell>{m_grid, m_left_x, m_bottom_y, std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()};
 	}
 
 	const_iterator end() const {
-		return grid_iterator{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
+		return grid_iterator<const cell>{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
 	}
 
 	const_iterator cend() const {
@@ -156,8 +138,8 @@ public:
 	grid_view radius(float center_x, float center_y, float radius) {
 		auto start_x  = static_cast<size_t>(std::max(0.5f, center_x - radius));
 		auto start_y  = static_cast<size_t>(std::max(0.5f, center_y - radius));
-		auto target_x = std::min(m_inner.size() - 1, static_cast<size_t>(center_x + radius));
-		auto target_y = std::min(m_inner[0].size() - 1, static_cast<size_t>(center_y + radius));
+		auto target_x = std::min(m_inner.size() - 1, static_cast<size_t>(center_x + radius) + 1);
+		auto target_y = std::min(m_inner[0].size() - 1, static_cast<size_t>(center_y + radius) + 1);
 
 		return subgrid(start_x, start_y, target_x, target_y);
 	}
