@@ -22,7 +22,7 @@ class holder;
 namespace view {
 class viewer {
 public:
-	explicit viewer(state::holder* state_holder) noexcept;
+	explicit viewer(state::holder *state_holder) noexcept;
 
 	~viewer() {
 		stop();
@@ -79,16 +79,17 @@ public:
 		m_level_size = map->level_size();
 	}
 
+	// converts world grid coords to on-screen coords
+	sf::Vector2f to_screen_coords(float x, float y) const noexcept;
 
-
-	std::pair<float, float> to_screen_coords(float x, float y) const noexcept;
+	sf::Vector2f get_mouse_pos() const noexcept;
 
 	const std::chrono::system_clock::time_point starting_time{std::chrono::system_clock::now()};
 
 	std::atomic_bool show_debug_data{true};
-    bool close_requested{false};
+	bool close_requested{false};
 
-	sf::RenderWindow* window;
+	sf::RenderWindow *window;
 
 private:
 	std::pair<float, float> to_screen_coords_base(float x, float y) const noexcept;
@@ -97,7 +98,11 @@ private:
 
 	void do_tooltip(sf::RenderWindow &, adapter::view_handle) noexcept;
 
-	state::holder& m_state_holder;
+    // converts sfml events coords to viewport coords
+    sf::Vector2f to_viewport_coord(const sf::Vector2f &coords) const noexcept;
+    sf::Vector2f to_viewport_coord(const sf::Vector2i &coords) const noexcept;
+
+	state::holder &m_state_holder;
 
 	std::pair<std::size_t, std::size_t> m_window_size;
 
@@ -108,6 +113,8 @@ private:
 
 	std::unique_ptr<std::thread> m_thread{};
 	std::atomic_bool m_running{false};
+
+	sf::FloatRect m_viewport{};
 
 	fps_limiter m_fps_limiter{};
 };

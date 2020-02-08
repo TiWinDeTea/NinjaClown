@@ -55,6 +55,10 @@ void view::viewer::do_run() noexcept {
 	sf::Clock music_offset_clock;
 
 	sf::RenderWindow local_window{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"};
+	sf::Vector2u windows_old_size = local_window.getSize();
+	m_viewport                    = sf::FloatRect(0.F, 0.F, cst::window_width, cst::window_height);
+	sf::Vector2i mouse_pos{0, 0};
+
 	window = &local_window;
 
 	m_window_size = {cst::window_width, cst::window_height};
@@ -80,30 +84,69 @@ void view::viewer::do_run() noexcept {
 		while (local_window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
 
-			if (event.type == sf::Event::Closed) {
-				local_window.close();
-			}
-			else if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::F11) {
-					displaying_term = !displaying_term;
-				}
-				else if (event.key.code == sf::Keyboard::F5) {
-					step_bot();
-				}
-				else if (event.key.code == sf::Keyboard::F4) {
-					auto_step_bot = !auto_step_bot;
-				}
-			}
-			else if (event.type == sf::Event::Resized) {
-				m_window_size.first  = event.size.width;
-				m_window_size.second = event.size.height;
-				terminal.set_width(local_window.getSize().x);
-				if (resized_once) {
-					terminal.set_height(std::min(local_window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
-				}
-				resized_once = true;
-				local_window.setView(
-				  sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(event.size.width), static_cast<float>(event.size.height))));
+			switch (event.type) {
+				case sf::Event::Closed:
+					local_window.close();
+					break;
+				case sf::Event::KeyPressed:
+					if (event.key.code == sf::Keyboard::F11) {
+						displaying_term = !displaying_term;
+					}
+					else if (event.key.code == sf::Keyboard::F5) {
+						step_bot();
+					}
+					else if (event.key.code == sf::Keyboard::F4) {
+						auto_step_bot = !auto_step_bot;
+					}
+					break;
+				case sf::Event::Resized:
+					m_window_size.first  = event.size.width;
+					m_window_size.second = event.size.height;
+					terminal.set_width(local_window.getSize().x);
+					if (resized_once) {
+						terminal.set_height(std::min(local_window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
+					}
+					resized_once = true;
+					local_window.setView(sf::View{m_viewport});
+					break;
+				case sf::Event::MouseWheelScrolled:
+					if (event.mouseWheelScroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
+						const auto MOUSE_POS = to_viewport_coord(sf::Vector2i{event.mouseWheelScroll.x, event.mouseWheelScroll.y});
+
+						const float DELTA = 1.1F;
+						float transform;
+						if (event.mouseWheelScroll.delta < 0) {
+							transform = DELTA;
+						}
+						else {
+							transform = 1 / DELTA;
+						}
+						sf::FloatRect new_viewport;
+
+						new_viewport.width      = m_viewport.width * transform;
+						const float WIDTH_RATIO = new_viewport.width / m_viewport.width;
+						new_viewport.left       = m_viewport.left + MOUSE_POS.x * (1 - WIDTH_RATIO);
+
+						new_viewport.height      = m_viewport.height * WIDTH_RATIO;
+						const float HEIGHT_RATIO = new_viewport.height / m_viewport.height;
+						new_viewport.top         = m_viewport.top + MOUSE_POS.y * (1 - HEIGHT_RATIO);
+
+						m_viewport = new_viewport;
+						local_window.setView(sf::View{m_viewport});
+					}
+					break;
+				case sf::Event::MouseMoved:
+					if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+						const float zoom_factor = window->getSize().x / m_viewport.width;
+
+						m_viewport.left += (mouse_pos.x - event.mouseMove.x) / zoom_factor;
+						m_viewport.top += (mouse_pos.y - event.mouseMove.y) / zoom_factor;
+                        local_window.setView(sf::View{m_viewport});
+					}
+					mouse_pos = {event.mouseMove.x, event.mouseMove.y};
+					break;
+                default:
+                    break;
 			}
 		}
 
@@ -155,7 +198,7 @@ void view::viewer::do_run() noexcept {
 	ImGui::SFML::Shutdown();
 }
 
-std::pair<float, float> view::viewer::to_screen_coords(float x, float y) const noexcept {
+sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {
 	auto [screen_x, screen_y] = to_screen_coords_base(x, y);
 
 	const auto &tiles = m_state_holder.resources.tiles_infos();
@@ -168,6 +211,16 @@ std::pair<float, float> view::viewer::to_screen_coords(float x, float y) const n
 	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
 }
 
+// conversions necessary to account for the viewport
+sf::Vector2f view::viewer::get_mouse_pos() const noexcept {
+	const auto &WINDOW_SZ = window->getSize();
+	const float YRATIO    = m_viewport.height / WINDOW_SZ.y;
+	const float XRATIO    = m_viewport.width / WINDOW_SZ.x;
+
+	const sf::Vector2i MOUSE_POS = sf::Mouse::getPosition(*window);
+	return {MOUSE_POS.x * XRATIO + m_viewport.left, MOUSE_POS.y * YRATIO + m_viewport.top};
+}
+
 std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept {
 	const auto &tiles = m_state_holder.resources.tiles_infos();
 	auto xshift       = static_cast<float>(m_level_size.second * tiles.y_xshift);
@@ -176,6 +229,7 @@ std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) co
 
 	return {screen_x, screen_y};
 }
+
 void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept {
 	using namespace adapter;
 	utils::visitor request_visitor{[&](const request::hitbox &hitbox) {
@@ -196,4 +250,16 @@ void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle han
 	                               },
 	                               [](std::monostate /* ignored */) {}};
 	std::visit(request_visitor, state::access<view::viewer>::adapter(m_state_holder).tooltip_for(handle));
+}
+
+sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2f &coords) const noexcept {
+	const auto WINDOW_SZ      = window->getSize();
+	const float VP_WIN_XRATIO = m_viewport.width / WINDOW_SZ.x;
+	const float VP_WIN_YRATIO = m_viewport.height / WINDOW_SZ.y;
+
+	return {VP_WIN_XRATIO * coords.x, VP_WIN_YRATIO * coords.y};
+}
+
+sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2i &coords) const noexcept {
+	return to_viewport_coord(sf::Vector2f{static_cast<float>(coords.x), static_cast<float>(coords.y)});
 }

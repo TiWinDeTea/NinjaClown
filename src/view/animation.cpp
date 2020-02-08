@@ -35,6 +35,5 @@ void view::shifted_animation::print(view::viewer& viewer, float posx, float posy
 
 bool view::shifted_animation::is_hovered(view::viewer& viewer) const noexcept {
 	auto selected_frame = (viewer.current_frame() / SINGLE_IMAGE_DURATION) % m_frames.size();
-	auto mouse_pos      = sf::Mouse::getPosition(*viewer.window);
-	return m_frames[selected_frame].getGlobalBounds().contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y));
+	return m_frames[selected_frame].getGlobalBounds().contains(viewer.get_mouse_pos());
 }
