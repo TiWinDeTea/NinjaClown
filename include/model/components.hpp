@@ -5,6 +5,14 @@
 
 namespace model::component {
 
+constexpr float DEFAULT_MOVE_SPEED = 0.2;
+constexpr float DEFAULT_ROTATION_SPEED = 0.2;
+
+struct properties {
+	float move_speed = DEFAULT_MOVE_SPEED;
+	float rotation_speed = DEFAULT_ROTATION_SPEED;
+};
+
 struct health {
 	std::uint8_t points;
 };
@@ -69,6 +77,7 @@ struct components {
 	std::optional<component::hitbox> hitbox[MAX_ENTITIES];
 	std::optional<component::angle> angle[MAX_ENTITIES];
 	std::optional<component::decision> decision[MAX_ENTITIES];
+	component::properties properties[MAX_ENTITIES];
 };
 
 } // namespace model

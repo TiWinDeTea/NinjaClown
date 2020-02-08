@@ -27,6 +27,10 @@ struct world {
 
 	std::vector<interaction> interactions{};
 	std::vector<button> buttons{};
+
+private:
+	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);
+	void move_entity(adapter::adapter &adapter, size_t handle, float x, float y);
 };
 
 } // namespace model

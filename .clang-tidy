@@ -163,7 +163,7 @@ CheckOptions:
   - key:   readability-magic-numbers.IgnoredIntegerValues
     value: '-1;0;1;2;3;4'
   - key:   readability-magic-numbers.IgnoredFloatingPointValues
-    value: '-1.0, 0.0, 1.0'
+    value: '-1.0, 0.0, 1.0, 0.5'
   - key:   readability-redundant-member-init.IgnoreBaseInCopyConstructors
     value: '1'
   - key:   readability-simplify-boolean-expr.ChainedConditionalReturn

@@ -4,6 +4,7 @@
 #include <iterator> // std::input_iterator_tag
 #include <vector>
 #include <algorithm>
+#include <cassert>
 
 #include "cell.hpp"
 
@@ -65,7 +66,7 @@ public:
 	using const_reference = cell const &;
 	using iterator        = grid_iterator<cell>;
 	using const_iterator  = const grid_iterator<const cell>;
-	using difference_type = std::pair<long, long>;
+	using difference_type = std::pair<std::int64_t, std::int64_t>;
 	using size_type       = std::pair<size_t, size_t>;
 
 	grid_view(std::vector<std::vector<cell>> &grid, size_t left_x, size_t top_y, size_t right_x, size_t bottom_y)
@@ -132,7 +133,9 @@ public:
 	}
 
 	grid_view subgrid(size_t left_x, size_t top_y, size_t right_x, size_t bottom_y) {
-		return grid_view{m_inner, left_x, top_y, right_x, bottom_y};
+		assert(left_x < right_x);
+		assert(top_y < bottom_y);
+		return grid_view{m_inner, left_x, top_y, std::min(m_inner.size(), right_x), std::min(m_inner[0].size(), bottom_y)};
 	}
 
 	grid_view radius(float center_x, float center_y, float radius) {
