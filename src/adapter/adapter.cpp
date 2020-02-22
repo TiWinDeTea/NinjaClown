@@ -18,8 +18,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	view::viewer &view   = state::access<adapter>::view(m_state);
 	model::world &world  = state::access<adapter>::model(m_state).world;
 
-	view.acquire_mobs()->clear();
-	view.acquire_objects()->clear();
+	view.acquire_overmap()->clear();
 
 	std::ifstream fs{path};
 
@@ -56,13 +55,11 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					auto obj_anim = m_state.resources.object_animation(utils::resource_manager::object_id::button);
 					assert(obj_anim);
 					o.set_animation(*obj_anim);
-					auto objects = view.acquire_objects();
-					objects->push_back(o);
 
-					view_handle view{false, objects->size() - 1};
-					model_handle model{world.buttons.size() - 1};
-					m_model2view[model] = view;
-					m_view2model[view]  = model;
+					view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+					model_handle model_handle{world.buttons.size() - 1};
+					m_model2view[model_handle] = view_handle;
+					m_view2model[view_handle]  = model_handle;
 					break;
 				}
 				case '@': {
@@ -76,13 +73,11 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					m.set_animations(m_state.resources.mob_animations(utils::resource_manager::mob_id::player).value());
 					m.set_direction(view::facing_direction::E);
 					m.set_pos(static_cast<float>(column), static_cast<float>(row));
-					auto mobs = view.acquire_mobs();
-					mobs->emplace_back(m);
 
-					model_handle model{world.ninja_clown_handle};
-					view_handle view{true, mobs->size() - 1};
-					m_model2view[model] = view;
-					m_view2model[view]  = model;
+                    view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
+                    model_handle model_handle{world.ninja_clown_handle};
+					m_model2view[model_handle] = view_handle;
+					m_view2model[view_handle]  = model_handle;
 					cell.type           = model::cell_type::GROUND;
 					break;
 				}
@@ -147,14 +142,7 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
     view::viewer& view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
-		if (it->second.is_mob) {
-			spdlog::trace("Moving mob {} to ({} ; {})", handle.handle, new_x, new_y);
-			(*view.acquire_mobs())[it->second.handle].set_pos(new_x, new_y);
-		}
-		else {
-			spdlog::trace("Moving object {} to ({} ; {})", handle.handle, new_x, new_y);
-			(*view.acquire_objects())[it->second.handle].set_pos(new_x, new_y);
-		}
+		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
 	}
 	else {
 		spdlog::error("Move request for unknown entity {}", handle.handle);
@@ -165,13 +153,8 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
     view::viewer& view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
-		if (it->second.is_mob) {
-			spdlog::trace("Rotating mob {} to a target angle of {}", it->first.handle, new_rad);
-			(*view.acquire_mobs())[it->second.handle].set_direction(view::facing_direction::from_angle(new_rad));
-		}
-		else {
-			spdlog::error("Rotate request for non-compatible object {}", handle.handle);
-		}
+        spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
+		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 	}
 	else {
 		spdlog::error("Rotate request for unknown model entity {}", handle.handle);

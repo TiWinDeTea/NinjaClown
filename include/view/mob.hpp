@@ -4,27 +4,26 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "view/mob_animations.hpp"
+#include "view/overmap_displayable.hpp"
 
 namespace view {
-class viewer;
-
-class mob {
+class mob : public overmap_displayable_interface {
 public:
-	void print(view::viewer &view) const {
+	void vprint(view::viewer &view) const override {
 		const auto &anim = m_animations->animation_for(m_dir);
 		assert(anim);
-		anim->print(view, m_posx, m_posy);
+		anim->print(view, p_posx, p_posy);
 	}
 
-	bool is_hovered(view::viewer &view) const noexcept {
+	bool vis_hovered(view::viewer &view) const noexcept override {
 		const auto &anim = m_animations->animation_for(m_dir);
 		assert(anim);
 		return anim->is_hovered(view);
 	}
 
 	void set_pos(float x, float y) {
-		m_posx = x;
-		m_posy = y;
+		p_posx = x;
+		p_posy = y;
 	}
 
 	void set_animations(const mob_animations &animations) {
@@ -37,8 +36,6 @@ public:
 
 private:
 	const mob_animations *m_animations;
-	float m_posx;
-	float m_posy;
 	facing_direction::type m_dir;
 };
 } // namespace view

@@ -30,6 +30,7 @@ add_executable(ninja-clown ${OPTIONS}
 		src/view/animation.cpp
 		src/view/map.cpp
 		src/view/mob_animations.cpp
+		src/view/overmap_collection.cpp
 		src/view/viewer.cpp
 )
 

@@ -2,28 +2,28 @@
 #define NINJACLOWN_VIEW_OBJECTS_HPP
 
 #include "view/animation.hpp"
+#include "view/overmap_displayable.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <cassert>
 
 namespace view {
-class viewer;
 
-class object {
+class object : public overmap_displayable_interface {
 public:
-	void print(view::viewer &view) const {
+	void vprint(view::viewer &view) const override {
 		assert(m_animation);
-		m_animation->print(view, m_posx, m_posy);
+		m_animation->print(view, p_posx, p_posy);
 	}
 
-	bool is_hovered(view::viewer &view) const noexcept {
+	bool vis_hovered(view::viewer &view) const noexcept override {
 		assert(m_animation);
 		return m_animation->is_hovered(view);
 	}
 
 	void set_pos(float x, float y) {
-		m_posx = x + m_xshift;
-		m_posy = y + m_yshift;
+		p_posx = x + m_xshift;
+		p_posy = y + m_yshift;
 	}
 
 	void set_animation(const shifted_animation &animation) {
@@ -32,8 +32,6 @@ public:
 
 private:
 	const shifted_animation *m_animation;
-	float m_posx;
-	float m_posy;
 	float m_xshift;
 	float m_yshift;
 };

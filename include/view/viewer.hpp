@@ -7,6 +7,7 @@
 #include "view/map.hpp"
 #include "view/mob.hpp"
 #include "view/object.hpp"
+#include "view/overmap_collection.hpp"
 
 namespace sf {
 class RenderWindow;
@@ -61,12 +62,8 @@ public:
 		return m_fps_limiter.frame_count();
 	}
 
-	auto acquire_mobs() noexcept {
-		return m_mobs.acquire();
-	}
-
-	auto acquire_objects() noexcept {
-		return m_objects.acquire();
+	auto acquire_overmap() noexcept {
+		return m_overmap.acquire();
 	}
 
 	auto acquire_map() noexcept {
@@ -96,18 +93,15 @@ private:
 
 	void do_run() noexcept;
 
-	void do_tooltip(sf::RenderWindow &, adapter::view_handle) noexcept;
-
-    // converts sfml events coords to viewport coords
-    sf::Vector2f to_viewport_coord(const sf::Vector2f &coords) const noexcept;
-    sf::Vector2f to_viewport_coord(const sf::Vector2i &coords) const noexcept;
+	// converts sfml events coords to viewport coords
+	sf::Vector2f to_viewport_coord(const sf::Vector2f &coords) const noexcept;
+	sf::Vector2f to_viewport_coord(const sf::Vector2i &coords) const noexcept;
 
 	state::holder &m_state_holder;
 
 	std::pair<std::size_t, std::size_t> m_window_size;
 
-	utils::synchronized<std::vector<object>> m_objects;
-	utils::synchronized<std::vector<mob>> m_mobs;
+	utils::synchronized<overmap_collection> m_overmap;
 	utils::synchronized<view::map, utils::spinlock> m_map{};
 	std::pair<std::size_t, std::size_t> m_level_size{};
 

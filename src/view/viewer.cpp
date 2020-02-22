@@ -178,25 +178,10 @@ void view::viewer::do_run() noexcept {
 
 		local_window.clear();
 		m_map.acquire()->print(*this, m_state_holder.resources);
-		{
-			auto mobs = m_mobs.acquire();
-			for (auto idx = 0u; idx < mobs->size(); ++idx) {
-				const auto &mob = (*mobs)[idx];
-				mob.print(*this);
-				if (show_debug_data && mob.is_hovered(*this)) {
-					do_tooltip(local_window, adapter::view_handle{true, idx});
-				}
-			}
-		}
-		{
-			auto objects = m_objects.acquire();
-			for (auto idx = 0u; idx < objects->size(); ++idx) {
-				const auto &object = (*objects)[idx];
-				object.print(*this);
-				if (show_debug_data && object.is_hovered(*this)) {
-					do_tooltip(local_window, adapter::view_handle{false, idx});
-				}
-			}
+		if (show_debug_data) {
+			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
+		} else {
+			m_overmap.acquire()->print_all(*this);
 		}
 
 		ImGui::SFML::Render(local_window);
@@ -240,28 +225,6 @@ std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) co
 	auto screen_y     = y * static_cast<float>(tiles.yspacing) + x * static_cast<float>(tiles.x_yshift);
 
 	return {screen_x, screen_y};
-}
-
-void view::viewer::do_tooltip(sf::RenderWindow &window, adapter::view_handle handle) noexcept {
-	using namespace adapter;
-	utils::visitor request_visitor{[&](const request::hitbox &hitbox) {
-		                               auto [screen_x, screen_y] = to_screen_coords(hitbox.x, hitbox.y);
-		                               auto [screen_width, screen_height]
-		                                 = to_screen_coords(hitbox.x + hitbox.width, hitbox.y + hitbox.height);
-		                               screen_width -= screen_x;
-		                               screen_height -= screen_y;
-
-		                               sf::RectangleShape rect{{screen_width, screen_height}};
-		                               rect.setPosition(screen_x, screen_y);
-		                               rect.setFillColor(sf::Color{128, 255, 128, 128}); // todo externalize
-
-		                               window.draw(rect);
-	                               },
-	                               [&](const request::coords &coords) {
-		                               m_map.acquire()->highlight_tile(*this, coords.x, coords.y, m_state_holder.resources);
-	                               },
-	                               [](std::monostate /* ignored */) {}};
-	std::visit(request_visitor, state::access<view::viewer>::adapter(m_state_holder).tooltip_for(handle));
 }
 
 sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2f &coords) const noexcept {
