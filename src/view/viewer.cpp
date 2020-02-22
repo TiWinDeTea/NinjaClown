@@ -29,8 +29,8 @@ view::viewer::viewer(state::holder *state_holder) noexcept
     : m_state_holder{*state_holder} {}
 
 void view::viewer::run() {
-	m_thread  = std::make_unique<std::thread>(&viewer::do_run, this);
 	m_running = true;
+	m_thread  = std::make_unique<std::thread>(&viewer::do_run, this);
 }
 
 void view::viewer::stop() noexcept {
@@ -92,10 +92,19 @@ void view::viewer::do_run() noexcept {
 						displaying_term = !displaying_term;
 					}
 					else if (event.key.code == sf::Keyboard::F5) {
-						step_bot();
+						if (!auto_step_bot) {
+							step_bot();
+						}
 					}
 					else if (event.key.code == sf::Keyboard::F4) {
 						auto_step_bot = !auto_step_bot;
+						if (auto_step_bot) {
+							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
+							terminal_commands::run_model(arg);
+						} else {
+							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
+							terminal_commands::stop_model(arg);
+						}
 					}
 					break;
 				case sf::Event::Resized: {
@@ -165,10 +174,6 @@ void view::viewer::do_run() noexcept {
 			if (close_requested) {
 				local_window.close();
 			}
-		}
-
-		if (auto_step_bot && !(current_frame() % 15)) {
-			step_bot();
 		}
 
 		local_window.clear();

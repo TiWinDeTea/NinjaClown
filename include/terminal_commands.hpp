@@ -68,6 +68,8 @@ public:
 	static void load_shared_library(argument_type &);
 	static void load_map(argument_type &);
 	static void update_world(argument_type &);
+	static void run_model(argument_type &);
+	static void stop_model(argument_type &);
 	static void set(argument_type &);
 	static void valueof(argument_type &);
 

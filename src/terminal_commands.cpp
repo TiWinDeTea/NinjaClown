@@ -204,6 +204,14 @@ void terminal_commands::update_world(argument_type &arg) {
 	arg.val.m_model.world.update(arg.val.m_adapter);
 }
 
+void terminal_commands::run_model(argument_type &arg) {
+	arg.val.m_model.run();
+}
+
+void terminal_commands::stop_model(argument_type &arg) {
+	arg.val.m_model.stop();
+}
+
 void terminal_commands::set(argument_type &arg) {
 	auto show_usage = [&]() {
 		arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());

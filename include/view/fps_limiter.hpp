@@ -10,7 +10,8 @@
 namespace view {
 class fps_limiter {
 public:
-	fps_limiter() noexcept {}
+	fps_limiter() noexcept {};
+	explicit fps_limiter(unsigned int target_fps) noexcept: m_target_fps{target_fps} {}
 
 	// Do not call this method concurrently with itself or with .wait
 	void start_now() noexcept {

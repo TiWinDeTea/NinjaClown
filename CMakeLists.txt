@@ -22,6 +22,7 @@ add_executable(ninja-clown ${OPTIONS}
 
 		src/model/button.cpp
 		src/model/world.cpp
+		src/model/model.cpp
 
 		src/utils/dll.cpp
 		src/utils/resource_manager.cpp

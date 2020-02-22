@@ -22,7 +22,7 @@ state::holder::holder(const std::filesystem::path &config) noexcept
     : m_command_manager{build_commands_manager()}
     , resources{configure_resources(config)}
     , m_terminal{*this, "Terminal", 0, 0, m_command_manager}
-    , m_model{}
+    , m_model{this}
     , m_view{this}
     , m_adapter{this} {
 	m_command_manager->load_commands(resources);

@@ -60,6 +60,15 @@ class access<view::viewer> {
 };
 
 template <>
+class access<model::model> {
+	static adapter::adapter &adapter(holder &holder) noexcept {
+		return holder.m_adapter;
+	}
+
+	friend model::model;
+};
+
+template <>
 class access<adapter::adapter> {
 	static model::model &model(holder &holder) noexcept {
 		return holder.m_model;
