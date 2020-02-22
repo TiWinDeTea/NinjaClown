@@ -1,5 +1,7 @@
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     add_compile_definitions(OS_WINDOWS)
+    add_compile_definitions(NOMINMAX)
+
     set(CONFIG_OS_WINDOWS 1)
     if (MSVC)
         set(OPTIONS WIN32)
