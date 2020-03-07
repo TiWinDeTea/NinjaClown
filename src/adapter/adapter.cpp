@@ -4,8 +4,8 @@
 #include "adapter/adapter.hpp"
 
 #include "model/cell.hpp"
-#include "view/facing_dir.hpp"
 #include "state_holder.hpp"
+#include "view/facing_dir.hpp"
 
 namespace {}
 
@@ -15,8 +15,8 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		return false;
 	}
 
-	view::viewer &view   = state::access<adapter>::view(m_state);
-	model::world &world  = state::access<adapter>::model(m_state).world;
+	view::viewer &view  = state::access<adapter>::view(m_state);
+	model::world &world = state::access<adapter>::model(m_state).world;
 
 	view.acquire_overmap()->clear();
 
@@ -63,22 +63,26 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				}
 				case '@': {
+					const float ninja_hitbox_height = 1.f;
+					const float ninja_hitbox_width = 1.f;
+
 					ninja_clown_not_found                             = false;
 					world.ninja_clown_handle                          = next_entity_handle++;
 					world.components.health[world.ninja_clown_handle] = {1};
-					world.components.hitbox[world.ninja_clown_handle] = {static_cast<float>(column), static_cast<float>(row), 1.f, 1.f};
-					world.components.angle[world.ninja_clown_handle]  = {0.f};
+					world.components.hitbox[world.ninja_clown_handle]
+					  = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width, ninja_hitbox_height};
+					world.components.angle[world.ninja_clown_handle] = {0.f};
 
 					view::mob m{};
 					m.set_animations(m_state.resources.mob_animations(utils::resource_manager::mob_id::player).value());
 					m.set_direction(view::facing_direction::E);
-					m.set_pos(static_cast<float>(column), static_cast<float>(row));
+					m.set_pos(static_cast<float>(column) + ninja_hitbox_width / 2.f, static_cast<float>(row) + ninja_hitbox_height);
 
-                    view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
-                    model_handle model_handle{world.ninja_clown_handle};
+					view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
+					model_handle model_handle{world.ninja_clown_handle};
 					m_model2view[model_handle] = view_handle;
 					m_view2model[view_handle]  = model_handle;
-					cell.type           = model::cell_type::GROUND;
+					cell.type                  = model::cell_type::GROUND;
 					break;
 				}
 				case 'D':
@@ -120,7 +124,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 }
 
 void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
-	view::viewer& view = state::access<adapter>::view(m_state);
+	view::viewer &view = state::access<adapter>::view(m_state);
 
 	view::map::cell current_cell = view.acquire_map()->m_cells[x][y];
 	view::map::cell output_cell;
@@ -139,7 +143,7 @@ void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell)
 }
 
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
-    view::viewer& view = state::access<adapter>::view(m_state);
+	view::viewer &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
@@ -150,10 +154,10 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 }
 
 void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
-    view::viewer& view = state::access<adapter>::view(m_state);
+	view::viewer &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
-        spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
+		spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
 		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 	}
 	else {
@@ -162,7 +166,7 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 }
 
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
-	model::world& world = state::access<adapter>::model(m_state).world;
+	model::world &world = state::access<adapter>::model(m_state).world;
 
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
 		auto &components = world.components;

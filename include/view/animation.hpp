@@ -33,7 +33,7 @@ public:
 
 	shifted_animation() noexcept(noexcept(std::vector<sf::Sprite>{})) = default;
 	shifted_animation(shifted_animation &&) noexcept                  = default;
-	shifted_animation(animation &&o) noexcept
+	explicit shifted_animation(animation &&o) noexcept
 	    : m_frames{std::move(o.m_frames)} {}
 
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;

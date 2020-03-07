@@ -13,6 +13,7 @@
             frame-count = 1
             pos.x = 0
             pos.y = 62
+            shift.y = -62
             width = 42
             height = 56
 
@@ -20,6 +21,7 @@
             frame-count = 1
             pos.x = 71
             pos.y = 62
+            shift.y = -62
             width = 41
             height = 56
 
@@ -27,6 +29,7 @@
             frame-count = 1
             pos.x = 113
             pos.y = 62
+            shift.y = -62
             width = 29
             height = 56
 
@@ -34,6 +37,7 @@
             frame-count = 1
             pos.x = 42
             pos.y = 62
+            shift.y = -62
             width = 29
             height = 56
 

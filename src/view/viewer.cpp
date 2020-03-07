@@ -14,7 +14,6 @@
 
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
-#include "utils/visitor.hpp"
 
 #include "view/viewer.hpp"
 

@@ -23,16 +23,16 @@ struct hitbox {
 	float width;
 	float height;
 
-	float right_x() const {
+	[[nodiscard]] float right_x() const {
 		return x + width;
 	}
-	float bottom_y() const {
+	[[nodiscard]] float bottom_y() const {
 		return y + height;
 	}
-	float center_x() const {
+	[[nodiscard]] float center_x() const {
 		return x + (width / 2);
 	}
-	float center_y() const {
+	[[nodiscard]] float center_y() const {
 		return y + (height / 2);
 	}
 };

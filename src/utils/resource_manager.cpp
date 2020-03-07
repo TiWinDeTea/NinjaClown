@@ -7,16 +7,17 @@ using utils::optional;
 using utils::resource_manager;
 
 namespace {
-std::shared_ptr<cpptoml::table> parse_file(const std::string& path) {
-    try {
-        return cpptoml::parse_file(path);
-    } catch (const cpptoml::parse_exception&) {
-        return {};
-    }
+std::shared_ptr<cpptoml::table> parse_file(const std::string &path) {
+	try {
+		return cpptoml::parse_file(path);
+	}
+	catch (const cpptoml::parse_exception &) {
+		return {};
+	}
 }
 
-auto parse_file(const std::filesystem::path& path) {
-    return parse_file(path.generic_string());
+auto parse_file(const std::filesystem::path &path) {
+	return parse_file(path.generic_string());
 }
 
 constexpr const char lang_folder[] = "lang/";
@@ -130,12 +131,11 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 
 } // namespace
 
-bool resource_manager::load_config(const std::filesystem::path &path) noexcept
-{
+bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	auto config = parse_file(path.generic_u8string());
 	if (!config) {
-	    spdlog::error("OHNO"); // TODO
-	    return false;
+		spdlog::error("OHNO"); // TODO
+		return false;
 	}
 	return load_graphics(config) && load_texts(config, path.parent_path());
 }
@@ -164,8 +164,7 @@ optional<const view::mob_animations &> resource_manager::mob_animations(mob_id m
 	return {it->second};
 }
 
-std::optional<std::pair<std::string_view, std::string_view>> resource_manager::text_for(command_id cmd) const noexcept
-{
+std::optional<std::pair<std::string_view, std::string_view>> resource_manager::text_for(command_id cmd) const noexcept {
 	auto it = m_commands_strings.find(cmd);
 	if (it == m_commands_strings.end()) {
 		return {};
@@ -173,8 +172,7 @@ std::optional<std::pair<std::string_view, std::string_view>> resource_manager::t
 	return {it->second};
 }
 
-bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept
-{
+bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {
 	config = config->get_table(config_keys::graphics);
 	if (!config) {
 		spdlog::critical("{}: \"{}\" {}", error_msgs::loading_failed, config_keys::graphics, error_msgs::missing_table);
@@ -270,7 +268,13 @@ bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_
 	if (!anim) {
 		return false;
 	}
-	anims.add_animation(std::move(*anim), dir);
+
+	namespace spr = config_keys::sprites;
+	view::shifted_animation shifted_anim{std::move(*anim)};
+	shifted_anim.set_shift(mob_anim_config->get_qualified_as<int>(spr::xshift).value_or(0),
+	                       mob_anim_config->get_qualified_as<int>(spr::yshift).value_or(0));
+
+	anims.add_animation(std::move(shifted_anim), dir);
 	return true;
 }
 
@@ -461,8 +465,8 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 	return success;
 }
 
-bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept
-{
+bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
+                                  const std::filesystem::path &resources_directory) noexcept {
 	namespace user = config_keys::user;
 
 	auto lang_config = config->get_table(config_keys::user::main_table);
@@ -483,17 +487,16 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 		commands_lang = general_lang;
 	}
 
-	auto path = resources_directory / lang_folder / (*commands_lang + ".toml");
+	auto path               = resources_directory / lang_folder / (*commands_lang + ".toml");
 	auto commands_text_file = parse_file(path.generic_string());
 	if (!commands_text_file) {
-	    spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
-	    return false;
+		spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
+		return false;
 	}
 	return load_command_texts(commands_text_file);
 }
 
-bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept
-{
+bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
 	namespace cmds = config_keys::lang::internal::commands;
 
 	bool result = true;
@@ -511,14 +514,14 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 		if (!name) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::name,
 			              error_msgs::missing_key);
-            result = false;
-            continue;
+			result = false;
+			continue;
 		}
 		if (!desc) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::description,
 			              error_msgs::missing_key);
-            result = false;
-            continue;
+			result = false;
+			continue;
 		}
 
 		m_commands_strings.emplace(static_cast<command_id>(i), std::pair{*name, *desc});
@@ -526,8 +529,7 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 	return true;
 }
 
-sf::Texture *resource_manager::get_texture(const std::string &file) noexcept
-{
+sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
 	auto it = m_textures_by_file.find(file);
 	if (it != m_textures_by_file.end()) {
 		return it->second;

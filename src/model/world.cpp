@@ -80,5 +80,5 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 		}
 	}
 
-	adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->x, components.hitbox[handle]->y);
+	adapter.move_entity(adapter::model_handle{handle}, components.hitbox[handle]->center_x(), components.hitbox[handle]->bottom_y());
 }
