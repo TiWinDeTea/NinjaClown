@@ -125,6 +125,10 @@ void view::viewer::do_run() noexcept {
 					break;
 				}
 				case sf::Event::MouseWheelScrolled:
+					if (displaying_term && terminal.get_size().y > event.mouseWheelScroll.y) {
+						break;
+					}
+
 					if (event.mouseWheelScroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
 						const auto MOUSE_POS = to_viewport_coord(sf::Vector2i{event.mouseWheelScroll.x, event.mouseWheelScroll.y});
 
