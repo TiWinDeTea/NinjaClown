@@ -2,7 +2,8 @@
 #include "state_holder.hpp"
 #include <spdlog/spdlog.h>
 
-model::model::model(state::holder *state_holder) noexcept: m_state_holder{*state_holder} {};
+model::model::model(state::holder *state_holder) noexcept
+    : m_state_holder{*state_holder} {};
 
 [[nodiscard]] bool model::model::load_dll(std::string dll_path) noexcept {
 	return m_dll.load(std::move(dll_path));

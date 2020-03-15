@@ -30,17 +30,17 @@ bot::cell **NINJACLOWN_CALLCONV vision([[maybe_unused]] void *model) {
 
 float NINJACLOWN_CALLCONV get_angle(void *model) {
 	auto data = reinterpret_cast<model::model *>(model);
-	return data->world.components.angle[ninja_clown_handle(data)]->rad;
+	return data->world.components.hitbox[ninja_clown_handle(data)]->rad;
 }
 
 float NINJACLOWN_CALLCONV get_x_position(void *model) {
 	auto data = reinterpret_cast<model::model *>(model);
-	return data->world.components.hitbox[ninja_clown_handle(data)]->center_x();
+	return data->world.components.hitbox[ninja_clown_handle(data)]->center.x;
 }
 
 float NINJACLOWN_CALLCONV get_y_position(void *model) {
 	auto data = reinterpret_cast<model::model *>(model);
-	return data->world.components.hitbox[ninja_clown_handle(data)]->center_y();
+	return data->world.components.hitbox[ninja_clown_handle(data)]->center.y;
 }
 
 void NINJACLOWN_CALLCONV turn_right(void *model) {

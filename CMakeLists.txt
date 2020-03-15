@@ -21,7 +21,9 @@ add_executable(ninja-clown ${OPTIONS}
 		src/bot/bot_dll.cpp
 
 		src/model/button.cpp
+		src/model/collision.cpp
 		src/model/world.cpp
+		src/model/vec2.cpp
 		src/model/model.cpp
 
 		src/utils/dll.cpp

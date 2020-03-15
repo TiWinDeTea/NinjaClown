@@ -1,22 +1,23 @@
 #ifndef NINJACLOWN_GRID_HPP
 #define NINJACLOWN_GRID_HPP
 
+#include <algorithm> // std::minmax
+#include <cassert>
 #include <iterator> // std::input_iterator_tag
 #include <vector>
-#include <algorithm>
-#include <cassert>
 
 #include "cell.hpp"
+#include "collision.hpp"
 
 namespace model {
 
-template<typename T>
+template <typename T>
 class grid_iterator {
 	using iterator_category = std::input_iterator_tag;
-	using value_type = T;
-	using difference_type = std::pair<int, int>;
-	using pointer = T*;
-	using reference = T&;
+	using value_type        = T;
+	using difference_type   = std::pair<int, int>;
+	using pointer           = T *;
+	using reference         = T &;
 
 public:
 	grid_iterator(std::vector<std::vector<cell>> &grid, size_t start_x, size_t start_y, size_t target_x, size_t target_y)
@@ -136,6 +137,13 @@ public:
 		assert(left_x < right_x);
 		assert(top_y < bottom_y);
 		return grid_view{m_inner, left_x, top_y, std::min(m_inner.size(), right_x), std::min(m_inner[0].size(), bottom_y)};
+	}
+
+	grid_view subgrid(const bounding_box &box) {
+		auto [min_x, max_x] = std::minmax({box.tl.x, box.br.x, box.bl.x, box.tr.x});
+		auto [min_y, max_y] = std::minmax({box.tl.y, box.br.y, box.bl.y, box.tr.y});
+		return subgrid(static_cast<size_t>(min_x), static_cast<size_t>(min_y), static_cast<size_t>(max_x) + 1,
+		               static_cast<size_t>(max_y) + 1);
 	}
 
 	grid_view radius(float center_x, float center_y, float radius) {

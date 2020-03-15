@@ -2,8 +2,8 @@
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
-
 #include "model/cell.hpp"
+#include "model/components.hpp"
 #include "state_holder.hpp"
 #include "view/facing_dir.hpp"
 
@@ -69,9 +69,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					ninja_clown_not_found                             = false;
 					world.ninja_clown_handle                          = next_entity_handle++;
 					world.components.health[world.ninja_clown_handle] = {1};
-					world.components.hitbox[world.ninja_clown_handle]
-					  = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width, ninja_hitbox_height};
-					world.components.angle[world.ninja_clown_handle] = {0.f};
+					world.components.hitbox[world.ninja_clown_handle] = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
 
 					view::mob m{};
 					m.set_animations(m_state.resources.mob_animations(utils::resource_manager::mob_id::player).value());
@@ -177,21 +175,20 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			if (components.health[handle]) {
 				ImGui::Text("Current HP: %u", components.health[handle]->points);
 			}
-			if (components.angle[handle]) {
-				ImGui::Text("Current angle: %f", components.angle[handle]->rad);
-			}
 			if (components.decision[handle]) { // FIXME: this component is reset before this function call
 				ImGui::Text("Current decision: %s", to_string(*components.decision[entity.handle]));
 			}
 			if (components.hitbox[handle]) {
-				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", components.hitbox[handle]->x, components.hitbox[handle]->y,
-				            components.hitbox[handle]->right_x(), components.hitbox[handle]->bottom_y());
+				model::vec2 top_left = components.hitbox[handle]->top_left();
+				model::vec2 bottom_right = components.hitbox[handle]->bottom_right();
+				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", top_left.x, top_left.y, bottom_right.x, bottom_right.y);
+				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
 			}
 			ImGui::EndTooltip();
 
 			if (components.hitbox[handle]) {
 				const auto &box = *components.hitbox[handle];
-				return request::hitbox{box.x, box.y, box.width, box.height};
+				return request::hitbox{box.center.x - 1.f, box.center.y - 2.f, 2.f, 2.f};
 			}
 		}
 		else {
