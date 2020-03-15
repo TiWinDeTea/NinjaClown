@@ -14,6 +14,7 @@
 #include <array>
 #include <charconv>
 #include <filesystem>
+#include <utils/visitor.hpp>
 
 namespace {
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
@@ -44,6 +45,16 @@ constexpr std::array local_command_list{
   cmd{command_id::update_world, terminal_commands::update_world, terminal_commands::no_completion},
   cmd{command_id::set, terminal_commands::set, terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
   cmd{command_id::valueof, terminal_commands::valueof, terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
+
+bool as_bool(std::string_view str) {
+	std::optional<int> int_val = utils::from_chars<int>(str);
+	if (int_val) {
+		return *int_val != 0;
+	}
+	else {
+		return str == "true";
+	}
+}
 } // namespace
 
 void terminal_commands::load_commands(const utils::resource_manager &resources) noexcept {
@@ -166,7 +177,7 @@ void terminal_commands::help(argument_type &arg) {
 	}
 
 	arg.term.add_text("");
-	arg.term.add_text("Additional information might be available using \"'command' --help\"");
+	arg.term.add_text("Additional information might be available using \"'command' --help\""); // todo externaliser
 }
 
 void terminal_commands::quit(argument_type &arg) {
@@ -175,18 +186,18 @@ void terminal_commands::quit(argument_type &arg) {
 
 void terminal_commands::load_shared_library(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
-		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path>");
+		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path>"); // todo externaliser
 		return;
 	}
 
 	std::string shared_library_path = arg.command_line[1];
-	arg.term.add_text("loading " + shared_library_path);
+	arg.term.add_text("loading " + shared_library_path); // todo externaliser
 
 	if (arg.val.m_model.load_dll(shared_library_path)) {
 		arg.val.m_model.bot_init(bot::make_api());
 	}
 	else {
-		arg.term.add_text("error loading dll");
+		arg.term.add_text("error loading dll"); // todo externaliser
 	}
 }
 
@@ -213,77 +224,69 @@ void terminal_commands::stop_model(argument_type &arg) {
 }
 
 void terminal_commands::set(argument_type &arg) {
-	auto show_usage = [&]() {
-		arg.term.add_formatted("usage: {} <variable> <integer value>", arg.command_line.front());
-	};
-
-	// todo: utiliser le gestionnaire de resources pour les noms
-	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 3) {
-		auto value = utils::from_chars<int>(arg.command_line.back());
-		if ("display_debug_data" == arg.command_line[1]) {
-			if (value && *value != 0 && *value != 1) {
-				arg.term.add_text("display_debug_data must be either 0 (no) or 1 (yes)");
-			}
-			else {
-				if (value) {
-					arg.val.m_view.show_debug_data = (*value == 1);
-				}
-				else {
-					if (arg.command_line.back() == "true") {
-						arg.val.m_view.show_debug_data = true;
-					}
-					else if (arg.command_line.back() == "false") {
-						arg.val.m_view.show_debug_data = false;
-					}
-					else {
-						show_usage();
-					}
-				}
-			}
+		auto it = arg.val.properties.find(arg.command_line[1]);
+		if (it == arg.val.properties.end()) {
+			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line[1]); // TODO externaliser
 			return;
 		}
-		if ("target_fps" == arg.command_line[1]) {
-			if (!value) {
-				show_usage();
-				return;
-			}
-			if (*value < 0) {
-				arg.term.add_text("target_fps must be positive");
-			}
-			else {
-				arg.val.m_view.target_fps(*value);
-			}
-			return;
-		}
-		if ("average_fps" == arg.command_line[1]) {
-			arg.term.add_text("average_fps can not be set");
-			return;
-		}
-	}
 
-	show_usage();
+		utils::visitor property_visitor{[&](state::property::proxy<unsigned int> &p) {
+			                                std::optional<unsigned int> value = utils::from_chars<unsigned int>(arg.command_line.back());
+			                                if (value) {
+				                                p.set(*value);
+			                                } else {
+				                                arg.term.add_formatted_err("{} is not an unsigned integer.", arg.command_line.back()); // TODO externaliser
+			                                }
+		                                },
+		                                [&](state::property::proxy<std::atomic_bool> &p) {
+			                                p.set(as_bool(arg.command_line.back()));
+		                                }};
+		utils::visitor property_dispatcher{[&](const state::property::readonly_property & /* ignored*/) {
+			                                   arg.term.add_formatted_err("Error: {} is read-only",
+			                                                              arg.command_line.back()); // TODO externaliser
+		                                   },
+		                                   [&](state::property::settable_property p) {
+			                                   std::visit(property_visitor, p);
+		                                   }};
+
+		std::visit(property_dispatcher, it->second.data());
+	} else {
+		arg.term.add_formatted("usage: {} <variable> <value>", arg.command_line.front()); // TODO externaliser
+	}
 }
 
 void terminal_commands::valueof(argument_type &arg) {
-	// todo: utiliser le gestionnaire de resources pour les noms
-	// todo: std::map & lower_bound + higher_bound, ptr vers fonctions
 	if (arg.command_line.size() == 2) {
-		if ("average_fps" == arg.command_line.back()) {
-			arg.term.add_formatted("average fps: {:.1f}", arg.val.m_view.average_fps());
+		auto it = arg.val.properties.find(arg.command_line.back());
+		if (it == arg.val.properties.end()) {
+			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line.back()); // TODO externaliser
 			return;
 		}
-		if ("target_fps" == arg.command_line.back()) {
-			arg.term.add_formatted("max fps: {}", arg.val.m_view.target_fps());
-			return;
-		}
-		if ("display_debug_data" == arg.command_line.back()) {
-			arg.term.add_formatted("display debug data: {}", arg.val.m_view.show_debug_data.load());
-			return;
-		}
-	}
 
-	arg.term.add_formatted("usage: {} <variable>", arg.command_line.front());
+		auto display_var = [&](const auto &var) {
+			arg.term.add_formatted("{} : {}", arg.command_line.back(), var);
+		};
+		utils::visitor property_visitor{[&](const state::property::proxy<unsigned int> &p) {
+			                                display_var(p.get());
+		                                },
+		                                [&](const state::property::proxy<std::atomic_bool> &p) {
+			                                display_var(p.get());
+		                                },
+		                                [&](float flt) {
+			                                display_var(flt);
+		                                }};
+		utils::visitor property_dispatcher{[&](const state::property::readonly_property &p) {
+			                                   std::visit(property_visitor, p);
+		                                   },
+		                                   [&](const state::property::settable_property &p) {
+			                                   std::visit(property_visitor, p);
+		                                   }};
+
+		std::visit(property_dispatcher, it->second.data());
+	} else {
+		arg.term.add_formatted("usage: {} <variable>", arg.command_line.front()); // TODO externaliser
+	}
 }
 
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg,
@@ -348,15 +351,9 @@ std::vector<std::string> terminal_commands::autocomplete_variable(argument_type 
 		return ans;
 	}
 
-	// todo: utiliser le gestionnaire de resources pour les noms
-	if (utils::starts_with("average_fps", arg.command_line.back())) { // todo: std::map + lower_bound & higher_bound
-		ans.emplace_back("average_fps");
-	}
-	if (utils::starts_with("target_fps", arg.command_line.back())) {
-		ans.emplace_back("target_fps");
-	}
-	if (utils::starts_with("display_debug_data", arg.command_line.back())) {
-		ans.emplace_back("display_debug_data");
+	auto it = arg.val.properties.lower_bound(arg.command_line.back());
+	while (it != arg.val.properties.end() && utils::starts_with(it->first, arg.command_line.back())) {
+		ans.emplace_back(it++->first);
 	}
 	return ans;
 }

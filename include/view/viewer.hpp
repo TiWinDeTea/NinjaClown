@@ -111,6 +111,7 @@ private:
 	sf::FloatRect m_viewport{};
 
 	fps_limiter m_fps_limiter{};
+
 };
 } // namespace view
 
