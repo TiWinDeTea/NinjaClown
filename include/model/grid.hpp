@@ -37,7 +37,7 @@ public:
 		return *this;
 	}
 
-	const grid_iterator operator++(int) {
+	grid_iterator operator++(int) {
 		grid_iterator tmp(*this);
 		operator++();
 		return tmp;
@@ -66,7 +66,7 @@ public:
 	using reference       = cell &;
 	using const_reference = cell const &;
 	using iterator        = grid_iterator<cell>;
-	using const_iterator  = const grid_iterator<const cell>;
+	using const_iterator  = grid_iterator<const cell>;
 	using difference_type = std::pair<std::int64_t, std::int64_t>;
 	using size_type       = std::pair<size_t, size_t>;
 
@@ -81,11 +81,13 @@ public:
 		return grid_iterator<cell>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
-	const_iterator begin() const {
+    [[nodiscard]]
+    const_iterator begin() const {
 		return grid_iterator<const cell>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
 	}
 
-	const_iterator cbegin() const {
+    [[nodiscard]]
+    const_iterator cbegin() const {
 		return begin();
 	}
 
@@ -93,11 +95,13 @@ public:
 		return grid_iterator<cell>{m_grid, m_left_x, m_bottom_y, std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()};
 	}
 
+	[[nodiscard]]
 	const_iterator end() const {
 		return grid_iterator<const cell>{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
 	}
 
-	const_iterator cend() const {
+    [[nodiscard]]
+    const_iterator cend() const {
 		return end();
 	}
 
@@ -119,26 +123,38 @@ public:
 		for (auto &column : m_inner) {
 			column.resize(height);
 		}
+		m_width = width;
+		m_height = height;
 	}
 
+	[[nodiscard]]
 	std::vector<cell> &operator[](size_t column) {
 		return m_inner[column];
 	}
 
+    [[nodiscard]]
 	const std::vector<cell> &operator[](size_t column) const {
 		return m_inner[column];
 	}
 
-	size_t size() const {
-		return m_inner.size();
-	}
+    [[nodiscard]]
+    size_t width() const {
+        return m_width;
+    }
 
+    [[nodiscard]]
+    size_t height() const {
+        return m_height;
+    }
+
+	[[nodiscard]]
 	grid_view subgrid(size_t left_x, size_t top_y, size_t right_x, size_t bottom_y) {
 		assert(left_x < right_x);
 		assert(top_y < bottom_y);
 		return grid_view{m_inner, left_x, top_y, std::min(m_inner.size(), right_x), std::min(m_inner[0].size(), bottom_y)};
 	}
 
+    [[nodiscard]]
 	grid_view subgrid(const bounding_box &box) {
 		auto [min_x, max_x] = std::minmax({box.tl.x, box.br.x, box.bl.x, box.tr.x});
 		auto [min_y, max_y] = std::minmax({box.tl.y, box.br.y, box.bl.y, box.tr.y});
@@ -146,6 +162,7 @@ public:
 		               static_cast<size_t>(max_y) + 1);
 	}
 
+    [[nodiscard]]
 	grid_view radius(float center_x, float center_y, float radius) {
 		auto start_x  = static_cast<size_t>(std::max(0.5f, center_x - radius));
 		auto start_y  = static_cast<size_t>(std::max(0.5f, center_y - radius));
@@ -156,6 +173,8 @@ public:
 	}
 
 private:
+    size_t m_width{0};
+    size_t m_height{0};
 	std::vector<std::vector<cell>> m_inner{};
 };
 

@@ -11,6 +11,7 @@ struct bot_api; // forward declaration
 
 using init_fn_type  = void(NINJACLOWN_CALLCONV *)(bot_api);
 using think_fn_type = void(NINJACLOWN_CALLCONV *)();
+using destroy_fn_type = void(NINJACLOWN_CALLCONV *)();
 
 struct bot_dll {
 	bot_dll() noexcept = default;
@@ -26,6 +27,7 @@ struct bot_dll {
 
 	void bot_init(bot_api api) noexcept;
 	void bot_think() noexcept;
+    void bot_destroy() noexcept;
 
 private:
 	[[nodiscard]] bool load_all_api_functions();
@@ -39,6 +41,7 @@ private:
 
 	init_fn_type m_init_fn{};
 	think_fn_type m_think_fn{};
+    destroy_fn_type m_destroy_fn{};
 };
 } // namespace bot
 

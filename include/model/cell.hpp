@@ -8,9 +8,9 @@
 namespace model {
 
 enum class cell_type {
-	CHASM  = 0,
-	GROUND = 1,
-	WALL   = 2,
+	CHASM  = 1,
+	GROUND = 2,
+	WALL   = 3,
 };
 
 struct cell {

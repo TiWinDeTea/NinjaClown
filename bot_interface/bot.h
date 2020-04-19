@@ -10,23 +10,27 @@
 #endif
 
 #ifdef __cplusplus
+#include <cstddef>
 namespace bot {
 extern "C" {
+#else
+#include <stddef.h>
 #endif
 
 enum cell_type {
-	CHASM  = 0,
-	GROUND = 1,
-	WALL   = 2,
+    UNKNOWN = 0,
+	CHASM   = 1,
+	GROUND  = 2,
+	WALL    = 3,
 };
 
 enum interaction_kind {
-	LIGHT_MANUAL   = 0, // character or thrown item can interact
-	HEAVY_MANUAL   = 1, // only a character can interact
-	LIGHT_MIDAIR   = 2, // character or thrown item in the cell cause interaction
-	HEAVY_MIDAIR   = 3, // only character in the cell cause interaction
-	WALK_ON_GROUND = 4, // only non-floating character in the cell cause interaction
-	NO_INTERACTION = 10, // not an interactive cell
+    NO_INTERACTION = 0, // not an interactive cell
+	LIGHT_MANUAL   = 1, // character or thrown item can interact
+	HEAVY_MANUAL   = 2, // only a character can interact
+	LIGHT_MIDAIR   = 3, // character or thrown item in the cell cause interaction
+	HEAVY_MIDAIR   = 4, // only character in the cell cause interaction
+	WALK_ON_GROUND = 5, // only non-floating character in the cell cause interaction
 };
 
 struct cell {
@@ -39,7 +43,10 @@ struct bot_api {
 
 	void(NINJACLOWN_CALLCONV *log)(const char *);
 
-	struct cell **(NINJACLOWN_CALLCONV *vision)(void *ninja_data);
+    size_t(NINJACLOWN_CALLCONV *map_width)(void* ninja_data);
+    size_t(NINJACLOWN_CALLCONV *map_height)(void* ninja_data);
+	void(NINJACLOWN_CALLCONV *map_scan)(void *ninja_data, struct cell *map_view);
+    void(NINJACLOWN_CALLCONV *map_update)(void *ninja_data, struct cell *map_view);
 
 	float(NINJACLOWN_CALLCONV *get_angle)(void *ninja_data);
 	float(NINJACLOWN_CALLCONV *get_x_position)(void *ninja_data);

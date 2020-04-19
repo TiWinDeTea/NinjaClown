@@ -60,11 +60,16 @@ void bot::bot_dll::bot_think() noexcept {
 	m_think_fn();
 }
 
+void bot::bot_dll::bot_destroy() noexcept {
+    m_destroy_fn();
+}
+
 bool bot::bot_dll::load_all_api_functions() {
 	bool good;
 
 	good = try_load_function(m_init_fn, "bot_init");
 	good = try_load_function(m_think_fn, "bot_think") && good;
+    good = try_load_function(m_destroy_fn, "bot_destroy") && good;
 
 	return good;
 }

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
 #include "bot_interface/bot.h"
 
@@ -28,7 +28,7 @@ void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think()
 	} else if (ninja_get_x() > 7.5) {
 		ninja_move_forward();
 	} else {
-		ninja_activate_button();
+        ninja_activate_button();
 		finished = 1;
 	}
 }

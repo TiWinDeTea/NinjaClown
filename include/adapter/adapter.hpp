@@ -3,6 +3,8 @@
 
 #include <filesystem>
 #include <unordered_map>
+#include <set>
+#include <vector>
 #include <variant>
 
 namespace model {
@@ -70,6 +72,9 @@ public:
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
+
+public:
+    std::vector<std::pair<size_t, size_t>> cells_changed_since_last_update{};
 
 private:
 	state::holder &m_state;

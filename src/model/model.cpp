@@ -54,7 +54,11 @@ void model::model::do_run() noexcept {
 
 	while (m_state != thread_state::stopping) {
 		bot_think();
-		world.update(state::access<model>::adapter(m_state_holder));
+
+        adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
+        adapter.cells_changed_since_last_update.clear();
+		world.update(adapter);
+
 		m_fps_limiter.wait();
 
         if (m_state == thread_state::waiting) {

@@ -24,7 +24,10 @@ bot::bot_api bot::make_api(Funcs &&... funcs) {
 
 	api.log = &ffi::log;
 
-	api.vision = &ffi::vision;
+    api.map_width = &ffi::map_width;
+    api.map_height = &ffi::map_height;
+	api.map_scan = &ffi::map_scan;
+	api.map_update = &ffi::map_update;
 
 	api.get_angle      = &ffi::get_angle;
 	api.get_x_position = &ffi::get_x_position;

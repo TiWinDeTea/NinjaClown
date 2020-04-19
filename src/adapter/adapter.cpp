@@ -122,6 +122,8 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 }
 
 void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
+	cells_changed_since_last_update.emplace_back(x, y);
+
 	view::viewer &view = state::access<adapter>::view(m_state);
 
 	view::map::cell current_cell = view.acquire_map()->m_cells[x][y];
@@ -205,6 +207,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	}
 	return {};
 }
+
 size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
 	if (h.is_mob) {
 		return h.handle;

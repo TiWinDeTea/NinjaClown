@@ -7,7 +7,10 @@ namespace bot::ffi {
 
 void NINJACLOWN_CALLCONV log(const char *text);
 
-bot::cell **NINJACLOWN_CALLCONV vision(void* ninja_data);
+size_t NINJACLOWN_CALLCONV map_width(void* ninja_data);
+size_t NINJACLOWN_CALLCONV map_height(void* ninja_data);
+void NINJACLOWN_CALLCONV map_scan(void* ninja_data, bot::cell *map_view);
+void NINJACLOWN_CALLCONV map_update(void* ninja_data, bot::cell *map_view);
 
 float NINJACLOWN_CALLCONV get_angle(void* ninja_data);
 float NINJACLOWN_CALLCONV get_x_position(void* ninja_data);

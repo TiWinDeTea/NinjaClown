@@ -23,9 +23,30 @@ void NINJACLOWN_CALLCONV log(const char *text) {
 	spdlog::info("{}", text);
 }
 
-bot::cell **NINJACLOWN_CALLCONV vision([[maybe_unused]] void *model) {
-	spdlog::warn("bot attempted to use vision function, but this isn't supported yet");
-	return nullptr;
+size_t NINJACLOWN_CALLCONV map_width(void *model) {
+    auto data = reinterpret_cast<model::model *>(model);
+    return data->world.grid.width();
+}
+
+size_t NINJACLOWN_CALLCONV map_height(void *model) {
+    auto data = reinterpret_cast<model::model *>(model);
+    return data->world.grid.height();
+}
+
+void NINJACLOWN_CALLCONV map_scan(void *model, bot::cell *map_view) {
+    auto data = reinterpret_cast<model::model *>(model);
+    model::grid_t& grid = data->world.grid;
+    for (const auto& cell : grid.subgrid(0, 0, grid.width(), grid.height())) {
+        map_view->type = static_cast<bot::cell_type>(cell.type);
+        if (cell.interaction_handle) {
+            map_view->interaction = static_cast<bot::interaction_kind>(data->world.interactions[*cell.interaction_handle].kind);
+        }
+        ++map_view;
+    }
+}
+
+void NINJACLOWN_CALLCONV map_update(void *model, bot::cell *map_view) {
+    spdlog::warn("map_update function is not implemented yet");
 }
 
 float NINJACLOWN_CALLCONV get_angle(void *model) {
