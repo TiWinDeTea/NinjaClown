@@ -27,7 +27,7 @@ class holder {
 	std::shared_ptr<terminal_commands> m_command_manager;
 
 public:
-	explicit holder(const std::filesystem::path &config) noexcept;
+	holder(const std::filesystem::path &config, const std::filesystem::path &autorun_script) noexcept;
 
 	void run() noexcept;
 
@@ -59,7 +59,7 @@ struct property {
 			return {[&val, set](const T &v) {
 				        std::invoke(set, val, v);
 			        },
-			        [&val, get] () -> const T& {
+			        [&val, get]() -> const T & {
 				        return std::invoke(get, val);
 			        }};
 		}
@@ -67,7 +67,7 @@ struct property {
 		using SetterType = std::conditional_t<std::is_same_v<T, std::atomic_bool>, bool, T>;
 
 		std::function<void(const SetterType &)> set;
-		std::function<const T&()> get;
+		std::function<const T &()> get;
 	};
 
 	using settable_property = std::variant<proxy<unsigned int>, proxy<std::atomic_bool>>;
@@ -81,7 +81,7 @@ struct property {
 	    }} { }
 
 	template <typename FuncT, typename... Args>
-	property(FuncT &&funct, Args&... args) {
+	property(FuncT &&funct, Args &... args) {
 		using ResultT     = std::invoke_result_t<FuncT &, Args &...>;
 		using ResultT_row = std::remove_const_t<std::remove_reference_t<ResultT>>;
 
@@ -90,7 +90,7 @@ struct property {
 				return any_property{settable_property{proxy<ResultT_row>{[&](const typename proxy<ResultT_row>::SetterType &val) mutable {
 					                                                         std::apply(funct, args) = val;
 				                                                         },
-				                                                         [&]() -> const ResultT_row& {
+				                                                         [&]() -> const ResultT_row & {
 					                                                         return std::apply(funct, args);
 				                                                         }}}};
 			};

@@ -1,6 +1,7 @@
 #include "state_holder.hpp"
 
 #include <spdlog/spdlog.h>
+#include <filesystem>
 
 namespace {
 utils::resource_manager configure_resources(const std::filesystem::path &config) {
@@ -18,7 +19,7 @@ std::shared_ptr<terminal_commands> build_commands_manager() {
 }
 } // namespace
 
-state::holder::holder(const std::filesystem::path &config) noexcept
+state::holder::holder(const std::filesystem::path &config, const std::filesystem::path &autorun_script) noexcept
     : m_command_manager{build_commands_manager()}
     , resources{configure_resources(config)}
     , m_terminal{*this, "Terminal", 0, 0, m_command_manager}
@@ -36,6 +37,13 @@ state::holder::holder(const std::filesystem::path &config) noexcept
 	properties.emplace("display_debug_data", property{&viewer::show_debug_data, m_view});
 
 	m_command_manager->load_commands(resources);
+	if (is_regular_file(autorun_script)) {
+		std::ifstream autorun{autorun_script};
+        std::string command_line;
+		while (getline(autorun, command_line)) {
+            m_terminal.execute(command_line);
+		}
+	}
 }
 
 void state::holder::run() noexcept {
