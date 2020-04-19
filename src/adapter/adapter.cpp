@@ -48,7 +48,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					cell.interaction_handle = {world.interactions.size()};
 					world.interactions.push_back(
 					  {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.buttons.size()});
-					world.buttons.push_back(model::button{4, 2});
+					world.buttons.push_back(model::button{4, 11});
 
 					view::object o{};
 					o.set_pos(static_cast<float>(column), static_cast<float>(row));
