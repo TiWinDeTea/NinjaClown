@@ -9,6 +9,8 @@ extern struct bot_api BOT;
 extern struct cell *MAP;
 extern size_t MAP_WIDTH;
 extern size_t MAP_HEIGHT;
+extern void(NINJACLOWN_CALLCONV *USER_START_LEVEL)();
+extern void(NINJACLOWN_CALLCONV *USER_DESTROY)();
 
 #define ninja_log(text)         BOT.log(text)
 #define ninja_map_scan()        BOT.map_scan(BOT.ninja_descriptor, MAP)
@@ -27,29 +29,34 @@ struct cell *ninja_get_cell(size_t column, size_t line) {
 }
 
 #ifdef NINJAHELPER_IMPLEMENT
-extern void(NINJACLOWN_CALLCONV *USER_START_LEVEL)();
-extern void(NINJACLOWN_CALLCONV *USER_END_LEVEL)();
-
 struct bot_api BOT;
 struct cell *MAP;
 size_t MAP_WIDTH;
 size_t MAP_HEIGHT;
 void(NINJACLOWN_CALLCONV *USER_START_LEVEL)() = NULL;
-void(NINJACLOWN_CALLCONV *USER_END_LEVEL)()   = NULL;
+void(NINJACLOWN_CALLCONV *USER_DESTROY)()     = NULL;
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_start_level(struct bot_api api) {
 	BOT = api;
+
+	if (MAP) {
+		free(MAP);
+	}
 
 	MAP_WIDTH  = api.map_width(api.ninja_descriptor);
 	MAP_HEIGHT = api.map_height(api.ninja_descriptor);
 	MAP        = calloc(MAP_WIDTH * MAP_HEIGHT, sizeof(struct cell));
 	ninja_map_scan();
 
-	USER_START_LEVEL();
+	if (USER_START_LEVEL) {
+		USER_START_LEVEL();
+	}
 }
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_destroy() {
-	USER_END_LEVEL();
+	if (USER_DESTROY) {
+		USER_DESTROY();
+	}
 
 	free(MAP);
 }
