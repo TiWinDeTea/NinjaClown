@@ -9,9 +9,10 @@
 namespace bot {
 struct bot_api; // forward declaration
 
-using init_fn_type  = void(NINJACLOWN_CALLCONV *)(bot_api);
-using think_fn_type = void(NINJACLOWN_CALLCONV *)();
-using destroy_fn_type = void(NINJACLOWN_CALLCONV *)();
+using init_fn_type        = void(NINJACLOWN_CALLCONV *)();
+using start_level_fn_type = void(NINJACLOWN_CALLCONV *)(bot_api);
+using think_fn_type       = void(NINJACLOWN_CALLCONV *)();
+using destroy_fn_type     = void(NINJACLOWN_CALLCONV *)();
 
 struct bot_dll {
 	bot_dll() noexcept = default;
@@ -25,23 +26,27 @@ struct bot_dll {
 	[[nodiscard]] bool load(std::string &&dll_path) noexcept;
 	[[nodiscard]] bool reload() noexcept;
 
-	void bot_init(bot_api api) noexcept;
+	void bot_init() noexcept;
+	void bot_start_level(bot_api api) noexcept;
 	void bot_think() noexcept;
-    void bot_destroy() noexcept;
+	void bot_destroy() noexcept;
 
 private:
 	[[nodiscard]] bool load_all_api_functions();
 
 	template <typename FuncPtr>
-	bool try_load_function(FuncPtr &ptr, const char *func_name);
+	bool try_load_function(FuncPtr &ptr, const char *func_name, bool required);
 
 	std::optional<std::string> m_dll_path{};
 	utils::dll m_dll{};
 	bool m_good{false};
 
 	init_fn_type m_init_fn{};
+	start_level_fn_type m_start_level_fn{};
 	think_fn_type m_think_fn{};
-    destroy_fn_type m_destroy_fn{};
+	destroy_fn_type m_destroy_fn{};
+
+	std::optional<bot_api> m_cached_bot_api;
 };
 } // namespace bot
 

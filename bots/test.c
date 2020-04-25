@@ -6,8 +6,17 @@
 #define NINJAHELPER_IMPLEMENT
 #include "bot_interface/helpers.h"
 
-static _Bool finished    = 0;
-static int action_choice = 0;
+static _Bool finished;
+static int action_choice;
+
+void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV on_start() {
+	finished      = 0;
+	action_choice = 0;
+}
+
+void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init() {
+	USER_START_LEVEL = on_start;
+}
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think() {
 	ninja_map_update();

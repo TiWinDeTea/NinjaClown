@@ -18,12 +18,18 @@ model::model::~model() noexcept {
 }
 
 [[nodiscard]] bool model::model::load_dll(std::string dll_path) noexcept {
-	return m_dll.load(std::move(dll_path));
+	if (m_dll.load(std::move(dll_path))) {
+		m_dll.bot_init();
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
-void model::model::bot_init(bot::bot_api api) noexcept {
+void model::model::bot_start_level(bot::bot_api api) noexcept {
 	api.ninja_descriptor = &m_state_holder;
-	m_dll.bot_init(api);
+	m_dll.bot_start_level(api);
 }
 
 void model::model::bot_think() noexcept {

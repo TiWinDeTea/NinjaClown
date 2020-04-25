@@ -197,10 +197,7 @@ void terminal_commands::load_shared_library(argument_type &arg) {
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path); // todo externaliser
 
-	if (arg.val.m_model.load_dll(shared_library_path)) {
-		arg.val.m_model.bot_init(bot::make_api());
-	}
-	else {
+	if (!arg.val.m_model.load_dll(shared_library_path)) {
 		arg.term.add_text("error loading dll"); // todo externaliser
 	}
 }
@@ -212,6 +209,7 @@ void terminal_commands::load_map(argument_type &arg) {
 	}
 
 	arg.val.m_adapter.load_map(arg.command_line[1]);
+	arg.val.m_model.bot_start_level(bot::make_api());
 }
 
 void terminal_commands::update_world(argument_type &arg) {
