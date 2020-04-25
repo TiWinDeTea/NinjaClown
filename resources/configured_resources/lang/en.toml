@@ -32,6 +32,9 @@
     [internal.commands.@COMMANDS_VALUEOFID@]
         name = "valueof"
         desc = "prints the value of a game variable"
+    [internal.commands.@COMMANDS_RELOAD_RESOURCES@]
+        name = "reconfigure"
+        desc = "reloads resources and configurations files"
 
     [internal.variables.@VARIABLES_AVERAGE_FPSID@]
         name = "average_fps"

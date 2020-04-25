@@ -1,10 +1,10 @@
 [internal]
     [internal.commands.@COMMANDS_CLEARID@]
         name = "éponge"
-        desc = "nettoie l’écran"
+        desc = "nettoie l'écran"
     [internal.commands.@COMMANDS_ECHOID@]
         name = "echo"
-        desc = "affiche du texte à l’écran"
+        desc = "affiche du texte à l'écran"
     [internal.commands.@COMMANDS_EXITID@]
         name = "sortir"
         desc = "ferme le terminal"
@@ -13,7 +13,7 @@
         desc = "affiche cette aide"
     [internal.commands.@COMMANDS_PRINTID@]
         name = "impression"
-        desc = "affiche du texte à l’écran"
+        desc = "affiche du texte à l'écran"
     [internal.commands.@COMMANDS_QUITID@]
         name = "quitter"
         desc = "ferme l’application"
@@ -31,7 +31,10 @@
         desc = "met à jour la valeur d’une variable"
     [internal.commands.@COMMANDS_VALUEOFID@]
         name = "val"
-        desc = "affiche la valeur d’une variable"
+        desc = "affiche la valeur d'une variable"
+    [internal.commands.@COMMANDS_RELOAD_RESOURCES@]
+        name = "reconfigurer"
+        desc = "recharge les fichiers de resources et de configuration"
 
     [internal.variables.@VARIABLES_AVERAGE_FPSID@]
         name = "fps_moyen"

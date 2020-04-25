@@ -25,13 +25,15 @@ std::vector<std::string> autocomplete_map_path(terminal_commands::argument_type 
 	return terminal_commands::autocomplete_path(arg, {".map"});
 }
 
+std::vector<std::string> autocomplete_config(terminal_commands::argument_type &arg) {
+	return terminal_commands::autocomplete_path(arg, {".toml"});
+}
+
 struct cmd {
 	command_id cmd;
 	void (*cmd_ptr)(terminal_commands::argument_type &);
 	std::vector<std::string> (*complete_ptr)(terminal_commands::argument_type &);
 };
-
-cmd c{command_id::clear, terminal_commands::clear, terminal_commands::no_completion};
 
 constexpr std::array local_command_list{
   cmd{command_id::clear, &terminal_commands::clear, terminal_commands::no_completion},
@@ -44,7 +46,8 @@ constexpr std::array local_command_list{
   cmd{command_id::load_map, terminal_commands::load_map, autocomplete_map_path},
   cmd{command_id::update_world, terminal_commands::update_world, terminal_commands::no_completion},
   cmd{command_id::set, terminal_commands::set, terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
-  cmd{command_id::valueof, terminal_commands::valueof, terminal_commands::autocomplete_variable}}; // TODO:autocomplete with map
+  cmd{command_id::valueof, terminal_commands::valueof, terminal_commands::autocomplete_variable}, // TODO:autocomplete with map
+  cmd{command_id::reconfigure, terminal_commands::reconfigure, autocomplete_config}};
 
 bool as_bool(std::string_view str) {
 	std::optional<int> int_val = utils::from_chars<int>(str);
@@ -58,6 +61,7 @@ bool as_bool(std::string_view str) {
 } // namespace
 
 void terminal_commands::load_commands(const utils::resource_manager &resources) noexcept {
+	cmd_list_.clear();
 	for (const auto &cmd : local_command_list) {
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
@@ -236,8 +240,10 @@ void terminal_commands::set(argument_type &arg) {
 			                                std::optional<unsigned int> value = utils::from_chars<unsigned int>(arg.command_line.back());
 			                                if (value) {
 				                                p.set(*value);
-			                                } else {
-				                                arg.term.add_formatted_err("{} is not an unsigned integer.", arg.command_line.back()); // TODO externaliser
+			                                }
+			                                else {
+				                                arg.term.add_formatted_err("{} is not an unsigned integer.",
+				                                                           arg.command_line.back()); // TODO externaliser
 			                                }
 		                                },
 		                                [&](state::property::proxy<std::atomic_bool> &p) {
@@ -252,7 +258,8 @@ void terminal_commands::set(argument_type &arg) {
 		                                   }};
 
 		std::visit(property_dispatcher, it->second.data());
-	} else {
+	}
+	else {
 		arg.term.add_formatted("usage: {} <variable> <value>", arg.command_line.front()); // TODO externaliser
 	}
 }
@@ -285,8 +292,25 @@ void terminal_commands::valueof(argument_type &arg) {
 		                                   }};
 
 		std::visit(property_dispatcher, it->second.data());
-	} else {
+	}
+	else {
 		arg.term.add_formatted("usage: {} <variable>", arg.command_line.front()); // TODO externaliser
+	}
+}
+
+void terminal_commands::reconfigure(argument_type &arg) {
+	if (arg.command_line.size() != 2) {
+		arg.term.add_formatted("usage: {} <config file>", arg.command_line.front()); // TODO externaliser
+		return;
+	}
+
+
+	if (!arg.val.resources.reload(arg.command_line.back())) {
+		arg.term.add_formatted("failed to reload resources from {}", arg.command_line.back()); // TODO externaliser
+	} else {
+		arg.term.add_formatted("{}: resources successfully reloaded", arg.command_line.back()); // TODO externaliser
+		arg.val.m_view.reload_sprites();
+		arg.val.m_terminal.get_terminal_helper()->load_commands(arg.val.resources);
 	}
 }
 

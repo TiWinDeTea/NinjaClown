@@ -1,11 +1,12 @@
 #ifndef NINJACLOWN_VIEW_OBJECTS_HPP
 #define NINJACLOWN_VIEW_OBJECTS_HPP
 
+#include <SFML/Graphics/RenderWindow.hpp>
+
 #include "view/animation.hpp"
 #include "view/overmap_displayable.hpp"
+#include "utils/resource_manager.hpp"
 
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <cassert>
 
 namespace view {
 
@@ -26,11 +27,17 @@ public:
 		p_posy = y + m_yshift;
 	}
 
-	void set_animation(const shifted_animation &animation) {
-		m_animation = &animation;
+	void set_id(utils::resource_manager::object_id id, const utils::resource_manager& res) {
+		m_object_id = id;
+		reload_sprites(res);
+	}
+
+	void reload_sprites(const utils::resource_manager& res) {
+        m_animation = &*res.object_animation(m_object_id);
 	}
 
 private:
+    utils::resource_manager::object_id m_object_id;
 	const shifted_animation *m_animation;
 	float m_xshift;
 	float m_yshift;

@@ -94,6 +94,7 @@ struct [[nodiscard]] optional<T &> {
 	}
 
 	[[nodiscard]] constexpr T &operator*() noexcept {
+		assert(has_value());
 		return *m_value;
 	}
 	[[nodiscard]] constexpr const T &operator*() const noexcept {

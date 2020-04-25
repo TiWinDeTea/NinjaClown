@@ -27,6 +27,15 @@ class overmap_collection {
 	};
 
 public:
+	void reload_sprites(const utils::resource_manager& res) {
+        for (mob& mob : m_mobs) {
+            mob.reload_sprites(res);
+        }
+        for (object& object : m_objects) {
+            object.reload_sprites(res);
+        }
+	}
+
 	void print_all(view::viewer &) const noexcept;
 
 	void print_all(view::viewer &, adapter::adapter &, utils::resource_manager &) const noexcept;

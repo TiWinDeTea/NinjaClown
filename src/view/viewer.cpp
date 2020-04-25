@@ -25,7 +25,7 @@ namespace cst {
 } // namespace
 
 view::viewer::viewer(state::holder *state_holder) noexcept
-    : m_state_holder{*state_holder} {}
+    : m_state_holder{*state_holder} { }
 
 void view::viewer::run() {
 	m_running = true;
@@ -100,7 +100,8 @@ void view::viewer::do_run() noexcept {
 						if (auto_step_bot) {
 							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
 							terminal_commands::run_model(arg);
-						} else {
+						}
+						else {
 							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
 							terminal_commands::stop_model(arg);
 						}
@@ -183,7 +184,8 @@ void view::viewer::do_run() noexcept {
 		m_map.acquire()->print(*this, m_state_holder.resources);
 		if (show_debug_data) {
 			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
-		} else {
+		}
+		else {
 			m_overmap.acquire()->print_all(*this);
 		}
 
@@ -196,6 +198,10 @@ void view::viewer::do_run() noexcept {
 		local_window.close();
 	}
 	ImGui::SFML::Shutdown();
+}
+
+void view::viewer::reload_sprites() {
+	m_overmap.acquire()->reload_sprites(m_state_holder.resources);
 }
 
 sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {

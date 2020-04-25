@@ -62,6 +62,8 @@ public:
 		return m_fps_limiter.frame_count();
 	}
 
+	void reload_sprites();
+
 	auto acquire_overmap() noexcept {
 		return m_overmap.acquire();
 	}

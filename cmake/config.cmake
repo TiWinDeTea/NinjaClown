@@ -84,6 +84,8 @@ set(COMMANDS_SETID 9)
 add_compile_definitions(COMMANDS_SETID=9)
 set(COMMANDS_VALUEOFID 10)
 add_compile_definitions(COMMANDS_VALUEOFID=10)
+set(COMMANDS_RELOAD_RESOURCES 11)
+add_compile_definitions(COMMANDS_RELOAD_RESOURCES=11)
 
 # variable names
 set(VARIABLES_AVERAGE_FPSID 0)
@@ -92,5 +94,3 @@ set(VARIABLES_TARGET_FPSID 1)
 add_compile_definitions(VARIABLES_TARGET_FPSID=1)
 set(VARIABLES_DISPLAY_DEBUG_DATAID 2)
 add_compile_definitions(VARIABLES_DISPLAY_DEBUG_DATAID=2)
-
-

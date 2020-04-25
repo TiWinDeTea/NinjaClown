@@ -18,7 +18,6 @@
 
 namespace utils {
 
-// todo: resource hot-swap (Pausing ui is probably sufficient. Pausing model might be desirable)
 class resource_manager {
 	static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
 
@@ -49,6 +48,15 @@ public:
 	};
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
+
+    [[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
+		resource_manager new_config{};
+		if (new_config.load_config(path)) {
+			*this = std::move(new_config);
+			return true;
+		}
+		return false;
+	}
 
 	[[nodiscard]] utils::optional<const view::animation &> tile_animation(tile_id) const noexcept;
 

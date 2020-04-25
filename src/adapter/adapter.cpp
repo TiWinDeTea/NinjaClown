@@ -52,9 +52,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 					view::object o{};
 					o.set_pos(static_cast<float>(column), static_cast<float>(row));
-					auto obj_anim = m_state.resources.object_animation(utils::resource_manager::object_id::button);
-					assert(obj_anim);
-					o.set_animation(*obj_anim);
+					o.set_id(utils::resource_manager::object_id::button, m_state.resources);
 
 					view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
 					model_handle model_handle{world.buttons.size() - 1};
@@ -72,7 +70,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					world.components.hitbox[world.ninja_clown_handle] = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
 
 					view::mob m{};
-					m.set_animations(m_state.resources.mob_animations(utils::resource_manager::mob_id::player).value());
+					m.set_mob_id(utils::resource_manager::mob_id::player, m_state.resources);
 					m.set_direction(view::facing_direction::E);
 					m.set_pos(static_cast<float>(column) + ninja_hitbox_width / 2.f, static_cast<float>(row) + ninja_hitbox_height);
 
