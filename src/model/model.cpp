@@ -38,8 +38,8 @@ void model::model::bot_think() noexcept {
 
 void model::model::run() {
 	if (m_state == thread_state::waiting && m_dll) {
-		m_cv.notify_one();
 		m_state = thread_state::running;
+		m_cv.notify_one();
 	}
 }
 
@@ -53,7 +53,7 @@ void model::model::do_run() noexcept {
 	{
 		std::unique_lock ul{m_wait_mutex};
 		m_cv.wait(ul, [this]() {
-			return m_state == thread_state::running;
+			return m_state != thread_state::waiting;
 		});
 	}
 	m_fps_limiter.start_now();
