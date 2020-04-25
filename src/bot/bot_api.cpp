@@ -42,7 +42,19 @@ void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, bot::cell *map_view) {
 }
 
 void NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::cell *map_view) {
-	spdlog::warn("map_update function is not implemented yet");
+	adapter::adapter &adapter = get_adapter(ninja_data);
+	model::world &world       = get_world(ninja_data);
+	model::grid_t &grid       = world.grid;
+
+	for (auto &changed : adapter.cells_changed_since_last_update) {
+		const auto &model_cell = grid[changed.column][changed.line];
+		bot::cell &bot_cell    = map_view[changed.column + changed.line * grid.width()];
+
+		bot_cell.type = static_cast<bot::cell_type>(model_cell.type);
+		if (model_cell.interaction_handle) {
+			bot_cell.interaction = static_cast<bot::interaction_kind>(world.interactions[*model_cell.interaction_handle].kind);
+		}
+	}
 }
 
 float NINJACLOWN_CALLCONV ffi::get_angle(void *ninja_data) {
