@@ -16,6 +16,10 @@
 #include "utils/resource_manager.hpp"
 #include "view/viewer.hpp"
 
+namespace bot {
+struct ffi;
+}
+
 namespace state {
 
 template <typename>
@@ -49,6 +53,7 @@ private:
 	friend access<view::viewer>;
 	friend access<adapter::adapter>;
 	friend access<model::model>;
+	friend access<bot::ffi>;
 };
 
 struct property {
@@ -75,13 +80,13 @@ struct property {
 	using any_property      = std::variant<settable_property, readonly_property>;
 
 	template <typename T>
-	property(proxy<T> &&proxy)
+	explicit property(proxy<T> &&proxy)
 	    : data{[proxy = std::move(proxy)]() {
 		    return any_property{settable_property{proxy}};
 	    }} { }
 
 	template <typename FuncT, typename... Args>
-	property(FuncT &&funct, Args &... args) {
+	explicit property(FuncT &&funct, Args &... args) {
 		using ResultT     = std::invoke_result_t<FuncT &, Args &...>;
 		using ResultT_row = std::remove_const_t<std::remove_reference_t<ResultT>>;
 
@@ -141,6 +146,19 @@ class access<adapter::adapter> {
 	}
 
 	friend adapter::adapter;
+};
+
+template <>
+class access<bot::ffi> {
+	static model::model &model(holder &holder) noexcept {
+		return holder.m_model;
+	}
+
+	static adapter::adapter &adapter(holder &holder) noexcept {
+		return holder.m_adapter;
+	}
+
+	friend bot::ffi;
 };
 
 } // namespace state

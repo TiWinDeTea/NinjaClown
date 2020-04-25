@@ -3,27 +3,43 @@
 
 #include <bot_interface/bot.h>
 
-namespace bot::ffi {
+namespace model {
+class model;
+struct world;
+} // namespace model
 
-void NINJACLOWN_CALLCONV log(const char *text);
+namespace adapter {
+class adapter;
+}
 
-size_t NINJACLOWN_CALLCONV map_width(void* ninja_data);
-size_t NINJACLOWN_CALLCONV map_height(void* ninja_data);
-void NINJACLOWN_CALLCONV map_scan(void* ninja_data, bot::cell *map_view);
-void NINJACLOWN_CALLCONV map_update(void* ninja_data, bot::cell *map_view);
+namespace bot {
 
-float NINJACLOWN_CALLCONV get_angle(void* ninja_data);
-float NINJACLOWN_CALLCONV get_x_position(void* ninja_data);
-float NINJACLOWN_CALLCONV get_y_position(void* ninja_data);
+struct ffi {
+	static void NINJACLOWN_CALLCONV log(const char *text);
 
-void NINJACLOWN_CALLCONV turn_right(void* ninja_data);
-void NINJACLOWN_CALLCONV turn_left(void* ninja_data);
-void NINJACLOWN_CALLCONV move_forward(void* ninja_data);
-void NINJACLOWN_CALLCONV move_backward(void* ninja_data);
-void NINJACLOWN_CALLCONV move_backward_dummy(void* ninja_data);
+	static size_t NINJACLOWN_CALLCONV map_width(void *ninja_data);
+	static size_t NINJACLOWN_CALLCONV map_height(void *ninja_data);
+	static void NINJACLOWN_CALLCONV map_scan(void *ninja_data, bot::cell *map_view);
+	static void NINJACLOWN_CALLCONV map_update(void *ninja_data, bot::cell *map_view);
 
-void NINJACLOWN_CALLCONV activate_button(void* ninja_data);
+	static float NINJACLOWN_CALLCONV get_angle(void *ninja_data);
+	static float NINJACLOWN_CALLCONV get_x_position(void *ninja_data);
+	static float NINJACLOWN_CALLCONV get_y_position(void *ninja_data);
 
-} // namespace bot::ffi
+	static void NINJACLOWN_CALLCONV turn_right(void *ninja_data);
+	static void NINJACLOWN_CALLCONV turn_left(void *ninja_data);
+	static void NINJACLOWN_CALLCONV move_forward(void *ninja_data);
+	static void NINJACLOWN_CALLCONV move_backward(void *ninja_data);
+	static void NINJACLOWN_CALLCONV move_backward_dummy(void *ninja_data);
+
+	static void NINJACLOWN_CALLCONV activate_button(void *ninja_data);
+
+private:
+	static model::model &get_model(void *ninja_data);
+	static model::world &get_world(void *ninja_data);
+	static adapter::adapter &get_adapter(void *ninja_data);
+};
+
+} // namespace bot
 
 #endif //NINJACLOWN_BOT_BOT_API_HPP

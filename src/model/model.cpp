@@ -22,7 +22,7 @@ model::model::~model() noexcept {
 }
 
 void model::model::bot_init(bot::bot_api api) noexcept {
-	api.ninja_descriptor = this;
+	api.ninja_descriptor = &m_state_holder;
 	m_dll.bot_init(api);
 }
 
@@ -50,23 +50,23 @@ void model::model::do_run() noexcept {
 			return m_state == thread_state::running;
 		});
 	}
-    m_fps_limiter.start_now();
+	m_fps_limiter.start_now();
 
 	while (m_state != thread_state::stopping) {
 		bot_think();
 
-        adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
-        adapter.cells_changed_since_last_update.clear();
+		adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
+		adapter.cells_changed_since_last_update.clear();
 		world.update(adapter);
 
 		m_fps_limiter.wait();
 
-        if (m_state == thread_state::waiting) {
-            std::unique_lock ul{m_wait_mutex};
-            m_cv.wait(ul, [this]() {
-                return m_state != thread_state::waiting;
-            });
-            m_fps_limiter.start_now();
-        }
+		if (m_state == thread_state::waiting) {
+			std::unique_lock ul{m_wait_mutex};
+			m_cv.wait(ul, [this]() {
+				return m_state != thread_state::waiting;
+			});
+			m_fps_limiter.start_now();
+		}
 	}
 }

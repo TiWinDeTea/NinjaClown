@@ -23,7 +23,7 @@ struct world {
 
 	size_t ninja_clown_handle{};
 
-	model::components components{};
+	::model::components components{};
 
 	std::vector<interaction> interactions{};
 	std::vector<button> buttons{};

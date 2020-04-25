@@ -2,9 +2,9 @@
 #define NINJACLOWN_MODEL_MODEL_HPP
 
 #include <atomic>
-#include <optional>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+#include <optional>
 
 #include "bot/bot_dll.hpp"
 #include "model/world.hpp"
@@ -23,7 +23,7 @@ class model {
 	};
 
 public:
-	[[nodiscard]] explicit model(state::holder *state_holder) noexcept;
+	explicit model(state::holder *state_holder) noexcept;
 	~model() noexcept;
 
 	[[nodiscard]] bool load_dll(std::string dll_path) noexcept;
