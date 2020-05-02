@@ -191,11 +191,6 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
 			}
 			ImGui::EndTooltip();
-
-			if (components.hitbox[handle]) {
-				const auto &box = *components.hitbox[handle];
-				return request::hitbox{box.center.x - 1.f, box.center.y - 2.f, 2.f, 2.f};
-			}
 		}
 		else {
 			ImGui::BeginTooltip();
@@ -203,7 +198,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			auto target = world.buttons[it->second.handle].target;
 			ImGui::Text("Button target: (%zu ; %zu)", target.column, target.row);
 			ImGui::EndTooltip();
-			return request::coords{target.column, target.row};
+			return request::coords{target.column, target.row}; // FIXME: nothing is draw
 		}
 	}
 	else {
