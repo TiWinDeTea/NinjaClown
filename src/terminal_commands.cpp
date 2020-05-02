@@ -210,6 +210,9 @@ void terminal_commands::load_map(argument_type &arg) {
 		return;
 	}
 
+	if (arg.val.m_adapter.map_is_loaded())
+		arg.val.m_model.bot_end_level();
+
 	arg.val.m_adapter.load_map(arg.command_line[1]);
 	arg.val.m_model.bot_start_level(bot::make_api());
 }
@@ -304,10 +307,10 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		return;
 	}
 
-
 	if (!arg.val.resources.reload(arg.command_line.back())) {
 		arg.term.add_formatted("failed to reload resources from {}", arg.command_line.back()); // TODO externaliser
-	} else {
+	}
+	else {
 		arg.term.add_formatted("{}: resources successfully reloaded", arg.command_line.back()); // TODO externaliser
 		arg.val.m_view.reload_sprites();
 		arg.val.m_terminal.get_terminal_helper()->load_commands(arg.val.resources);

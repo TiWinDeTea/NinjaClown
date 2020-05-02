@@ -74,6 +74,8 @@ public:
 
 	bool load_map(const std::filesystem::path &path) noexcept;
 
+	bool map_is_loaded() noexcept;
+
 	void update_map(size_t y, size_t x, model::cell_type new_cell) noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;

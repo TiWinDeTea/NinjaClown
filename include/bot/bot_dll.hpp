@@ -12,10 +12,12 @@ struct bot_api; // forward declaration
 using init_fn_type        = void(NINJACLOWN_CALLCONV *)();
 using start_level_fn_type = void(NINJACLOWN_CALLCONV *)(bot_api);
 using think_fn_type       = void(NINJACLOWN_CALLCONV *)();
+using end_level_fn_type   = void(NINJACLOWN_CALLCONV *)();
 using destroy_fn_type     = void(NINJACLOWN_CALLCONV *)();
 
 struct bot_dll {
 	bot_dll() noexcept = default;
+	~bot_dll();
 	explicit bot_dll(std::string dll_path) noexcept;
 	explicit bot_dll(std::string &&dll_path) noexcept;
 
@@ -29,7 +31,7 @@ struct bot_dll {
 	void bot_init() noexcept;
 	void bot_start_level(bot_api api) noexcept;
 	void bot_think() noexcept;
-	void bot_destroy() noexcept;
+	void bot_end_level() noexcept;
 
 private:
 	[[nodiscard]] bool load_all_api_functions();
@@ -44,6 +46,7 @@ private:
 	init_fn_type m_init_fn{};
 	start_level_fn_type m_start_level_fn{};
 	think_fn_type m_think_fn{};
+	end_level_fn_type m_end_level_fn{};
 	destroy_fn_type m_destroy_fn{};
 
 	std::optional<bot_api> m_cached_bot_api;

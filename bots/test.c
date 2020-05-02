@@ -18,6 +18,10 @@ void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init() {
 	USER_START_LEVEL = on_start;
 }
 
+void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_destroy() {
+	ninja_log("No... no... NO! DON'T DESTROY M");
+}
+
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think() {
 	ninja_map_update();
 

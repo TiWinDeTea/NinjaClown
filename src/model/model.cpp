@@ -32,6 +32,10 @@ void model::model::bot_start_level(bot::bot_api api) noexcept {
 	m_dll.bot_start_level(api);
 }
 
+void model::model::bot_end_level() noexcept {
+	m_dll.bot_end_level();
+}
+
 void model::model::bot_think() noexcept {
 	m_dll.bot_think();
 }

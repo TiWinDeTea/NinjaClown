@@ -2,6 +2,12 @@
 
 #include "bot/bot_dll.hpp"
 
+bot::bot_dll::~bot_dll() {
+	if (m_destroy_fn) {
+		m_destroy_fn();
+	}
+}
+
 bot::bot_dll::bot_dll(std::string dll_path) noexcept
     : m_dll_path{std::move(dll_path)} {
 	static_cast<void>(reload());
@@ -75,9 +81,9 @@ void bot::bot_dll::bot_think() noexcept {
 	m_think_fn();
 }
 
-void bot::bot_dll::bot_destroy() noexcept {
-	if (m_destroy_fn) {
-		m_destroy_fn();
+void bot::bot_dll::bot_end_level() noexcept {
+	if (m_end_level_fn) {
+		m_end_level_fn();
 	}
 }
 
@@ -88,6 +94,7 @@ bool bot::bot_dll::load_all_api_functions() {
 	try_load_function(m_think_fn, "bot_think", true) && good;
 
 	try_load_function(m_init_fn, "bot_init", false);
+	try_load_function(m_end_level_fn, "bot_end_level", false);
 	try_load_function(m_destroy_fn, "bot_destroy", false);
 
 	return good;

@@ -7,7 +7,7 @@
 #include "state_holder.hpp"
 #include "view/facing_dir.hpp"
 
-namespace {}
+namespace { }
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	if (!std::filesystem::is_regular_file(path)) {
@@ -62,12 +62,13 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 				}
 				case '@': {
 					const float ninja_hitbox_height = 1.f;
-					const float ninja_hitbox_width = 1.f;
+					const float ninja_hitbox_width  = 1.f;
 
 					ninja_clown_not_found                             = false;
 					world.ninja_clown_handle                          = next_entity_handle++;
 					world.components.health[world.ninja_clown_handle] = {1};
-					world.components.hitbox[world.ninja_clown_handle] = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
+					world.components.hitbox[world.ninja_clown_handle]
+					  = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
 
 					view::mob m{};
 					m.set_mob_id(utils::resource_manager::mob_id::player, m_state.resources);
@@ -117,6 +118,11 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 	spdlog::info("Loaded map \"{}\"", path.generic_string());
 	return true;
+}
+
+bool adapter::adapter::map_is_loaded() noexcept {
+	view::viewer &view = state::access<adapter>::view(m_state);
+	return !view.acquire_map()->m_cells.empty();
 }
 
 void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
@@ -179,7 +185,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				ImGui::Text("Current decision: %s", to_string(*components.decision[entity.handle]));
 			}
 			if (components.hitbox[handle]) {
-				model::vec2 top_left = components.hitbox[handle]->top_left();
+				model::vec2 top_left     = components.hitbox[handle]->top_left();
 				model::vec2 bottom_right = components.hitbox[handle]->bottom_right();
 				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
