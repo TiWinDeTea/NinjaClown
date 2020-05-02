@@ -19,8 +19,8 @@
 
 namespace {
 namespace cst {
-	constexpr unsigned long window_width  = 800;
-	constexpr unsigned long window_height = 450;
+	constexpr unsigned long window_width  = 1600;
+	constexpr unsigned long window_height = 900;
 } // namespace cst
 } // namespace
 
@@ -54,12 +54,13 @@ void view::viewer::do_run() noexcept {
 	sf::Clock music_offset_clock;
 
 	sf::RenderWindow local_window{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"};
-	m_viewport = sf::FloatRect(0.F, 0.F, cst::window_width, cst::window_height);
+	m_viewport = sf::FloatRect(cst::window_width / 4, cst::window_height / 4, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
 	sf::Vector2i mouse_pos{0, 0};
 
 	window = &local_window;
 
 	m_window_size = {cst::window_width, cst::window_height};
+    local_window.setView(sf::View{m_viewport});
 
 	bool resized_once = false;
 	local_window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
