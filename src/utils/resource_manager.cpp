@@ -526,7 +526,7 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 
 		m_commands_strings.emplace(static_cast<command_id>(i), std::pair{*name, *desc});
 	}
-	return true;
+	return result;
 }
 
 sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {

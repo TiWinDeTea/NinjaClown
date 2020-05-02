@@ -7,7 +7,7 @@ namespace {
 utils::resource_manager configure_resources(const std::filesystem::path &config) {
 	utils::resource_manager rm{};
 	if (!rm.load_config(config)) {
-		spdlog::critical("Failed to load resources from {}", config.generic_string());
+		spdlog::warn("Failed to load resources from {}", config.generic_string());
 	}
 	return rm;
 }

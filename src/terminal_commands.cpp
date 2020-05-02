@@ -63,11 +63,13 @@ bool as_bool(std::string_view str) {
 void terminal_commands::load_commands(const utils::resource_manager &resources) noexcept {
 	cmd_list_.clear();
 	for (const auto &cmd : local_command_list) {
+
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
-			spdlog::error("No name found for command {}", static_cast<int>(cmd.cmd)); // TODO: not logged in terminal
-			continue;
+			std::string error = "No name found for command " + std::to_string(static_cast<int>(cmd.cmd));
+            spdlog::warn(error);
 		}
+
 		auto [name, desc] = *maybe_command;
 
 		command_type command;
@@ -151,7 +153,7 @@ void terminal_commands::help(argument_type &arg) {
 	for (const auto &cmd : local_command_list) {
 		auto opt = arg.val.resources.text_for(cmd.cmd);
 		if (!opt) {
-			spdlog::error("No name found for command {}", static_cast<int>(cmd.cmd)); // TODO: not logged in terminal
+			spdlog::warn("No name found for command {}", static_cast<int>(cmd.cmd));
 			continue;
 		}
 		auto [name, desc] = *opt;
