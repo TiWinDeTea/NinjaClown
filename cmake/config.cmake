@@ -58,6 +58,8 @@ set(TILES_CONCRETEID 2)
 add_compile_definitions(TILES_CONCRETEID=2)
 set(TILES_FRAMEID 3)
 add_compile_definitions(TILES_FRAMEID=3)
+set(TILES_TARGETID 4)
+add_compile_definitions(TILES_TARGETID=4)
 
 # objects
 set(OBJECTS_BUTTONID 0)

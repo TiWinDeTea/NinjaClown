@@ -77,7 +77,7 @@
             height = 56
 
     [graphics.tiles]
-        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
+        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame", "target-tile"]
         spacing.x = 51
         x-yshift = 0 # when going one left (51px), go neither left nor right
 
@@ -110,6 +110,12 @@
             frame-count = 2
             pos.x = 0
             pos.y = 32
+
+        [graphics.tiles.target-tile]
+            id = @TILES_TARGETID@
+            frame-count = 8
+            pos.x = 2
+            pos.y = 122
 
     [graphics.objects]
         list = ["button"]

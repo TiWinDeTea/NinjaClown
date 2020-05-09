@@ -106,6 +106,8 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				}
 				case 'D':
+                    cell.type = model::cell_type::TARGET;
+					break;
 				case ' ':
 					cell.type = model::cell_type::GROUND;
 					break;
@@ -134,6 +136,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				case model::cell_type::GROUND:
 					view_map[x][y] = view::map::cell::concrete_tile;
+					break;
+				case model::cell_type::TARGET:
+					view_map[x][y] = view::map::cell::target_tile;
+					break;
 			}
 		}
 	}

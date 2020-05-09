@@ -11,6 +11,7 @@ enum class cell_type {
 	CHASM  = 1,
 	GROUND = 2,
 	WALL   = 3,
+	TARGET = 4,
 };
 
 struct cell {

@@ -46,6 +46,7 @@ public:
 		iron     = TILES_IRONID,
 		concrete = TILES_CONCRETEID,
 		frame    = TILES_FRAMEID,
+		target   = TILES_TARGETID,
 	};
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;

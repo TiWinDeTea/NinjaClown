@@ -24,6 +24,7 @@ public:
 		iron_tile,
 		concrete_tile,
 		abyss,
+		target_tile,
 	};
 
 	void set(std::vector<std::vector<cell>> &&cells) {
