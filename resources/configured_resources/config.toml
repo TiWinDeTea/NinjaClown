@@ -4,7 +4,7 @@
 
 [graphics]
     [graphics.mobs]
-        list = ["player"]
+        list = ["player", "scientist"]
 
         [graphics.mobs.player]
             id = @MOBS_PLAYERID@
@@ -41,6 +41,40 @@
             width = 29
             height = 56
 
+        [graphics.mobs.scientist]
+            id = @MOBS_SCIENTISTID@
+
+        [graphics.mobs.scientist.downwards]
+            frame-count = 1
+            pos.x = 0
+            pos.y = 64
+            shift.y = -58
+            width = 42
+            height = 56
+
+        [graphics.mobs.scientist.upwards]
+            frame-count = 1
+            pos.x = 73
+            pos.y = 64
+            shift.y = -58
+            width = 41
+            height = 56
+
+        [graphics.mobs.scientist.rightwards]
+            frame-count = 1
+            pos.x = 116
+            pos.y = 64
+            shift.y = -58
+            width = 29
+            height = 56
+
+        [graphics.mobs.scientist.leftwards]
+            frame-count = 1
+            pos.x = 43
+            pos.y = 64
+            shift.y = -58
+            width = 29
+            height = 56
 
     [graphics.tiles]
         list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]

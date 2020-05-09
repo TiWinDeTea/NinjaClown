@@ -65,15 +65,16 @@ void view::overmap_collection::move_entity(adapter::view_handle handle, float ne
 	}
 
 	m_ordered_displayable.erase(it);
+    auto target = std::next(m_mobs.begin(), handle.handle);
 	if (handle.is_mob) {
 		spdlog::trace("Moving view mob {} to ({} ; {})", handle.handle, newx, newy);
-		m_mobs[handle.handle].set_pos(newx, newy);
-		m_ordered_displayable.emplace(std::pair{&m_mobs[handle.handle], handle});
+		target->set_pos(newx, newy);
+		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 	else {
 		spdlog::trace("Moving view object {} to ({} ; {})", handle.handle, newx, newy);
-		m_objects[handle.handle].set_pos(newx, newy);
-		m_ordered_displayable.emplace(std::pair{&m_mobs[handle.handle], handle});
+        target->set_pos(newx, newy);
+		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
 
@@ -83,5 +84,5 @@ void view::overmap_collection::rotate_entity(adapter::view_handle handle, view::
 		return;
 	}
 
-	m_mobs[handle.handle].set_direction(new_direction);
+    std::next(m_mobs.begin(), handle.handle)->set_direction(new_direction);
 }

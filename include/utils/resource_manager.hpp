@@ -34,6 +34,7 @@ public:
 
 	enum class mob_id {
 		player = MOBS_PLAYERID,
+		scientist = MOBS_SCIENTISTID,
 	};
 
 	enum class object_id {

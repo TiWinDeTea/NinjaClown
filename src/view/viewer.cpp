@@ -25,7 +25,8 @@ namespace cst {
 } // namespace
 
 view::viewer::viewer(state::holder *state_holder) noexcept
-    : m_state_holder{*state_holder} { }
+    : m_state_holder{*state_holder} {
+}
 
 void view::viewer::run() {
 	m_running = true;

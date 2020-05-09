@@ -82,6 +82,29 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					cell.type                  = model::cell_type::GROUND;
 					break;
 				}
+				case 'S': {
+					const float scientist_hitbox_height = 1.f;
+					const float scientist_hitbox_width  = 1.f;
+
+					world.components.health[next_entity_handle] = {1};
+					world.components.hitbox[next_entity_handle]
+							= {static_cast<float>(column), static_cast<float>(row), scientist_hitbox_width / 2.f, scientist_hitbox_height / 2.f};
+
+					view::mob m{};
+					m.set_mob_id(utils::resource_manager::mob_id::scientist, m_state.resources);
+					m.set_direction(view::facing_direction::S);
+					m.set_pos(static_cast<float>(column) + scientist_hitbox_width / 2.f, static_cast<float>(row) + scientist_hitbox_height);
+
+					view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
+					model_handle model_handle{next_entity_handle};
+					m_model2view[model_handle] = view_handle;
+					m_view2model[view_handle]  = model_handle;
+					cell.type                  = model::cell_type::GROUND;
+
+					++next_entity_handle;
+
+					break;
+				}
 				case 'D':
 				case ' ':
 					cell.type = model::cell_type::GROUND;
