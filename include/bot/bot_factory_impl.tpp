@@ -4,7 +4,7 @@ namespace bot::details {
 template <typename>
 constexpr bool dependant_false = false;
 
-constexpr void make_api_impl(bot_api &) {} // ends template recursion
+constexpr void make_api_impl(bot_api &) { } // ends template recursion
 
 template <typename Func, typename... OtherFuncs>
 void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others) {
@@ -24,10 +24,12 @@ bot::bot_api bot::make_api(Funcs &&... funcs) {
 
 	api.log = &ffi::log;
 
-    api.map_width = &ffi::map_width;
-    api.map_height = &ffi::map_height;
-	api.map_scan = &ffi::map_scan;
-	api.map_update = &ffi::map_update;
+	api.map_width       = &ffi::map_width;
+	api.map_height      = &ffi::map_height;
+	api.map_scan        = &ffi::map_scan;
+	api.map_update      = &ffi::map_update;
+	api.max_entities    = &ffi::max_entities;
+	api.entities_update = &ffi::entities_update;
 
 	api.get_angle      = &ffi::get_angle;
 	api.get_x_position = &ffi::get_x_position;

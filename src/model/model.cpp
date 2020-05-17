@@ -22,9 +22,8 @@ model::model::~model() noexcept {
 		m_dll.bot_init();
 		return true;
 	}
-	else {
-		return false;
-	}
+
+	return false;
 }
 
 void model::model::bot_start_level(bot::bot_api api) noexcept {

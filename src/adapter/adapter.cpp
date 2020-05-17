@@ -1,3 +1,4 @@
+#include <bot_interface/bot.h>
 #include <fstream>
 #include <spdlog/spdlog.h>
 
@@ -64,9 +65,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					const float ninja_hitbox_height = 1.f;
 					const float ninja_hitbox_width  = 1.f;
 
-					ninja_clown_not_found                             = false;
-					world.ninja_clown_handle                          = next_entity_handle++;
-					world.components.health[world.ninja_clown_handle] = {1};
+					ninja_clown_not_found                                    = false;
+					world.ninja_clown_handle                                 = next_entity_handle++;
+					world.components.metadata[world.ninja_clown_handle].kind = bot::entity_kind::EK_DLL;
+					world.components.health[world.ninja_clown_handle]        = {1};
 					world.components.hitbox[world.ninja_clown_handle]
 					  = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
 
@@ -86,9 +88,10 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					const float scientist_hitbox_height = 1.f;
 					const float scientist_hitbox_width  = 1.f;
 
-					world.components.health[next_entity_handle] = {1};
+					world.components.health[next_entity_handle]              = {1};
+					world.components.metadata[world.ninja_clown_handle].kind = bot::entity_kind::EK_HARMLESS;
 					world.components.hitbox[next_entity_handle]
-							= {static_cast<float>(column), static_cast<float>(row), scientist_hitbox_width / 2.f, scientist_hitbox_height / 2.f};
+					  = {static_cast<float>(column), static_cast<float>(row), scientist_hitbox_width / 2.f, scientist_hitbox_height / 2.f};
 
 					view::mob m{};
 					m.set_mob_id(utils::resource_manager::mob_id::scientist, m_state.resources);
@@ -106,7 +109,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				}
 				case 'D':
-                    cell.type = model::cell_type::TARGET;
+					cell.type = model::cell_type::TARGET;
 					break;
 				case ' ':
 					cell.type = model::cell_type::GROUND;

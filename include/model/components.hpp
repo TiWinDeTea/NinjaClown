@@ -1,11 +1,14 @@
 #ifndef NINJACLOWN_COMPONENTS_HPP
 #define NINJACLOWN_COMPONENTS_HPP
 
+#include <array>
+#include <bot_interface/bot.h>
 #include <cmath>
+#include <cstdint>
 #include <optional>
 
-#include "vec2.hpp"
 #include "utils/universal_constants.hpp"
+#include "vec2.hpp"
 
 namespace model::component {
 
@@ -15,6 +18,10 @@ constexpr float default_rotation_speed = 0.2f;
 struct properties {
 	float move_speed     = default_move_speed;
 	float rotation_speed = default_rotation_speed;
+};
+
+struct metadata {
+	bot::entity_kind kind = bot::entity_kind::EK_NOT_AN_ENTITY;
 };
 
 struct health {
@@ -29,7 +36,7 @@ struct hitbox {
 	hitbox(float x, float y, float half_width, float half_height) noexcept
 	    : center{x, y}
 	    , half{half_width, half_height}
-	    , rad{0.f} {}
+	    , rad{0.f} { }
 
 	[[nodiscard]] vec2 top_left() const {
 		constexpr float top_left_angle = 3 * uni::math::pi_4<float>;
@@ -59,19 +66,19 @@ struct hitbox {
 		return vec2{half.x * std::cos(angle) * hypot + center.x, half.y * std::sin(angle) * hypot + center.y};
 	}
 
-	float half_width() const {
+	[[nodiscard]] float half_width() const {
 		return half.x;
 	}
 
-	float half_height() const {
+	[[nodiscard]] float half_height() const {
 		return half.y;
 	}
 
-	float width() const {
+	[[nodiscard]] float width() const {
 		return half.x * 2;
 	}
 
-	float height() const {
+	[[nodiscard]] float height() const {
 		return half.y * 2;
 	}
 };
@@ -108,10 +115,11 @@ namespace model {
 constexpr size_t max_entities = 10;
 
 struct components {
-	std::optional<component::health> health[max_entities];
-	std::optional<component::hitbox> hitbox[max_entities];
-	std::optional<component::decision> decision[max_entities];
-	component::properties properties[max_entities];
+	std::array<std::optional<component::health>, max_entities> health;
+	std::array<std::optional<component::hitbox>, max_entities> hitbox;
+	std::array<std::optional<component::decision>, max_entities> decision;
+	std::array<component::properties, max_entities> properties;
+	std::array<component::metadata, max_entities> metadata;
 };
 
 } // namespace model

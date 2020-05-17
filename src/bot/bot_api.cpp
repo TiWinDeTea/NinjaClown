@@ -7,8 +7,8 @@
 
 namespace {
 
-void set_decision(model::world &world, model::component::decision decision) {
-	world.components.decision[world.ninja_clown_handle] = {decision};
+void set_decision(model::world *world, model::component::decision decision) {
+	world->components.decision[world->ninja_clown_handle] = {decision};
 }
 
 } // namespace
@@ -20,56 +20,78 @@ void NINJACLOWN_CALLCONV ffi::log(const char *text) {
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_width(void *ninja_data) {
-	model::world &world = get_world(ninja_data);
-	return world.grid.width();
+	return get_world(ninja_data)->grid.width();
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
-	model::world &world = get_world(ninja_data);
-	return world.grid.height();
+	return get_world(ninja_data)->grid.height();
 }
 
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, bot::cell *map_view) {
-	model::world &world = get_world(ninja_data);
-	model::grid_t &grid = world.grid;
+	model::world *world = get_world(ninja_data);
+	model::grid_t &grid = world->grid;
 	for (const auto &cell : grid.subgrid(0, 0, grid.width(), grid.height())) {
 		map_view->type = static_cast<bot::cell_type>(cell.type);
 		if (cell.interaction_handle) {
-			map_view->interaction = static_cast<bot::interaction_kind>(world.interactions[*cell.interaction_handle].kind);
+			map_view->interaction = static_cast<bot::interaction_kind>(world->interactions[*cell.interaction_handle].kind);
 		}
-		++map_view;
+		++map_view; // NOLINT
 	}
 }
 
 void NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::cell *map_view) {
-	adapter::adapter &adapter = get_adapter(ninja_data);
-	model::world &world       = get_world(ninja_data);
-	model::grid_t &grid       = world.grid;
+	adapter::adapter *adapter = get_adapter(ninja_data);
+	model::world *world       = get_world(ninja_data);
+	model::grid_t &grid       = world->grid;
 
-	for (auto &changed : adapter.cells_changed_since_last_update) {
+	for (auto &changed : adapter->cells_changed_since_last_update) {
 		const auto &model_cell = grid[changed.column][changed.line];
-		bot::cell &bot_cell    = map_view[changed.column + changed.line * grid.width()];
+		bot::cell &bot_cell    = map_view[changed.column + changed.line * grid.width()]; // NOLINT
 
 		bot_cell.type = static_cast<bot::cell_type>(model_cell.type);
 		if (model_cell.interaction_handle) {
-			bot_cell.interaction = static_cast<bot::interaction_kind>(world.interactions[*model_cell.interaction_handle].kind);
+			bot_cell.interaction = static_cast<bot::interaction_kind>(world->interactions[*model_cell.interaction_handle].kind);
+		}
+	}
+}
+
+size_t NINJACLOWN_CALLCONV ffi::max_entities() {
+	return model::max_entities;
+}
+
+void NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, bot::entity *entities) {
+	model::world *world = get_world(ninja_data);
+
+	for (size_t i = 0; i < model::max_entities; ++i) {
+		entities[i].type = world->components.metadata[i].kind;
+		if (entities[i].type != bot::entity_kind::EK_NOT_AN_ENTITY) {
+			if (world->components.hitbox[i]) {
+				auto &hitbox      = world->components.hitbox[i];
+				entities[i].x     = hitbox->center.x;
+				entities[i].y     = hitbox->center.y;
+				entities[i].angle = hitbox->rad;
+			}
+			else {
+				// bot can't work with entity with no hitbox
+				entities[i].type = bot::entity_kind::EK_NOT_AN_ENTITY;
+			}
 		}
 	}
 }
 
 float NINJACLOWN_CALLCONV ffi::get_angle(void *ninja_data) {
-	model::world &world = get_world(ninja_data);
-	return world.components.hitbox[world.ninja_clown_handle]->rad;
+	model::world *world = get_world(ninja_data);
+	return world->components.hitbox[world->ninja_clown_handle]->rad;
 }
 
 float NINJACLOWN_CALLCONV ffi::get_x_position(void *ninja_data) {
-	model::world &world = get_world(ninja_data);
-	return world.components.hitbox[world.ninja_clown_handle]->center.x;
+	model::world *world = get_world(ninja_data);
+	return world->components.hitbox[world->ninja_clown_handle]->center.x;
 }
 
 float NINJACLOWN_CALLCONV ffi::get_y_position(void *ninja_data) {
-	model::world &world = get_world(ninja_data);
-	return world.components.hitbox[world.ninja_clown_handle]->center.y;
+	model::world *world = get_world(ninja_data);
+	return world->components.hitbox[world->ninja_clown_handle]->center.y;
 }
 
 void NINJACLOWN_CALLCONV ffi::turn_right(void *ninja_data) {
@@ -96,16 +118,16 @@ void NINJACLOWN_CALLCONV ffi::activate_button(void *ninja_data) {
 	set_decision(get_world(ninja_data), model::component::decision::ACTIVATE_BUTTON);
 }
 
-model::model &ffi::get_model(void *ninja_data) {
-	return state::access<bot::ffi>::model(*reinterpret_cast<state::holder *>(ninja_data));
+model::model *ffi::get_model(void *ninja_data) {
+	return &state::access<bot::ffi>::model(*reinterpret_cast<state::holder *>(ninja_data)); // NOLINT
 }
 
-model::world &ffi::get_world(void *ninja_data) {
-	return get_model(ninja_data).world;
+model::world *ffi::get_world(void *ninja_data) {
+	return &get_model(ninja_data)->world;
 }
 
-adapter::adapter &ffi::get_adapter(void *ninja_data) {
-	return state::access<bot::ffi>::adapter(*reinterpret_cast<state::holder *>(ninja_data));
+adapter::adapter *ffi::get_adapter(void *ninja_data) {
+	return &state::access<bot::ffi>::adapter(*reinterpret_cast<state::holder *>(ninja_data)); // NOLINT
 }
 
 } // namespace bot

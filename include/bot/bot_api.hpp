@@ -21,6 +21,8 @@ struct ffi {
 	static size_t NINJACLOWN_CALLCONV map_height(void *ninja_data);
 	static void NINJACLOWN_CALLCONV map_scan(void *ninja_data, bot::cell *map_view);
 	static void NINJACLOWN_CALLCONV map_update(void *ninja_data, bot::cell *map_view);
+	static size_t NINJACLOWN_CALLCONV max_entities();
+	static void NINJACLOWN_CALLCONV entities_update(void *ninja_data, bot::entity *entities);
 
 	static float NINJACLOWN_CALLCONV get_angle(void *ninja_data);
 	static float NINJACLOWN_CALLCONV get_x_position(void *ninja_data);
@@ -35,9 +37,9 @@ struct ffi {
 	static void NINJACLOWN_CALLCONV activate_button(void *ninja_data);
 
 private:
-	static model::model &get_model(void *ninja_data);
-	static model::world &get_world(void *ninja_data);
-	static adapter::adapter &get_adapter(void *ninja_data);
+	static model::model *get_model(void *ninja_data);
+	static model::world *get_world(void *ninja_data);
+	static adapter::adapter *get_adapter(void *ninja_data);
 };
 
 } // namespace bot

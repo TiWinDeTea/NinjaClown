@@ -24,6 +24,7 @@ void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_destroy() {
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think() {
 	ninja_map_update();
+	ninja_entities_update();
 
 	if (finished) {
 		action_choice = action_choice + 1;
