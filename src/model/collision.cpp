@@ -23,3 +23,8 @@ std::pair<model::bounding_box::min, model::bounding_box::max> model::bounding_bo
 	float max_coef      = *std::max_element(std::begin(proj_coefs), std::end(proj_coefs));
 	return {min_coef, max_coef};
 }
+
+bool model::circle_obb_test(const bounding_circle &circle, const bounding_box &box) {
+	return circle.center.to(box.bl).norm() < circle.radius || circle.center.to(box.br).norm() < circle.radius
+	       || circle.center.to(box.tl).norm() < circle.radius || circle.center.to(box.tr).norm() < circle.radius;
+}

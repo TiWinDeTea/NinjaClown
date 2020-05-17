@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "model/vec2.hpp"
 
 model::vec2 model::operator+(const model::vec2 &a, const model::vec2 &b) {
@@ -20,15 +22,16 @@ float model::vec2::dot(const model::vec2 &other) const {
 	return x * other.x + y * other.y;
 }
 
+void model::vec2::unitify() {
+	float n = norm();
+	x /= n;
+	y /= n;
+}
+
 model::vec2 model::vec2::unit() const {
 	vec2 unit = *this;
 	unit.unitify();
 	return unit;
-}
-
-void model::vec2::unitify() {
-	x /= x;
-	y /= y;
 }
 
 model::vec2 model::vec2::project_on(const model::vec2 &other) const {
@@ -50,6 +53,10 @@ model::vec2 model::vec2::normal() const {
 	return normal;
 }
 
+float model::vec2::norm() const {
+	return std::hypot(x, y);
+}
+
 model::vec2 model::vec2::to(const model::vec2 &other) const {
-	return vec2{other.x - x, other.y - y};
+	return other - *this;
 }

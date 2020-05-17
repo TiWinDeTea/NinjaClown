@@ -11,6 +11,12 @@ struct bounding_box {
 	using min = float;
 	using max = float;
 
+	bounding_box(float top_left_x, float top_left_y, float width, float height) noexcept
+	    : tl{top_left_x, top_left_y}
+	    , bl{top_left_x, top_left_y + height}
+	    , tr{top_left_x + width, top_left_y}
+	    , br{top_left_x + width, top_left_y + height} { }
+
 	explicit bounding_box(const component::hitbox &box) noexcept
 	    : tl{box.top_left()}
 	    , bl{box.bottom_left()}
@@ -26,6 +32,17 @@ struct bounding_box {
 };
 
 bool obb_obb_sat_test(const bounding_box &a, const bounding_box &b);
+
+struct bounding_circle {
+	explicit bounding_circle(const component::hitbox &box) noexcept
+	    : center{box.center}
+	    , radius{std::min(box.half_height(), box.half_height())} { }
+
+	vec2 center;
+	float radius;
+};
+
+bool circle_obb_test(const bounding_circle &a, const bounding_box &b);
 
 } // namespace model
 

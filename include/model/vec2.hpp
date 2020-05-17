@@ -7,13 +7,14 @@ struct vec2 {
 	float x;
 	float y;
 
+	void unitify();
 	[[nodiscard]] float dot(const vec2 &other) const;
 	[[nodiscard]] vec2 unit() const;
-	void unitify();
 	[[nodiscard]] vec2 project_on(const vec2 &other) const;
 	[[nodiscard]] vec2 proj_point(const vec2 &other) const;
 	[[nodiscard]] float proj_coef(const vec2 &other) const;
 	[[nodiscard]] vec2 normal() const;
+	[[nodiscard]] float norm() const;
 	[[nodiscard]] vec2 to(const vec2 &other) const;
 };
 

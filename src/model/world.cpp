@@ -44,7 +44,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 				break;
 			case component::decision::ACTIVATE_BUTTON:
 				component::hitbox &hitbox = components.hitbox[handle].value();
-				for (cell &c : grid.radius(hitbox.center.x, hitbox.center.y, 0.5f)) {
+				for (cell_view c : grid.radius(hitbox.center.x, hitbox.center.y, 0.5f)) {
 					if (c.interaction_handle) {
 						interaction &i = interactions[c.interaction_handle.value()];
 						if (i.interactable == interactable_kind::BUTTON) {
@@ -67,10 +67,14 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 	hitbox.center.y += dy;
 
 	bounding_box box{hitbox};
-	for (const cell &c : grid.subgrid(box)) {
+	bounding_circle circle{hitbox};
+	for (const cell_view c : grid.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
-			hitbox.center.x = old_x;
-			hitbox.center.y = old_y;
+			bounding_box cell_box{static_cast<float>(c.x), static_cast<float>(c.y), model::cell_width, model::cell_height};
+			if (circle_obb_test(circle, cell_box)) {
+				hitbox.center.x = old_x;
+				hitbox.center.y = old_y;
+			}
 		}
 	}
 

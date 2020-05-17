@@ -1,10 +1,12 @@
 #ifndef NINJACLOWN_UTILS_OPTIONAL_HPP
 #define NINJACLOWN_UTILS_OPTIONAL_HPP
 
-#include "utils.hpp"
+#include <cassert>
 #include <optional>
 #include <type_traits>
 #include <typeinfo>
+
+#include "utils.hpp"
 
 namespace utils {
 
@@ -31,7 +33,7 @@ struct [[nodiscard]] optional<T &> {
 	}
 
 	constexpr optional(const optional &other) noexcept
-	    : m_value{other.m_value} {}
+	    : m_value{other.m_value} { }
 
 	template <typename U>
 	optional(const optional<U *> &other) {
