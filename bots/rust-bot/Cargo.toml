@@ -1,0 +1,11 @@
+[package]
+name = "rust-bot"
+version = "0.1.0"
+authors = ["Benoît CORTIER <benoit.cortier@fried-world.eu>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+pathfinding = "2.0"

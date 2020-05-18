@@ -1,4 +1,7 @@
+# C/C++
 build/
 .idea/*
-
 .vs/
+
+# Rust
+**/target/**
