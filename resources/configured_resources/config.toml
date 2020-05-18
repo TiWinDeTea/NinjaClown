@@ -13,7 +13,8 @@
             frame-count = 1
             pos.x = 0
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 42
             height = 56
 
@@ -21,7 +22,8 @@
             frame-count = 1
             pos.x = 73
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 41
             height = 56
 
@@ -29,7 +31,8 @@
             frame-count = 1
             pos.x = 116
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 29
             height = 56
 
@@ -37,7 +40,8 @@
             frame-count = 1
             pos.x = 43
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 29
             height = 56
 
@@ -48,7 +52,8 @@
             frame-count = 1
             pos.x = 0
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 42
             height = 56
 
@@ -56,7 +61,8 @@
             frame-count = 1
             pos.x = 73
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 41
             height = 56
 
@@ -64,7 +70,8 @@
             frame-count = 1
             pos.x = 116
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 29
             height = 56
 
@@ -72,7 +79,8 @@
             frame-count = 1
             pos.x = 43
             pos.y = 64
-            shift.y = -58
+            shift.x = 9
+            shift.y = -50
             width = 29
             height = 56
 

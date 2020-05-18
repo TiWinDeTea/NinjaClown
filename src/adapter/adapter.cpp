@@ -33,6 +33,12 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		for (size_t column = 0; column < width; ++column) {
 			model::cell &cell = world.grid[column][row];
 
+			float topleft_x = static_cast<float>(column) * model::cell_width;
+			float topleft_y = static_cast<float>(row) * model::cell_height;
+
+			float center_x = static_cast<float>(column) * model::cell_width + model::cell_width / 2.f;
+			float center_y = static_cast<float>(row) * model::cell_height + model::cell_height / 2.f;
+
 			char type;
 			fs >> std::noskipws >> type;
 			if (type == '\n') {
@@ -52,7 +58,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					world.buttons.push_back(model::button{4, 11});
 
 					view::object o{};
-					o.set_pos(static_cast<float>(column), static_cast<float>(row));
+					o.set_pos(topleft_x, topleft_y);
 					o.set_id(utils::resource_manager::object_id::button, m_state.resources);
 
 					view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
@@ -62,20 +68,22 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				}
 				case '@': {
-					const float ninja_hitbox_height = 1.f;
-					const float ninja_hitbox_width  = 1.f;
+					const float ninja_hitbox_half_height = 0.5f;
+					const float ninja_hitbox_half_width  = 0.5f;
 
 					ninja_clown_not_found                                    = false;
 					world.ninja_clown_handle                                 = next_entity_handle++;
 					world.components.metadata[world.ninja_clown_handle].kind = bot::entity_kind::EK_DLL;
 					world.components.health[world.ninja_clown_handle]        = {1};
 					world.components.hitbox[world.ninja_clown_handle]
-					  = {static_cast<float>(column), static_cast<float>(row), ninja_hitbox_width / 2.f, ninja_hitbox_height / 2.f};
+					  = {center_x, center_y, ninja_hitbox_half_width, ninja_hitbox_half_height};
+
+					model::component::hitbox &hitbox = *world.components.hitbox[world.ninja_clown_handle];
 
 					view::mob m{};
 					m.set_mob_id(utils::resource_manager::mob_id::player, m_state.resources);
 					m.set_direction(view::facing_direction::E);
-					m.set_pos(static_cast<float>(column) + ninja_hitbox_width / 2.f, static_cast<float>(row) + ninja_hitbox_height);
+					m.set_pos(hitbox.center.x, hitbox.center.y);
 
 					view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
 					model_handle model_handle{world.ninja_clown_handle};
@@ -85,18 +93,20 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 					break;
 				}
 				case 'S': {
-					const float scientist_hitbox_height = 1.f;
-					const float scientist_hitbox_width  = 1.f;
+					const float scientist_hitbox_half_height = 0.5f;
+					const float scientist_hitbox_half_width  = 0.5f;
 
 					world.components.health[next_entity_handle]              = {1};
 					world.components.metadata[world.ninja_clown_handle].kind = bot::entity_kind::EK_HARMLESS;
 					world.components.hitbox[next_entity_handle]
-					  = {static_cast<float>(column), static_cast<float>(row), scientist_hitbox_width / 2.f, scientist_hitbox_height / 2.f};
+					  = {center_x, center_y, scientist_hitbox_half_width, scientist_hitbox_half_height};
+
+					model::component::hitbox &hitbox = *world.components.hitbox[next_entity_handle];
 
 					view::mob m{};
 					m.set_mob_id(utils::resource_manager::mob_id::scientist, m_state.resources);
 					m.set_direction(view::facing_direction::S);
-					m.set_pos(static_cast<float>(column) + scientist_hitbox_width / 2.f, static_cast<float>(row) + scientist_hitbox_height);
+					m.set_pos(center_x, center_y);
 
 					view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
 					model_handle model_handle{next_entity_handle};

@@ -33,8 +33,8 @@ struct hitbox {
 	vec2 half;
 	float rad;
 
-	hitbox(float x, float y, float half_width, float half_height) noexcept
-	    : center{x, y}
+	hitbox(float center_x, float center_y, float half_width, float half_height) noexcept
+	    : center{center_x, center_y}
 	    , half{half_width, half_height}
 	    , rad{0.f} { }
 
