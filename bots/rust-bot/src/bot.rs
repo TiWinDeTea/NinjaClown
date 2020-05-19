@@ -47,7 +47,7 @@ pub fn think(bot: &mut Bot, data: &mut UserData) {
 
     let dist =
         absdiff(next_target.center_x(), bot_pos.0) + absdiff(next_target.center_y(), bot_pos.1);
-    if dist < 0.3 {
+    if dist < 0.4 {
         data.path_idx += 1;
 
         if data.path_idx >= data.path.len() {
