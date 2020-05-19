@@ -31,6 +31,7 @@ struct world {
 private:
 	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);
 	void move_entity(adapter::adapter &adapter, size_t handle, float x, float y);
+	bool entity_check_collision(const component::hitbox &hitbox);
 };
 
 } // namespace model

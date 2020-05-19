@@ -62,21 +62,31 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 	component::hitbox &hitbox = components.hitbox[handle].value();
 
 	float old_x = hitbox.center.x;
-	float old_y = hitbox.center.y;
 	hitbox.center.x += dx;
-	hitbox.center.y += dy;
+	if (entity_check_collision(hitbox)) {
+		hitbox.center.x = old_x;
+	}
 
+	float old_y = hitbox.center.y;
+	hitbox.center.y += dy;
+	if (entity_check_collision(hitbox)) {
+		hitbox.center.y = old_y;
+	}
+
+	adapter.move_entity(adapter::model_handle{handle}, hitbox.center.x, hitbox.center.y);
+}
+
+bool model::world::entity_check_collision(const component::hitbox &hitbox) {
 	bounding_box box{hitbox};
 	bounding_circle circle{hitbox};
 	for (const cell_view c : grid.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
 			bounding_box cell_box{static_cast<float>(c.x), static_cast<float>(c.y), model::cell_width, model::cell_height};
 			if (circle_obb_test(circle, cell_box)) {
-				hitbox.center.x = old_x;
-				hitbox.center.y = old_y;
+				return true;
 			}
 		}
 	}
 
-	adapter.move_entity(adapter::model_handle{handle}, hitbox.center.x, hitbox.center.y);
+	return false;
 }
