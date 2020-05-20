@@ -1,16 +1,50 @@
-12
-14
-############
-# D # b    #
-#   # #  @ #
-#   #      #
-##S###     #
-#  ###     #
-# ######   #
-# ####     #
-# ####     #
-# ####     #
-#  #####   #
-#   P      #
-##  #      #
-############
+[file]
+	version = "1.0.0"
+[mobs]
+	[[mobs.definition]]
+			name = "clown"
+			hp = 1
+			behaviour = "dll"
+			sprite = "clown"
+	[[mobs.definition]]
+			name = "scientist"
+			inherits = "clown"
+			behaviour = "none"
+			sprite = "scientist"
+
+	[[mobs.spawn]]
+		type = "clown"
+		pos.x = 9
+		pos.y = 2
+		facing = 0
+
+	[[mobs.spawn]]
+		type = "scientist"
+		pos.x = 2
+		pos.y = 4
+		facing = 2.3561
+
+[actors]
+	[[actors.spawn]]
+		type = "button"
+		pos.x = 6
+		pos.y = 1
+		acts_on = [[4, 11], [3, 11], [3, 12]]
+
+[map]
+	layout = [
+		"############",
+		"# T #      #",
+		"#   # #    #",
+		"#   #      #",
+		"## ###  ~  #",
+		"#  ### ~~~ #",
+		"# ######~~~#",
+		"# ####~~~~~#",
+		"# ####~~~~~#",
+		"# ####~~~~~#",
+		"#  #####~~~#",
+		"#        ~~#",
+		"##  #   ~~ #",
+		"############"
+	]

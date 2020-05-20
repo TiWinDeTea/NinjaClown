@@ -13,8 +13,8 @@ void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
 	}
 }
 
-void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter, utils::resource_manager &resources) const
-  noexcept {
+void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
+                                         utils::resource_manager &resources) const noexcept {
 	for (const auto &displayable : m_ordered_displayable) {
 		displayable.first->vprint(viewer);
 		if (displayable.first->vis_hovered(viewer)) {
@@ -31,8 +31,10 @@ void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter 
 
 				                               viewer.window->draw(rect);
 			                               },
-			                               [&](const adapter::request::coords &coords) {
-				                               viewer.acquire_map()->highlight_tile(viewer, coords.x, coords.y, resources);
+			                               [&](const adapter::request::coords_list &list) {
+				                               for (const auto &coords : list.coords) {
+					                               viewer.acquire_map()->highlight_tile(viewer, coords.x, coords.y, resources);
+				                               }
 			                               },
 			                               [](std::monostate /* ignored */) {}};
 			std::visit(request_visitor, adapter.tooltip_for(displayable.second));
@@ -65,7 +67,7 @@ void view::overmap_collection::move_entity(adapter::view_handle handle, float ne
 	}
 
 	m_ordered_displayable.erase(it);
-    auto target = std::next(m_mobs.begin(), handle.handle);
+	auto target = std::next(m_mobs.begin(), handle.handle);
 	if (handle.is_mob) {
 		spdlog::trace("Moving view mob {} to ({} ; {})", handle.handle, newx, newy);
 		target->set_pos(newx, newy);
@@ -73,7 +75,7 @@ void view::overmap_collection::move_entity(adapter::view_handle handle, float ne
 	}
 	else {
 		spdlog::trace("Moving view object {} to ({} ; {})", handle.handle, newx, newy);
-        target->set_pos(newx, newy);
+		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
@@ -84,5 +86,5 @@ void view::overmap_collection::rotate_entity(adapter::view_handle handle, view::
 		return;
 	}
 
-    std::next(m_mobs.begin(), handle.handle)->set_direction(new_direction);
+	std::next(m_mobs.begin(), handle.handle)->set_direction(new_direction);
 }

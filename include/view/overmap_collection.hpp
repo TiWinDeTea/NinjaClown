@@ -56,7 +56,7 @@ public:
     }
 
 private:
-    std::set<pair_type, less> m_ordered_displayable;
+    std::multiset<pair_type, less> m_ordered_displayable;
 
     std::list<mob> m_mobs;
     std::list<object> m_objects;

@@ -12,13 +12,15 @@
 namespace model {
 
 struct button {
-	struct {
-		size_t column;
-		size_t row;
-	} target;
+	struct target_t {
+		ssize_t column;
+		ssize_t row;
+	};
+
+	std::vector<target_t> targets;
 };
 
-void toggle_button(adapter::adapter &adapter, button &button, grid_t &grid);
+void toggle_button(adapter::adapter &adapter, const button &button, grid_t &grid);
 
 } // namespace model
 

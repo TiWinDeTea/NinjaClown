@@ -15,6 +15,10 @@ namespace state {
 class holder;
 }
 
+namespace cpptoml {
+class table;
+}
+
 namespace adapter {
 struct changed_tile {
 	changed_tile(size_t x, size_t y)
@@ -58,14 +62,18 @@ struct view_hhash {
 
 namespace request {
 	struct coords {
-		size_t x, y;
+		ssize_t x, y;
 	};
+	struct coords_list {
+		std::vector<class coords> coords;
+	};
+
 	struct hitbox {
 		float x, y;
 		float width, height;
 	};
 } // namespace request
-using draw_request = std::variant<std::monostate, request::coords, request::hitbox>;
+using draw_request = std::variant<std::monostate, request::coords_list, request::hitbox>;
 
 class adapter {
 public:
@@ -88,6 +96,9 @@ public:
 	std::vector<changed_tile> cells_changed_since_last_update{};
 
 private:
+
+    bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
+
 	state::holder &m_state;
 
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;

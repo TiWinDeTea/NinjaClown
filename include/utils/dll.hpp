@@ -1,5 +1,5 @@
-#ifndef DLL
-#define DLL
+#ifndef NINJACLOWN_UTILS_DLL_HPP
+#define NINJACLOWN_UTILS_DLL_HPP
 
 #include <string>
 
@@ -48,4 +48,4 @@ private:
 
 } // namespace utils
 
-#endif
+#endif // NINJACLOWN_UTILS_DLL_HPP
