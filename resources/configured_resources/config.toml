@@ -122,8 +122,8 @@
         [graphics.tiles.target-tile]
             id = @TILES_TARGETID@
             frame-count = 8
-            pos.x = 2
-            pos.y = 122
+            pos.x = 0
+            pos.y = 121
 
     [graphics.objects]
         list = ["button"]
