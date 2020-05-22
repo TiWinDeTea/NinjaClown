@@ -4,7 +4,8 @@ use pathfinding::utils::absdiff;
 
 #[derive(Debug)]
 pub struct UserData {
-    objectives: Vec<path::Pos>,
+    target: path::Pos,
+    button: path::Pos,
     path: Vec<path::Pos>,
     path_idx: usize,
 }
@@ -16,7 +17,8 @@ pub fn start_level(bot: &mut Bot) -> UserData {
     bot.log(bot.map.to_string());
 
     UserData {
-        objectives: vec![path::Pos(2, 1), path::Pos(6, 1)],
+        target: path::Pos(2, 1),
+        button: path::Pos(6, 1),
         path: Vec::new(),
         path_idx: 0,
     }
@@ -26,21 +28,21 @@ pub fn think(bot: &mut Bot, data: &mut UserData) {
     let bot_pos = (bot.get_x_position(), bot.get_y_position());
 
     if data.path.is_empty() {
-        if let Some(goal) = data.objectives.pop() {
-            let graph = bot.map.build_path_graph();
-            let start = path::Pos(bot_pos.0 as usize, bot_pos.1 as usize);
-            if let Some(path) = graph.path_to(&start, &goal) {
-                data.path = path;
-                data.path_idx = 0;
-                bot.log("Moving to the next goal!");
-            } else {
-                bot.log("I can't reach the target!");
-                return;
-            }
+        let start = path::Pos(bot_pos.0 as usize, bot_pos.1 as usize);
+        let graph = bot.map.build_path_graph();
+
+        data.path = if let Some(path) = graph.path_to(&start, &data.target) {
+            bot.log("Moving to the target!");
+            path
+        } else if let Some(path) = graph.path_to(&start, &data.button) {
+            bot.log("Moving to the button!");
+            path
         } else {
-            bot.log("I reached the target!");
+            bot.log("Bib bop I'm stuck");
             return;
-        }
+        };
+
+        data.path_idx = 0;
     }
 
     let next_target = &data.path[data.path_idx];
