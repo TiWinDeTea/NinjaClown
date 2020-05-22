@@ -5,6 +5,7 @@
 #include <vector>
 #include <view/map.hpp>
 
+#include "utils/utils.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
 #include "model/grid.hpp"
@@ -13,8 +14,8 @@ namespace model {
 
 struct button {
 	struct target_t {
-		ssize_t column;
-		ssize_t row;
+		utils::ssize_t column;
+		utils::ssize_t row;
 	};
 
 	std::vector<target_t> targets;

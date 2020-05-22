@@ -16,6 +16,7 @@ add_executable(ninja-clown ${OPTIONS}
 		src/state_holder.cpp
 
 		src/adapter/adapter.cpp
+		src/adapter/adapter_map_loader_v1_0_0.cpp
 
 		src/bot/bot_api.cpp
 		src/bot/bot_dll.cpp

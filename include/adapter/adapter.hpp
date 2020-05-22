@@ -7,6 +7,8 @@
 #include <variant>
 #include <vector>
 
+#include "utils/utils.hpp"
+
 namespace model {
 enum class cell_type;
 }
@@ -62,10 +64,10 @@ struct view_hhash {
 
 namespace request {
 	struct coords {
-		ssize_t x, y;
+		utils::ssize_t x, y;
 	};
 	struct coords_list {
-		std::vector<class coords> coords;
+		std::vector<struct coords> coords;
 	};
 
 	struct hitbox {
@@ -96,8 +98,7 @@ public:
 	std::vector<changed_tile> cells_changed_since_last_update{};
 
 private:
-
-    bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
+	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
 
 	state::holder &m_state;
 
