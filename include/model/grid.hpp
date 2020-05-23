@@ -168,7 +168,7 @@ public:
 		                  std::min(static_cast<utils::ssize_t>(m_inner[0].size()), end.y)}};
 	}
 
-	[[nodiscard]] grid_view subgrid(const bounding_box &box) {
+	[[nodiscard]] grid_view subgrid(const obb &box) {
 		auto [min_x, max_x] = std::minmax({box.tl.x, box.br.x, box.bl.x, box.tr.x});
 		auto [min_y, max_y] = std::minmax({box.tl.y, box.br.y, box.bl.y, box.tr.y});
 		return subgrid({static_cast<utils::ssize_t>(min_x), static_cast<utils::ssize_t>(min_y)},

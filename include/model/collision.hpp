@@ -9,17 +9,26 @@
 
 namespace model {
 
-struct bounding_box {
+struct bounding_circle {
+    explicit bounding_circle(const component::hitbox &box) noexcept
+      : center{box.center}
+      , radius{std::min(box.half_height(), box.half_height())} { }
+
+    vec2 center;
+    float radius;
+};
+
+struct obb {
 	using min = float;
 	using max = float;
 
-	bounding_box(float top_left_x, float top_left_y, float width, float height) noexcept
+	obb(float top_left_x, float top_left_y, float width, float height) noexcept
 	    : tl{top_left_x, top_left_y}
 	    , bl{top_left_x, top_left_y + height}
 	    , tr{top_left_x + width, top_left_y}
 	    , br{top_left_x + width, top_left_y + height} { }
 
-	explicit bounding_box(const component::hitbox &box) noexcept
+	explicit obb(const component::hitbox &box) noexcept
 	    : tl{box.top_left()}
 	    , bl{box.bottom_left()}
 	    , tr{box.top_right()}
@@ -31,15 +40,6 @@ struct bounding_box {
 	vec2 bl;
 	vec2 tr;
 	vec2 br;
-};
-
-struct bounding_circle {
-	explicit bounding_circle(const component::hitbox &box) noexcept
-	    : center{box.center}
-	    , radius{std::min(box.half_height(), box.half_height())} { }
-
-	vec2 center;
-	float radius;
 };
 
 struct aabb {
@@ -58,7 +58,7 @@ struct aabb {
 	vec2 bottom_right;
 };
 
-bool obb_obb_sat_test(const bounding_box &a, const bounding_box &b);
+bool obb_obb_sat_test(const obb &a, const obb &b);
 
 bool circle_aabb_test(const bounding_circle &circle, const aabb &box);
 
