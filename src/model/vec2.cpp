@@ -65,3 +65,12 @@ model::vec2 model::vec2::to(const model::vec2 &other) const noexcept {
 float model::vec2::prod(const model::vec2 &other) const noexcept {
 	return x * other.y - y * other.x;
 }
+
+float model::vec2::atan2() const noexcept {
+	return std::atan2(y, x);
+}
+
+std::ostream &operator<<(std::ostream &stream, const model::vec2 &vec) {
+	stream << "(" << vec.x << ", " << vec.y << ")";
+	return stream;
+}

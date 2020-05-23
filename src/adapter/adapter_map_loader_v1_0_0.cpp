@@ -489,8 +489,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	}
 
 	// TODO externalize
-	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.5f;
-	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.5f;
+	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
+	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.25f;
 
 	size_t model_entity_handle = 0;
 	for (const mob &mob : mobs) {

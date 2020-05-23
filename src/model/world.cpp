@@ -53,7 +53,9 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 				move_entity(adapter, handle, +components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
 				            -components.properties[handle].move_speed * std::sin(components.hitbox[handle]->rad));
 				if (handle == ninja_clown_handle) {
-					float distance = components.hitbox[handle]->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f}).norm();
+					float distance = components.hitbox[handle]
+					                   ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
+					                   .norm();
 					if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
 						spdlog::info("You win."); // TODO
 					}
@@ -83,22 +85,24 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 
 	float old_x = hitbox.center.x;
 	hitbox.center.x += dx;
-	if (entity_check_collision(hitbox)) {
+	if (entity_check_collision(handle)) {
 		hitbox.center.x = old_x;
 	}
 
 	float old_y = hitbox.center.y;
 	hitbox.center.y += dy;
-	if (entity_check_collision(hitbox)) {
+	if (entity_check_collision(handle)) {
 		hitbox.center.y = old_y;
 	}
 
 	adapter.move_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, hitbox.center.x, hitbox.center.y);
 }
 
-bool model::world::entity_check_collision(const component::hitbox &hitbox) {
-	obb box{hitbox};
-	bounding_circle circle{hitbox};
+bool model::world::entity_check_collision(const size_t handle) {
+	obb box{*components.hitbox[handle]};
+
+	// with map
+	bounding_circle circle{*components.hitbox[handle]};
 	for (const cell_view &c : grid.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
 			aabb cell_box{c.pos};

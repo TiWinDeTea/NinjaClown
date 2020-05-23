@@ -10,8 +10,7 @@ include(cmake/spdlog.cmake)
 include(cmake/fmt.cmake)
 include(cmake/cpptoml.cmake)
 
-add_executable(ninja-clown ${OPTIONS}
-		src/main.cpp
+set(NINJA_CLOWN_SOURCES
 		src/terminal_commands.cpp
 		src/state_holder.cpp
 
@@ -36,6 +35,8 @@ add_executable(ninja-clown ${OPTIONS}
 		src/view/overmap_collection.cpp
 		src/view/viewer.cpp
 )
+
+add_executable(ninja-clown ${OPTIONS} ${NINJA_CLOWN_SOURCES} src/main.cpp)
 
 set_target_properties(
 	ninja-clown PROPERTIES
@@ -79,3 +80,39 @@ add_library(ninja-clown-bot MODULE bots/test.c)
 target_include_directories(ninja-clown-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 add_dependencies(ninja-clown ninja-clown-bot)
+
+# tests
+
+set(NINJA_CLOWN_TESTS_SOURCES
+		tests/collisions.cpp
+)
+
+add_executable(ninja-clown-tests ${NINJA_CLOWN_SOURCES} ${NINJA_CLOWN_TESTS_SOURCES} tests/main.cpp)
+
+set_target_properties(
+		ninja-clown-tests PROPERTIES
+		CXX_STANDARD 17
+		CXX_STANDARD_REQUIRED ON
+		CXX_EXTENSIONS OFF
+)
+
+target_include_directories(ninja-clown-tests SYSTEM PUBLIC
+		${IMGUI_SFML_INCLUDE_DIR}
+		${IMTERM_INCLUDE_DIR}
+		${SPDLOG_INCLUDE_DIR}
+		${SFML_INCLUDE_DIR}
+		${FMT_INCLUDE_DIR}
+		${CPPTOML_INCLUDE_DIR}
+		${CMAKE_CURRENT_LIST_DIR}
+		external/
+		include
+)
+
+target_link_libraries(
+		ninja-clown-tests
+		${IMGUI_SFML_LIBRARIES}
+		${SFML_LIBRARIES}
+		${DLL_LOADING_TARGET_LIBRARY}
+		${THREADS_LIBRARIES}
+		${FILESYSTEM_LIBRARIES}
+)

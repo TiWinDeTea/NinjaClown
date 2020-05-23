@@ -42,28 +42,28 @@ struct hitbox {
 		constexpr float top_left_angle = 3 * uni::math::pi_4<float>;
 		float hypot                    = std::hypot(half.x, half.y);
 		float angle                    = top_left_angle + rad;
-		return vec2{half.x * std::cos(angle) * hypot + center.x, half.y * std::sin(angle) * hypot + center.y};
+		return vec2{hypot * std::cos(angle) + center.x, hypot * std::sin(angle) + center.y};
 	}
 
 	[[nodiscard]] vec2 top_right() const {
 		constexpr float top_right_angle = uni::math::pi_4<float>;
 		float hypot                     = std::hypot(half.x, half.y);
 		float angle                     = top_right_angle + rad;
-		return vec2{half.x * std::cos(angle) * hypot + center.x, half.y * std::sin(angle) * hypot + center.y};
+		return vec2{hypot * std::cos(angle) + center.x, hypot * std::sin(angle) + center.y};
 	}
 
 	[[nodiscard]] vec2 bottom_left() const {
 		constexpr float bottom_left_angle = -3 * uni::math::pi_4<float>;
 		float hypot                       = std::hypot(half.x, half.y);
 		float angle                       = bottom_left_angle + rad;
-		return vec2{half.x * std::cos(angle) * hypot + center.x, half.y * std::sin(angle) * hypot + center.y};
+		return vec2{hypot * std::cos(angle) + center.x, hypot * std::sin(angle) + center.y};
 	}
 
 	[[nodiscard]] vec2 bottom_right() const {
 		constexpr float bottom_right_angle = -uni::math::pi_4<float>;
 		float hypot                        = std::hypot(half.x, half.y);
 		float angle                        = bottom_right_angle + rad;
-		return vec2{half.x * std::cos(angle) * hypot + center.x, half.y * std::sin(angle) * hypot + center.y};
+		return vec2{hypot * std::cos(angle) + center.x, hypot * std::sin(angle) + center.y};
 	}
 
 	[[nodiscard]] float half_width() const {
