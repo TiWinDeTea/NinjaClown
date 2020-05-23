@@ -9,6 +9,13 @@
 #include "state_holder.hpp"
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
+	auto clear = [this] {
+        state::access<adapter>::model(m_state).world.reset();
+        state::access<adapter>::view(m_state).acquire_overmap()->clear();
+        state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
+	};
+
+	clear();
 	std::string string_path = path.generic_string();
 
 	std::shared_ptr<cpptoml::table> map_file;
@@ -26,12 +33,16 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		return false;
 	}
 
+    bool success{false};
 	if (*version == "1.0.0") {
-		return load_map_v1_0_0(map_file, string_path);
+		success = load_map_v1_0_0(map_file, string_path);
 	}
 
-	spdlog::error(R"(Unsupported version "{}" for map "{}")", *version, string_path);
-	return false;
+	if (!success) {
+        spdlog::error(R"(Unsupported version "{}" for map "{}")", *version, string_path);
+		clear();
+    }
+	return success;
 }
 
 bool adapter::adapter::map_is_loaded() noexcept {

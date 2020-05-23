@@ -75,17 +75,10 @@
 	    closed = false
 
 	[[actors.spawn]]
-	    name = "gate8"
-	    type = "gate"
-	    pos.x = 9
-	    pos.y = 4
-	    closed = false
-
-	[[actors.spawn]]
 		type = "button"
 		pos.x = 6
 		pos.y = 1
-		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7", "gate8"]
+		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7"]
 
 [map]
 	layout = [

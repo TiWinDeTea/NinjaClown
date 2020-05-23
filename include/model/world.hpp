@@ -20,6 +20,21 @@ struct world {
 
 	void update(adapter::adapter &);
 
+	void reset() {
+		grid.resize(0,0);
+		interactions.clear();
+		activators.clear();
+		actionables.clear();
+
+        for (unsigned int i = 0 ; i < cst::max_entities ; ++i) {
+            components.metadata[i] = {};
+            components.properties[i] = {};
+            components.decision[i].reset();
+            components.health[i].reset();
+            components.hitbox[i].reset();
+        }
+	}
+
 	grid_t grid{};
 
 	size_t ninja_clown_handle{};

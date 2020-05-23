@@ -9,6 +9,10 @@
 #include "utils/visitor.hpp"
 #include "view/facing_dir.hpp"
 
+// TODO ailleurs : les infobulles devraient afficher le numéro d’handle
+// TODO faire des commandes pour activer des trucs via les numéros d’handle
+// TODO Effets sonores
+
 // TODO externalize error messages
 
 namespace {
@@ -261,7 +265,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 	std::vector<std::variant<activator, gate, autoshooter>> actors;
 
-	std::unordered_map<std::string, size_t> gates_handles;
+	std::unordered_map<std::string, size_t> actionable_handles;
 
 	for (const auto &actor : *tables) {
 		auto type = actor->get_as<std::string>(keys::type);
@@ -300,6 +304,16 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				return {};
 			}
 
+            std::string name;
+            if (!try_get(keys::name, name)) {
+                return {};
+            }
+
+			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
+			if (!insert_result.second) {
+				spdlog::warn("Actor {} is duplicated", name);
+                spdlog::warn(R"((while parsing map "{}"))", map);
+			}
 			actors.emplace_back(autoshooter{point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
 		}
 		else if (*type == values::gate) {
@@ -314,7 +328,11 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				return {};
 			}
 
-            gates_handles[name] = actors.size();
+            auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
+            if (!insert_result.second) {
+                spdlog::warn("Actor {} is duplicated", name);
+                spdlog::warn(R"((while parsing map "{}"))", map);
+            }
             actors.emplace_back(gate{point{x_pos, y_pos}, closed});
 		}
 		else {
@@ -344,9 +362,9 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			}
 			for (const std::string &target : *targets) {
 
-                auto it = gates_handles.find(target);
-				if (it == gates_handles.end()) {
-					error("Unknown referenced gate {}", target); // FIXME do not search only for gates wtf
+                auto it = actionable_handles.find(target);
+				if (it == actionable_handles.end()) {
+					error("Unknown referenced gate {}", target);
 					return {};
 				}
 
@@ -463,8 +481,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		++line_idx;
 	}
 
-    view.acquire_overmap()->clear();
-    // TODO FIXME : clear logic
 
 	// TODO externalize
 	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.5f;
