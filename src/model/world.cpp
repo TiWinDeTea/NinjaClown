@@ -31,23 +31,12 @@ void model::world::reset() {
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
 	if (components.decision[handle]) {
-		float &angle = components.hitbox[handle]->rad;
 		switch (*components.decision[handle]) {
 			case component::decision::TURN_LEFT:
-				// TODO: check collision
-				angle += components.properties[handle].rotation_speed;
-				if (angle >= PI) {
-					angle -= 2 * PI;
-				}
-				adapter.rotate_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, angle);
+				rotate_entity(adapter, handle, components.properties[handle].rotation_speed);
 				break;
 			case component::decision::TURN_RIGHT:
-				// TODO: check collision
-				components.hitbox[handle]->rad -= components.properties[handle].rotation_speed;
-				if (angle <= -PI) {
-					angle += 2 * PI;
-				}
-				adapter.rotate_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, angle);
+				rotate_entity(adapter, handle, -components.properties[handle].rotation_speed);
 				break;
 			case component::decision::MOVE_FORWARD:
 				move_entity(adapter, handle, +components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
@@ -98,7 +87,27 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 	adapter.move_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, hitbox.center.x, hitbox.center.y);
 }
 
-bool model::world::entity_check_collision(const size_t handle) {
+void model::world::rotate_entity(adapter::adapter &adapter, size_t handle, float rotation_rad) {
+	component::hitbox &hitbox = components.hitbox[handle].value();
+	float old_rad             = hitbox.rad;
+
+	hitbox.rad += rotation_rad;
+	if (hitbox.rad >= PI) {
+		hitbox.rad -= 2 * PI;
+	}
+	else if (hitbox.rad <= -PI) {
+		hitbox.rad += 2 * PI;
+	}
+
+	if (entity_check_collision(handle)) {
+		hitbox.rad = old_rad;
+	}
+	else {
+		adapter.rotate_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, hitbox.rad);
+	}
+}
+
+bool model::world::entity_check_collision(size_t handle) {
 	obb box{*components.hitbox[handle]};
 
 	// with map
@@ -107,6 +116,16 @@ bool model::world::entity_check_collision(const size_t handle) {
 		if (c.type != cell_type::GROUND) {
 			aabb cell_box{c.pos};
 			if (circle_aabb_test(circle, cell_box)) {
+				return true;
+			}
+		}
+	}
+
+	// other entities
+	for (size_t other_handle = cst::max_entities; other_handle--;) {
+		if (other_handle != handle && components.hitbox[other_handle]) {
+			obb other{*components.hitbox[other_handle]};
+			if (obb_obb_sat_test(box, other)) {
 				return true;
 			}
 		}
