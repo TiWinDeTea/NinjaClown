@@ -271,8 +271,8 @@ bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_
 
 	namespace spr = config_keys::sprites;
 	view::shifted_animation shifted_anim{std::move(*anim)};
-	shifted_anim.set_shift(mob_anim_config->get_qualified_as<int>(spr::xshift).value_or(0),
-	                       mob_anim_config->get_qualified_as<int>(spr::yshift).value_or(0));
+	shifted_anim.set_shift(static_cast<float>(mob_anim_config->get_qualified_as<int>(spr::xshift).value_or(0)),
+	                       static_cast<float>(mob_anim_config->get_qualified_as<int>(spr::yshift).value_or(0)));
 
 	anims.add_animation(std::move(shifted_anim), dir);
 	return true;

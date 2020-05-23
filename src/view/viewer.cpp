@@ -184,7 +184,8 @@ void view::viewer::do_run() noexcept {
 
 		local_window.clear();
 		m_map.acquire()->print(*this, m_state_holder.resources);
-		if (show_debug_data) {
+
+        if (show_debug_data) {
 			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
 		}
 		else {

@@ -79,9 +79,9 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 bool model::world::entity_check_collision(const component::hitbox &hitbox) {
 	bounding_box box{hitbox};
 	bounding_circle circle{hitbox};
-	for (const cell_view c : grid.subgrid(box)) {
+	for (const cell_view &c : grid.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
-			bounding_box cell_box{static_cast<float>(c.x), static_cast<float>(c.y), model::cell_width, model::cell_height};
+			bounding_box cell_box{static_cast<float>(c.pos.x), static_cast<float>(c.pos.y), model::cell_width, model::cell_height};
 			if (circle_obb_test(circle, cell_box)) {
 				return true;
 			}

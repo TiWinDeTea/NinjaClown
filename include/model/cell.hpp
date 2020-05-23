@@ -22,10 +22,6 @@ struct cell {
 	explicit cell(cell_type type) noexcept
 	    : type{type} { }
 
-	cell(cell &&other) noexcept
-	    : type{other.type}
-	    , interaction_handle{other.interaction_handle} { }
-
 	cell(cell_type type, size_t interaction_handle) noexcept
 	    : type{type}
 	    , interaction_handle{interaction_handle} { }

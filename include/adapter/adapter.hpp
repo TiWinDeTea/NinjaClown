@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "utils/utils.hpp"
+#include "model/grid_point.hpp"
 
 namespace model {
 enum class cell_type;
@@ -22,14 +23,6 @@ class table;
 }
 
 namespace adapter {
-struct changed_tile {
-	changed_tile(size_t x, size_t y)
-	    : column{x}
-	    , line{y} { }
-
-	size_t column;
-	size_t line;
-};
 
 struct model_handle {
 	explicit model_handle() noexcept = default;
@@ -53,13 +46,13 @@ struct view_handle {
 	size_t handle{};
 };
 
-struct model_hhash: private std::hash<size_t> {
-	size_t operator()(const model_handle &h) const noexcept {
-		return std::hash<size_t>::operator()(h.handle);
+struct model_hhash: private std::hash<utils::ssize_t> {
+	utils::ssize_t operator()(const model_handle &h) const noexcept {
+		return std::hash<utils::ssize_t>::operator()(h.handle);
 	}
 };
 struct view_hhash {
-	size_t operator()(const view_handle &h) const noexcept;
+    std::size_t operator()(const view_handle &h) const noexcept;
 };
 
 namespace request {
@@ -86,7 +79,7 @@ public:
 
 	bool map_is_loaded() noexcept;
 
-	void update_map(size_t y, size_t x, model::cell_type new_cell) noexcept;
+	void update_map(const model::grid_point &target, model::cell_type new_cell) noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 
@@ -95,7 +88,7 @@ public:
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
 public:
-	std::vector<changed_tile> cells_changed_since_last_update{};
+	std::vector<model::grid_point> cells_changed_since_last_update{};
 
 private:
 	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;

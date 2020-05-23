@@ -30,7 +30,7 @@ size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, bot::cell *map_view) {
 	model::world *world = get_world(ninja_data);
 	model::grid_t &grid = world->grid;
-	for (const auto &cell : grid.subgrid(0, 0, grid.width(), grid.height())) {
+	for (const auto &cell : grid.subgrid({0, 0}, {static_cast<utils::ssize_t>(grid.width()), static_cast<utils::ssize_t>(grid.height())})) {
 		map_view->type = static_cast<bot::cell_type>(cell.type);
 		if (cell.interaction_handle) {
 			map_view->interaction = static_cast<bot::interaction_kind>(world->interactions[*cell.interaction_handle].kind);
@@ -45,8 +45,8 @@ void NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::cell *map_view) 
 	model::grid_t &grid       = world->grid;
 
 	for (auto &changed : adapter->cells_changed_since_last_update) {
-		const auto &model_cell = grid[changed.column][changed.line];
-		bot::cell &bot_cell    = map_view[changed.column + changed.line * grid.width()]; // NOLINT
+		const auto &model_cell = grid[changed.x][changed.y];
+		bot::cell &bot_cell    = map_view[changed.x + changed.y * grid.width()]; // NOLINT
 
 		bot_cell.type = static_cast<bot::cell_type>(model_cell.type);
 		if (model_cell.interaction_handle) {

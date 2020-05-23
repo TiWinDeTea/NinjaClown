@@ -10,7 +10,7 @@
 #include <cstddef>
 
 namespace utils {
-using ssize_t = std::make_signed_t<size_t>;
+using ssize_t = std::make_signed_t<std::size_t>;
 
 inline bool starts_with(std::string_view str, std::string_view prefix) {
 	return std::mismatch(str.begin(), str.end(), prefix.begin(), prefix.end()).second == prefix.end();

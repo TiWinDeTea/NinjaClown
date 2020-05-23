@@ -6,13 +6,14 @@
 #include <iterator> // std::input_iterator_tag
 #include <vector>
 
-#include "cell.hpp"
-#include "collision.hpp"
+#include "model/cell.hpp"
+#include "model/collision.hpp"
+#include "model/grid_point.hpp"
 
 namespace model {
 
 struct cell_view {
-	size_t x, y;
+	grid_point pos;
 	cell_type &type;
 	utils::optional<size_t> &interaction_handle;
 };
@@ -24,19 +25,21 @@ class grid_iterator {
 	using reference         = Ref;
 
 public:
-	grid_iterator(std::vector<std::vector<cell>> &grid, size_t start_x, size_t start_y, size_t target_x, size_t target_y)
+	/**
+     * @param start  top left corner
+     * @param target bottom right corner
+     */
+	grid_iterator(std::vector<std::vector<cell>> &grid, grid_point start, grid_point target)
 	    : m_grid{grid}
-	    , m_left_x{start_x}
-	    , m_cur_x{start_x}
-	    , m_cur_y{start_y}
-	    , m_right_x{target_x}
-	    , m_bottom_y{target_y} { }
+	    , m_start{start}
+	    , m_current{start}
+	    , m_end{target} { }
 
 	grid_iterator &operator++() {
-		++m_cur_x;
-		if (m_cur_x == m_right_x) {
-			m_cur_x = m_left_x;
-			++m_cur_y;
+		++m_current.x;
+		if (m_current.x == m_end.x) {
+			m_current.x = m_start.x;
+			++m_current.y;
 		}
 		return *this;
 	}
@@ -48,7 +51,8 @@ public:
 	}
 
 	bool operator==(const grid_iterator &rhs) const {
-		return m_cur_x == rhs.m_cur_x && m_cur_y == rhs.m_cur_y;
+		assert(&m_grid == &rhs.m_grid);
+		return m_current == rhs.m_current;
 	}
 
 	bool operator!=(const grid_iterator &rhs) const {
@@ -56,13 +60,15 @@ public:
 	}
 
 	reference operator*() {
-		cell &c = m_grid[m_cur_x][m_cur_y];
-		return cell_view{m_cur_x, m_cur_y, c.type, c.interaction_handle};
+		cell &c = m_grid[m_current.x][m_current.y];
+		return cell_view{m_current.x, m_current.y, c.type, c.interaction_handle};
 	}
 
 private:
 	std::vector<std::vector<cell>> &m_grid;
-	size_t m_left_x, m_cur_x, m_cur_y, m_right_x, m_bottom_y;
+	grid_point m_start;
+	grid_point m_current;
+	grid_point m_end;
 };
 
 class grid_view {
@@ -75,19 +81,21 @@ public:
 	using difference_type = std::pair<std::int64_t, std::int64_t>;
 	using size_type       = std::pair<size_t, size_t>;
 
-	grid_view(std::vector<std::vector<cell>> &grid, size_t left_x, size_t top_y, size_t right_x, size_t bottom_y)
+	/**
+	 * @param begin top left corner
+	 * @param end   bottom right corner
+	 */
+	grid_view(std::vector<std::vector<cell>> &grid, grid_point begin, grid_point end)
 	    : m_grid{grid}
-	    , m_left_x{left_x}
-	    , m_top_y{top_y}
-	    , m_right_x{right_x}
-	    , m_bottom_y{bottom_y} { }
+	    , m_start{begin}
+	    , m_end{end} { }
 
 	iterator begin() {
-		return grid_iterator<cell_view>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
+		return grid_iterator<cell_view>{m_grid, m_start, m_end};
 	}
 
 	[[nodiscard]] const_iterator begin() const {
-		return grid_iterator<const cell_view>{m_grid, m_left_x, m_top_y, m_right_x, m_bottom_y};
+		return grid_iterator<const cell_view>{m_grid, m_start, m_end};
 	}
 
 	[[nodiscard]] const_iterator cbegin() const {
@@ -95,12 +103,11 @@ public:
 	}
 
 	iterator end() {
-		return grid_iterator<cell_view>{m_grid, m_left_x, m_bottom_y, std::numeric_limits<size_t>::max(),
-		                                std::numeric_limits<size_t>::max()};
+		return grid_iterator<cell_view>{m_grid, {m_start.x, m_end.y}, grid_point::max()};
 	}
 
 	[[nodiscard]] const_iterator end() const {
-		return grid_iterator<const cell_view>{m_grid, m_right_x, m_bottom_y, m_right_x, m_bottom_y};
+		return grid_iterator<const cell_view>{m_grid, {m_start.x, m_end.y}, grid_point::max()};
 	}
 
 	[[nodiscard]] const_iterator cend() const {
@@ -109,7 +116,8 @@ public:
 
 private:
 	std::vector<std::vector<cell>> &m_grid;
-	size_t m_left_x, m_top_y, m_right_x, m_bottom_y;
+	grid_point m_start;
+	grid_point m_end;
 };
 
 class grid_t {
@@ -129,11 +137,13 @@ public:
 		m_height = height;
 	}
 
-	[[nodiscard]] std::vector<cell> &operator[](size_t column) {
+	[[nodiscard]] std::vector<cell> &operator[](utils::ssize_t column) {
+		assert(column >= 0 && static_cast<std::size_t>(column) < m_inner.size()); // NOLINT
 		return m_inner[column];
 	}
 
-	[[nodiscard]] const std::vector<cell> &operator[](size_t column) const {
+	[[nodiscard]] const std::vector<cell> &operator[](utils::ssize_t column) const {
+		assert(column >= 0 && static_cast<std::size_t>(column) < m_inner.size()); // NOLINT
 		return m_inner[column];
 	}
 
@@ -145,26 +155,33 @@ public:
 		return m_height;
 	}
 
-	[[nodiscard]] grid_view subgrid(size_t left_x, size_t top_y, size_t right_x, size_t bottom_y) {
-		assert(left_x < right_x);
-		assert(top_y < bottom_y);
-		return grid_view{m_inner, left_x, top_y, std::min(m_inner.size(), right_x), std::min(m_inner[0].size(), bottom_y)};
+	/**
+     * @param begin top left corner
+     * @param end   bottom right corner
+     */
+	[[nodiscard]] grid_view subgrid(grid_point begin, grid_point end) {
+		assert(begin.x < end.x); // NOLINT
+		assert(begin.y < end.y); // NOLINT
+		return grid_view{m_inner,
+		                 begin,
+		                 {std::min(static_cast<utils::ssize_t>(m_inner.size()), end.x),
+		                  std::min(static_cast<utils::ssize_t>(m_inner[0].size()), end.y)}}; // FIXME ??
 	}
 
 	[[nodiscard]] grid_view subgrid(const bounding_box &box) {
 		auto [min_x, max_x] = std::minmax({box.tl.x, box.br.x, box.bl.x, box.tr.x});
 		auto [min_y, max_y] = std::minmax({box.tl.y, box.br.y, box.bl.y, box.tr.y});
-		return subgrid(static_cast<size_t>(min_x), static_cast<size_t>(min_y), static_cast<size_t>(max_x) + 1,
-		               static_cast<size_t>(max_y) + 1);
+		return subgrid({static_cast<utils::ssize_t>(min_x), static_cast<utils::ssize_t>(min_y)},
+		               {static_cast<utils::ssize_t>(max_x) + 1, static_cast<utils::ssize_t>(max_y) + 1});
 	}
 
 	[[nodiscard]] grid_view radius(float center_x, float center_y, float radius) {
-		auto start_x  = static_cast<size_t>(std::max(0.5f, center_x - radius));
-		auto start_y  = static_cast<size_t>(std::max(0.5f, center_y - radius));
-		auto target_x = std::min(m_inner.size() - 1, static_cast<size_t>(center_x + radius) + 1);
-		auto target_y = std::min(m_inner[0].size() - 1, static_cast<size_t>(center_y + radius) + 1);
+		auto start_x  = static_cast<utils::ssize_t>(std::max(0.5f, center_x - radius));
+		auto start_y  = static_cast<utils::ssize_t>(std::max(0.5f, center_y - radius));
+		auto target_x = static_cast<utils::ssize_t>(std::min(m_inner.size() - 1, static_cast<size_t>(center_x + radius) + 1));
+		auto target_y = static_cast<utils::ssize_t>(std::min(m_inner[0].size() - 1, static_cast<size_t>(center_y + radius) + 1));
 
-		return subgrid(start_x, start_y, target_x, target_y);
+		return subgrid({start_x, start_y}, {target_x, target_y});
 	}
 
 private:
