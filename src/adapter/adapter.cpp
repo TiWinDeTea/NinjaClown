@@ -111,6 +111,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 		ImGui::BeginTooltip();
 		ImGui::Text("Your objective.");
 		ImGui::EndTooltip();
+		return {};
 	}
 
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
