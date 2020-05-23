@@ -9,7 +9,7 @@
 #include "cell.hpp"
 #include "components.hpp"
 #include "grid.hpp"
-#include "interactables/button.hpp"
+#include "activator.hpp"
 #include "interaction.hpp"
 
 namespace model {
@@ -26,7 +26,9 @@ struct world {
 	::model::components components{};
 
 	std::vector<interaction> interactions{};
-	std::vector<button> buttons{};
+	std::vector<activator> activators{};
+	std::vector<actionable> actionables{};
+
 
 private:
 	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);

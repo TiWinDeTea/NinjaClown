@@ -44,9 +44,13 @@ public:
     adapter::view_handle add_object(object&&) noexcept;
     adapter::view_handle add_mob(mob&&) noexcept;
 
+
     void move_entity(adapter::view_handle handle, float newx, float newy);
 
     void rotate_entity(adapter::view_handle handle, view::facing_direction::type new_direction) noexcept;
+
+	void hide(adapter::view_handle handle);
+	void reveal(adapter::view_handle handle);
 
 
     void clear() {

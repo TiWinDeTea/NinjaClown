@@ -9,11 +9,16 @@ class viewer;
 // can be ordered by Y coordinate
 class overmap_displayable_interface {
 public:
-	// prints the displayable in a view
-	virtual void vprint(view::viewer&) const = 0;
 
-	// returns true if the displayable is currently hovered by the mouse
-	virtual bool vis_hovered(view::viewer&) const noexcept = 0;
+	void print(view::viewer& v) const {
+		if (!m_hidden) {
+			vprint(v);
+		}
+	}
+
+	bool is_hovered(view::viewer& v) const noexcept {
+		return !m_hidden && vis_hovered(v);
+	}
 
 	bool operator<(const overmap_displayable_interface& other) const noexcept {
 		return p_posy < other.p_posy;
@@ -21,9 +26,26 @@ public:
 
 	virtual ~overmap_displayable_interface() = default;
 
+	void hide() noexcept {
+		m_hidden = true;
+	}
+
+	void reveal() noexcept {
+		m_hidden = false;
+	}
+
 protected:
+    // prints the displayable in a view
+    virtual void vprint(view::viewer&) const = 0;
+
+    // returns true if the displayable is currently hovered by the mouse
+    virtual bool vis_hovered(view::viewer&) const noexcept = 0;
+
 	float p_posx{};
 	float p_posy{};
+
+private:
+    bool m_hidden{false};
 };
 }  // namespace view
 

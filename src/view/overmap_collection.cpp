@@ -9,15 +9,15 @@
 
 void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
 	for (const auto &displayable : m_ordered_displayable) {
-		displayable.first->vprint(viewer);
+		displayable.first->print(viewer);
 	}
 }
 
 void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
                                          utils::resource_manager &resources) const noexcept {
 	for (const auto &displayable : m_ordered_displayable) {
-		displayable.first->vprint(viewer);
-		if (displayable.first->vis_hovered(viewer)) {
+		displayable.first->print(viewer);
+		if (displayable.first->is_hovered(viewer)) {
 			utils::visitor request_visitor{[&](const adapter::request::hitbox &hitbox) {
 				                               auto [screen_x, screen_y] = viewer.to_screen_coords(hitbox.x, hitbox.y);
 				                               auto [screen_width, screen_height]
@@ -87,4 +87,20 @@ void view::overmap_collection::rotate_entity(adapter::view_handle handle, view::
 	}
 
 	std::next(m_mobs.begin(), handle.handle)->set_direction(new_direction);
+}
+
+void view::overmap_collection::hide(adapter::view_handle handle) {
+	if (handle.is_mob) {
+		std::next(m_mobs.begin(), handle.handle)->hide();
+	} else {
+		std::next(m_objects.begin(), handle.handle)->hide();
+	}
+}
+
+void view::overmap_collection::reveal(adapter::view_handle handle) {
+    if (handle.is_mob) {
+        std::next(m_mobs.begin(), handle.handle)->reveal();
+    } else {
+        std::next(m_objects.begin(), handle.handle)->reveal();
+    }
 }
