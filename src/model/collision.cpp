@@ -24,7 +24,17 @@ std::pair<model::bounding_box::min, model::bounding_box::max> model::bounding_bo
 	return {min_coef, max_coef};
 }
 
-bool model::circle_obb_test(const bounding_circle &circle, const bounding_box &box) {
-	return circle.center.to(box.bl).norm() < circle.radius || circle.center.to(box.br).norm() < circle.radius
-	       || circle.center.to(box.tl).norm() < circle.radius || circle.center.to(box.tr).norm() < circle.radius;
+bool model::circle_aabb_test(const bounding_circle &circle, const aabb &box) {
+	if (point_aabb_test(circle.center, box)) {
+		return true;
+	}
+
+	vec2 radius = circle.center.to(box.center()).unitify() * circle.radius;
+	vec2 point  = circle.center + radius;
+
+	return point_aabb_test(point, box);
+}
+
+bool model::point_aabb_test(const vec2 &point, const aabb &box) {
+	return point.x > box.top_left.x && point.x < box.bottom_right.x && point.y > box.top_left.y && point.y < box.bottom_right.y;
 }

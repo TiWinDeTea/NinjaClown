@@ -7,15 +7,16 @@ struct vec2 {
 	float x;
 	float y;
 
-	void unitify();
-	[[nodiscard]] float dot(const vec2 &other) const;
-	[[nodiscard]] vec2 unit() const;
-	[[nodiscard]] vec2 project_on(const vec2 &other) const;
-	[[nodiscard]] vec2 proj_point(const vec2 &other) const;
-	[[nodiscard]] float proj_coef(const vec2 &other) const;
-	[[nodiscard]] vec2 normal() const;
-	[[nodiscard]] float norm() const;
-	[[nodiscard]] vec2 to(const vec2 &other) const;
+	vec2 &unitify();
+	[[nodiscard]] float dot(const vec2 &other) const noexcept;
+	[[nodiscard]] vec2 unit() const noexcept;
+	[[nodiscard]] vec2 project_on(const vec2 &other) const noexcept;
+	[[nodiscard]] vec2 proj_point(const vec2 &other) const noexcept;
+	[[nodiscard]] float proj_coef(const vec2 &other) const noexcept;
+	[[nodiscard]] vec2 normal() const noexcept;
+	[[nodiscard]] float norm() const noexcept;
+	[[nodiscard]] vec2 to(const vec2 &other) const noexcept;
+	[[nodiscard]] float prod(const vec2 &other) const noexcept;
 };
 
 vec2 operator+(const vec2 &a, const vec2 &b);

@@ -20,7 +20,7 @@ enum class interactable_kind {
 struct interaction {
 	interaction_kind kind;
 	interactable_kind interactable;
-	size_t interactable_handler;
+	std::size_t interactable_handler;
 };
 
 } // namespace model

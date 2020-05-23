@@ -15,20 +15,19 @@ void model::world::update(adapter::adapter &adapter) {
 }
 
 void model::world::reset() {
-    grid.resize(0,0);
-    interactions.clear();
-    activators.clear();
-    actionables.clear();
+	grid.resize(0, 0);
+	interactions.clear();
+	activators.clear();
+	actionables.clear();
 
-    for (unsigned int i = 0 ; i < cst::max_entities ; ++i) {
-        components.metadata[i] = {};
-        components.properties[i] = {};
-        components.decision[i].reset();
-        components.health[i].reset();
-        components.hitbox[i].reset();
-    }
+	for (unsigned int i = 0; i < cst::max_entities; ++i) {
+		components.metadata[i]   = {};
+		components.properties[i] = {};
+		components.decision[i].reset();
+		components.health[i].reset();
+		components.hitbox[i].reset();
+	}
 }
-
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
 	if (components.decision[handle]) {
@@ -96,8 +95,8 @@ bool model::world::entity_check_collision(const component::hitbox &hitbox) {
 	bounding_circle circle{hitbox};
 	for (const cell_view &c : grid.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
-			bounding_box cell_box{static_cast<float>(c.pos.x), static_cast<float>(c.pos.y), model::cell_width, model::cell_height};
-			if (circle_obb_test(circle, cell_box)) {
+			aabb cell_box{c.pos};
+			if (circle_aabb_test(circle, cell_box)) {
 				return true;
 			}
 		}
@@ -106,12 +105,12 @@ bool model::world::entity_check_collision(const component::hitbox &hitbox) {
 	return false;
 }
 
-void model::world::fire_activator(adapter::adapter& adapter, size_t handle) {
-    for (size_t target : activators[handle].targets) {
+void model::world::fire_activator(adapter::adapter &adapter, size_t handle) {
+	for (size_t target : activators[handle].targets) {
 		fire_actionable(adapter, target);
-    }
+	}
 }
 
-void model::world::fire_actionable(adapter::adapter& adapter, size_t handle) {
+void model::world::fire_actionable(adapter::adapter &adapter, size_t handle) {
 	actionables[handle].make_action({*this, adapter});
 }
