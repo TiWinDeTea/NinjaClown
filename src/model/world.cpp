@@ -14,6 +14,22 @@ void model::world::update(adapter::adapter &adapter) {
 	}
 }
 
+void model::world::reset() {
+    grid.resize(0,0);
+    interactions.clear();
+    activators.clear();
+    actionables.clear();
+
+    for (unsigned int i = 0 ; i < cst::max_entities ; ++i) {
+        components.metadata[i] = {};
+        components.properties[i] = {};
+        components.decision[i].reset();
+        components.health[i].reset();
+        components.hitbox[i].reset();
+    }
+}
+
+
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
 	if (components.decision[handle]) {
 		float &angle = components.hitbox[handle]->rad;
@@ -48,10 +64,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 					if (c.interaction_handle) {
 						interaction &i = interactions[c.interaction_handle.value()];
 						if (i.interactable == interactable_kind::BUTTON) {
-							for (size_t target : activators[i.interactable_handler].targets) {
-								actionables[target].make_action({target, c.pos, *this, adapter});
-							}
-							break;
+							fire_activator(adapter, i.interactable_handler);
 						}
 					}
 				}
@@ -91,4 +104,14 @@ bool model::world::entity_check_collision(const component::hitbox &hitbox) {
 	}
 
 	return false;
+}
+
+void model::world::fire_activator(adapter::adapter& adapter, size_t handle) {
+    for (size_t target : activators[handle].targets) {
+		fire_actionable(adapter, target);
+    }
+}
+
+void model::world::fire_actionable(adapter::adapter& adapter, size_t handle) {
+	actionables[handle].make_action({*this, adapter});
 }

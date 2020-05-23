@@ -23,6 +23,8 @@ enum class command_id {
 	set                 = COMMANDS_SETID,
 	valueof             = COMMANDS_VALUEOFID,
 	reconfigure         = COMMANDS_RELOAD_RESOURCES,
+	fire_actionable     = COMMANDS_FIRE_ACTIONABLE,
+	fire_activator      = COMMANDS_FIRE_ACTIVATOR,
 	OUTOFRANGE
 };
 
@@ -70,10 +72,12 @@ public:
 	static void load_map(argument_type &);
 	static void update_world(argument_type &);
 	static void run_model(argument_type &);
-    static void stop_model(argument_type &);
-    static void set(argument_type &);
-    static void valueof(argument_type &);
-    static void reconfigure(argument_type &);
+	static void stop_model(argument_type &);
+	static void set(argument_type &);
+	static void valueof(argument_type &);
+	static void reconfigure(argument_type &);
+	static void fire_activator(argument_type &);
+	static void fire_actionable(argument_type &);
 
 	static std::vector<std::string> autocomplete_path(argument_type &, const std::initializer_list<std::string_view> &extensions);
 	static std::vector<std::string> autocomplete_variable(argument_type &);

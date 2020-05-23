@@ -10,6 +10,8 @@
 #include "model/grid_point.hpp"
 #include "utils/utils.hpp"
 
+class terminal_commands;
+
 namespace model {
 enum class cell_type;
 }
@@ -102,6 +104,8 @@ public: // fixme friendship
 	std::vector<model::grid_point> cells_changed_since_last_update{};
 
 private:
+    friend terminal_commands;
+
 	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
 
 	state::holder &m_state;

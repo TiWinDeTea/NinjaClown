@@ -15,14 +15,13 @@ namespace model {
 struct actionable {
 
 	struct argument_type {
-		size_t handle; // FIXME
-		grid_point source;
         struct world& world;
 		adapter::adapter& adapter;
 	};
 
 	struct instance_data {
 		grid_point pos;
+		size_t handle;
 		unsigned int firing_rate;
 		float angle;
 	};

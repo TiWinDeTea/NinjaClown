@@ -13,27 +13,15 @@
 #include "model/grid.hpp"
 #include "model/interaction.hpp"
 
+class terminal_commands;
+
 namespace model {
 
 struct world {
 	world() noexcept = default;
 
 	void update(adapter::adapter &);
-
-	void reset() {
-		grid.resize(0,0);
-		interactions.clear();
-		activators.clear();
-		actionables.clear();
-
-        for (unsigned int i = 0 ; i < cst::max_entities ; ++i) {
-            components.metadata[i] = {};
-            components.properties[i] = {};
-            components.decision[i].reset();
-            components.health[i].reset();
-            components.hitbox[i].reset();
-        }
-	}
+	void reset();
 
 	grid_t grid{};
 
@@ -49,6 +37,11 @@ private:
 	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);
 	void move_entity(adapter::adapter &adapter, size_t handle, float x, float y);
 	bool entity_check_collision(const component::hitbox &hitbox);
+
+    void fire_activator(adapter::adapter&, size_t handle);
+    void fire_actionable(adapter::adapter&, size_t handle);
+
+	friend terminal_commands;
 };
 
 } // namespace model

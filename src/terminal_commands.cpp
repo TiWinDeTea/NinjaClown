@@ -16,6 +16,8 @@
 #include <filesystem>
 #include <utils/visitor.hpp>
 
+// TODO translations
+
 namespace {
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
@@ -47,7 +49,9 @@ constexpr std::array local_command_list{
   cmd{command_id::update_world, terminal_commands::update_world, terminal_commands::no_completion},
   cmd{command_id::set, terminal_commands::set, terminal_commands::autocomplete_variable}, // TODO: autocomplete only settable variable
   cmd{command_id::valueof, terminal_commands::valueof, terminal_commands::autocomplete_variable}, // TODO:autocomplete with map
-  cmd{command_id::reconfigure, terminal_commands::reconfigure, autocomplete_config}};
+  cmd{command_id::reconfigure, terminal_commands::reconfigure, autocomplete_config},
+  cmd{command_id::fire_actionable, terminal_commands::fire_actionable, terminal_commands::no_completion},
+  cmd{command_id::fire_activator, terminal_commands::fire_activator, terminal_commands::no_completion}};
 
 bool as_bool(std::string_view str) {
 	std::optional<int> int_val = utils::from_chars<int>(str);
@@ -67,7 +71,7 @@ void terminal_commands::load_commands(const utils::resource_manager &resources) 
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
 			std::string error = "No name found for command " + std::to_string(static_cast<int>(cmd.cmd));
-            spdlog::warn(error);
+			spdlog::warn(error);
 		}
 
 		auto [name, desc] = *maybe_command;
@@ -315,6 +319,47 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		arg.val.m_view.reload_sprites();
 		arg.val.m_terminal.get_terminal_helper()->load_commands(arg.val.resources);
 	}
+}
+
+void terminal_commands::fire_activator(argument_type &arg) {
+	if (arg.command_line.size() != 2) {
+		arg.term.add_formatted("usage: {} <activator id>", arg.command_line.front()); // TODO externaliser
+		return;
+	}
+
+	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
+	if (!val) {
+		arg.term.add_formatted("activator id should be an integer (got {})", arg.command_line.back()); // TODO externaliser
+		return;
+	}
+
+	if (*val > arg.val.m_model.world.activators.size()) {
+		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
+		                       arg.val.m_model.world.activators.size()); // TODO externaliser
+		return;
+	}
+
+	arg.val.m_model.world.fire_activator(arg.val.m_adapter, *val);
+}
+
+void terminal_commands::fire_actionable(argument_type &arg) {
+	if (arg.command_line.size() != 2) {
+		arg.term.add_formatted("usage: {} <actionable id>", arg.command_line.front()); // TODO externaliser
+		return;
+	}
+
+	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
+	if (!val) {
+		arg.term.add_formatted("activator id should be an integer (got {})", arg.command_line.back()); // TODO externaliser
+		return;
+	}
+
+	if (*val > arg.val.m_model.world.actionables.size()) {
+		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
+		                       arg.val.m_model.world.actionables.size()); // TODO externaliser
+		return;
+	}
+	arg.val.m_model.world.fire_actionable(arg.val.m_adapter, *val);
 }
 
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg,

@@ -9,8 +9,6 @@
 #include "utils/visitor.hpp"
 #include "view/facing_dir.hpp"
 
-// TODO ailleurs : les infobulles devraient afficher le numéro d’handle
-// TODO faire des commandes pour activer des trucs via les numéros d’handle
 // TODO Effets sonores
 
 // TODO externalize error messages
@@ -590,7 +588,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cell_height;
 
 			  world.actionables.push_back(
-			    {model::actionable::instance_data{{gate.pos.x, gate.pos.y}}, model::actionable::behaviours_ns::gate});
+			    {model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()}, model::actionable::behaviours_ns::gate});
 
 			  view::object o{};
 			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
@@ -613,7 +611,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cell_height;
 
 			  world.actionables.push_back(
-			    {model::actionable::instance_data{{autoshooter.pos.x, autoshooter.pos.y}, autoshooter.firing_rate, autoshooter.facing},
+			    {model::actionable::instance_data{{autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
 			     model::actionable::behaviours_ns::autoshooter});
 
 			  view::object o{};
