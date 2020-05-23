@@ -7,6 +7,7 @@
 #include "model/components.hpp"
 #include "model/grid_point.hpp"
 #include "state_holder.hpp"
+#include "utils/scope_guards.hpp"
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	auto clear = [this] {
@@ -102,16 +103,20 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	}
 }
 
-
 // TODO traductions
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 
 	model::world &world = state::access<adapter>::model(m_state).world;
 
-	if (entity == m_target_handle) {
-		ImGui::BeginTooltip();
-		ImGui::Text("Your objective.");
+	ImGui::BeginTooltip();
+	ImGui::Separator();
+	ON_SCOPE_EXIT {
+		ImGui::Separator();
 		ImGui::EndTooltip();
+	};
+
+	if (entity == m_target_handle) {
+		ImGui::Text("Your objective.");
 		return {};
 	}
 
@@ -120,7 +125,6 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 		auto handle      = it->second.handle;
 
 		if (entity.is_mob) {
-			ImGui::BeginTooltip();
 			if (components.health[handle]) {
 				ImGui::Text("Current HP: %u", components.health[handle]->points);
 			}
@@ -133,7 +137,6 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
 			}
-			ImGui::EndTooltip();
 		}
 		else {
 			auto model_it = m_view2model.find(entity);
@@ -143,8 +146,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				case model_handle::ACTIVATOR: {
 					auto targets = world.activators[it->second.handle].targets;
 					request::coords_list list;
-					ImGui::BeginTooltip();
-                    ImGui::Text("Activator %zu", it->second.handle);
+					ImGui::Text("Activator %zu", it->second.handle);
 					for (size_t target : targets) {
 						std::string target_name;
 						auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
@@ -156,25 +158,24 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 
 						if (!target_name.empty()) {
-                            ImGui::Text("    target: %zu, %s", target, target_name.c_str());
-						} else {
-                            ImGui::Text("    target: %zu", target);
+							ImGui::Text("    target: %zu, %s", target, target_name.c_str());
+						}
+						else {
+							ImGui::Text("    target: %zu", target);
 							spdlog::warn("Name not found for activator target {}", target);
-                        }
+						}
 					}
-					ImGui::EndTooltip();
 					return list;
 				}
 				case model_handle::ACTIONABLE: {
-					ImGui::BeginTooltip();
 					auto target_name = m_view2name.find(entity);
 					if (target_name != m_view2name.end()) {
-                        ImGui::Text("Gate : %zu, %s", model_it->second.handle, target_name->second.c_str());
-					} else {
-                        spdlog::warn("Name not found for actionable {}", model_it->second.handle);
-                        ImGui::Text("Gate : %zu", model_it->second.handle);
+						ImGui::Text("Gate : %zu, %s", model_it->second.handle, target_name->second.c_str());
 					}
-					ImGui::EndTooltip();
+					else {
+						spdlog::warn("Name not found for actionable {}", model_it->second.handle);
+						ImGui::Text("Gate : %zu", model_it->second.handle);
+					}
 					break;
 				}
 				case model_handle::ENTITY:
@@ -185,7 +186,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	}
 	else {
 		spdlog::warn("Tried to fetch data for unknown view entity with handle {}", entity.handle);
-        spdlog::warn("logic and view might be out of sync (internal error)");
+		spdlog::warn("logic and view might be out of sync (internal error)");
 	}
 	return {};
 }
