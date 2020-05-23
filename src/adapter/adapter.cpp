@@ -105,6 +105,7 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 
 // TODO traductions
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
+
 	model::world &world = state::access<adapter>::model(m_state).world;
 
 	if (entity == m_target_handle) {
@@ -143,8 +144,8 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 					auto targets = world.activators[it->second.handle].targets;
 					request::coords_list list;
 					ImGui::BeginTooltip();
+                    ImGui::Text("Activator %zu", it->second.handle);
 					for (size_t target : targets) {
-
 						std::string target_name;
 						auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
 						if (target_view_handle != m_model2view.end()) {
@@ -155,9 +156,9 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 
 						if (!target_name.empty()) {
-                            ImGui::Text("Activator target: %zu, %s", target, target_name.c_str());
+                            ImGui::Text("    target: %zu, %s", target, target_name.c_str());
 						} else {
-                            ImGui::Text("Activator target: %zu", target);
+                            ImGui::Text("    target: %zu", target);
 							spdlog::warn("Name not found for activator target {}", target);
                         }
 					}
@@ -168,10 +169,10 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 					ImGui::BeginTooltip();
 					auto target_name = m_view2name.find(entity);
 					if (target_name != m_view2name.end()) {
-                        ImGui::Text("Door : %zu, %s", model_it->second.handle, target_name->second.c_str());
+                        ImGui::Text("Gate : %zu, %s", model_it->second.handle, target_name->second.c_str());
 					} else {
                         spdlog::warn("Name not found for actionable {}", model_it->second.handle);
-                        ImGui::Text("Door : %zu", model_it->second.handle);
+                        ImGui::Text("Gate : %zu", model_it->second.handle);
 					}
 					ImGui::EndTooltip();
 					break;
