@@ -53,7 +53,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 				move_entity(adapter, handle, +components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
 				            -components.properties[handle].move_speed * std::sin(components.hitbox[handle]->rad));
 				if (handle == ninja_clown_handle) {
-					float distance = components.hitbox[handle]->center.to({target_tile.x + cell_width / 2.f, target_tile.y + cell_height / 2.f}).norm();
+					float distance = components.hitbox[handle]->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f}).norm();
 					if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
 						spdlog::info("You win."); // TODO
 					}

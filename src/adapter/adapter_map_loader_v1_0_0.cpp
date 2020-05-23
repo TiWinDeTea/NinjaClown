@@ -474,7 +474,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
                     view::object obj;
                     obj.set_id(utils::resource_manager::object_id::target, m_state.resources);
-                    obj.set_pos(world.target_tile.x * model::cell_width, world.target_tile.y * model::cell_height);
+                    obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
                     obj.reveal();
                     m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
 					break;
@@ -494,8 +494,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 	size_t model_entity_handle = 0;
 	for (const mob &mob : mobs) {
-		const float CENTER_X = static_cast<float>(mob.pos.x) * model::cell_width + model::cell_width / 2.f;
-		const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cell_height + model::cell_height / 2.f;
+		const float CENTER_X = static_cast<float>(mob.pos.x) * model::cst::cell_width + model::cst::cell_width / 2.f;
+		const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cst::cell_height + model::cst::cell_height / 2.f;
 
 		switch (mob.type.behaviour) {
 			case mob_behaviour::NONE:
@@ -548,8 +548,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		utils::visitor visitor{
 		  [&](const activator &activator) {
-			  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cell_height;
+			  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cst::cell_width;
+			  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cst::cell_height;
 
 			  world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
 
@@ -592,8 +592,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			                              activator.delay});
 		  },
 		  [&](const gate &gate) {
-			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cell_height;
+			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;
+			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cst::cell_height;
 
 			  world.actionables.push_back(
 			    {model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()}, model::actionable::behaviours_ns::gate});
@@ -615,8 +615,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  m_view2name[view_handle] = gate.name;
 		  },
 		  [&](const autoshooter &autoshooter) {
-			  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cell_height;
+			  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cst::cell_width;
+			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cst::cell_height;
 
 			  world.actionables.push_back(
 			    {model::actionable::instance_data{{autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},

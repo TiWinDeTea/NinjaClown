@@ -6,8 +6,10 @@
 
 namespace model {
 
-constexpr float cell_width  = 1.0f;
-constexpr float cell_height = 1.0f;
+namespace cst {
+	constexpr float cell_width  = 1.0f;
+	constexpr float cell_height = 1.0f;
+} // namespace cst
 
 enum class cell_type {
 	CHASM  = 1,

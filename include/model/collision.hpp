@@ -48,7 +48,7 @@ struct aabb {
 	    , bottom_right{top_left_x + width, top_left_y + height} { }
 
 	explicit aabb(grid_point cell_pos) noexcept
-	    : aabb(static_cast<float>(cell_pos.x), static_cast<float>(cell_pos.y), cell_width, cell_height) { }
+	    : aabb(static_cast<float>(cell_pos.x), static_cast<float>(cell_pos.y), cst::cell_width, cst::cell_height) { }
 
 	[[nodiscard]] vec2 center() const noexcept {
 		return {(top_left.x + bottom_right.x) / 2, (top_left.y + bottom_right.y) / 2};
