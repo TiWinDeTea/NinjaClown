@@ -467,10 +467,12 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
 					view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
 					break;
-				case 'T':
-					world.grid[column_idx][line_idx].type = model::cell_type::TARGET;
-					view_map[column_idx][line_idx]        = view::map::cell::target_tile;
+				case 'T': {
+                    world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+                    view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+                    world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 					break;
+				}
 				default:
 					error("Unknown caracter '{}' in map layout", line[column_idx]);
 					return false;
@@ -577,7 +579,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  m_model2view[model_handle] = view_handle;
 			  m_view2model[view_handle]  = model_handle;
 
-			  world.activators.push_back({std::move(activator.target_tiles),
+			  world.activators.push_back({activator.target_tiles,
 			                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
 			                                std::optional<unsigned int>{} :
 			                                std::optional<unsigned int>(activator.refire_after),
@@ -605,6 +607,13 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  }
 
 			  m_view2name[view_handle] = gate.name;
+
+
+              view::object obj;
+              obj.set_id(utils::resource_manager::object_id::target, m_state.resources);
+              obj.set_pos(world.target_tile.x * model::cell_width, world.target_tile.y * model::cell_height);
+              obj.reveal();
+              m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
 		  },
 		  [&](const autoshooter &autoshooter) {
 			  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cell_width;
@@ -627,7 +636,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		std::visit(visitor, actor);
 	}
 
-	view.set_map(std::move(view_map));
+    view.set_map(std::move(view_map));
 
 	spdlog::info("Loaded map \"{}\"", map);
 	return true;

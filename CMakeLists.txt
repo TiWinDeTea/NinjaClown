@@ -43,6 +43,7 @@ set_target_properties(
 	CXX_STANDARD_REQUIRED ON
 	CXX_EXTENSIONS OFF
 )
+
 target_include_directories(ninja-clown PUBLIC include/ ${CMAKE_CURRENT_LIST_DIR})
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}

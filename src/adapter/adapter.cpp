@@ -13,6 +13,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		state::access<adapter>::model(m_state).world.reset();
 		state::access<adapter>::view(m_state).acquire_overmap()->clear();
 		state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
+		m_target_handle.reset();
 	};
 
 	clear();
@@ -105,6 +106,12 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 // TODO traductions
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	model::world &world = state::access<adapter>::model(m_state).world;
+
+	if (entity == m_target_handle) {
+		ImGui::BeginTooltip();
+		ImGui::Text("Your objective.");
+		ImGui::EndTooltip();
+	}
 
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
 		auto &components = world.components;

@@ -8,12 +8,10 @@ void view::map::print(view::viewer &view, utils::resource_manager &resources) co
 	static_assert(static_cast<int>(cell::iron_tile) == 0);
 	static_assert(static_cast<int>(cell::concrete_tile) == 1);
 	static_assert(static_cast<int>(cell::abyss) == 2);
-	static_assert(static_cast<int>(cell::target_tile) == 3);
 
 	std::array<utils::optional<const view::animation &>, 4> animations{resources.tile_animation(utils::resource_manager::tile_id::iron),
 	                                                                   resources.tile_animation(utils::resource_manager::tile_id::concrete),
-	                                                                   resources.tile_animation(utils::resource_manager::tile_id::chasm),
-	                                                                   resources.tile_animation(utils::resource_manager::tile_id::target)};
+	                                                                   resources.tile_animation(utils::resource_manager::tile_id::chasm)};
 
 	for (unsigned int x = 0; x < m_cells.size(); ++x) {
 		for (unsigned int y = 0; y < m_cells[x].size(); ++y) {

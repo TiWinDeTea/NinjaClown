@@ -58,14 +58,16 @@ set(TILES_CONCRETEID 2)
 add_compile_definitions(TILES_CONCRETEID=2)
 set(TILES_FRAMEID 3)
 add_compile_definitions(TILES_FRAMEID=3)
-set(TILES_TARGETID 4)
-add_compile_definitions(TILES_TARGETID=4)
 
 # objects
 set(OBJECTS_BUTTONID 0)
 add_compile_definitions(OBJECTS_BUTTONID=0)
 set(OBJECTS_GATEID 1)
 add_compile_definitions(OBJECTS_GATEID=1)
+set(OBJECTS_AUTOSHOOTERID 2)
+add_compile_definitions(OBJECTS_AUTOSHOOTERID=2)
+set(OBJECTS_TARGETID 3)
+add_compile_definitions(OBJECTS_TARGETID=3)
 
 # command ids
 set(COMMANDS_CLEARID 0)

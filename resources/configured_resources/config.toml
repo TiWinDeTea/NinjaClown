@@ -85,12 +85,12 @@
             height = 56
 
     [graphics.tiles]
-        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame", "target-tile"]
+        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
         spacing.x = 51
-        x-yshift = 0 # when going one left (51px), go neither left nor right
+        x-yshift = 0
 
         spacing.y = 31
-        y-xshift = 31 # when going one up (31px), also go 31px to the right
+        y-xshift = 31
 
         width = 81
         height = 31
@@ -119,14 +119,8 @@
             pos.x = 0
             pos.y = 32
 
-        [graphics.tiles.target-tile]
-            id = @TILES_TARGETID@
-            frame-count = 8
-            pos.x = 0
-            pos.y = 121
-
     [graphics.objects]
-        list = ["button", "gate"]
+        list = ["button", "gate", "target"]
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
@@ -135,7 +129,7 @@
             pos.y = 32
             width = 17
             height = 24
-            shift.y = -4 # the button shall be printed with a sprite starting 4 extra upwards from usual
+            shift.y = -4
             shift.x = 33
 
         [graphics.objects.gate]
@@ -146,4 +140,13 @@
             width = 82
             height = 51
             shift.y = -20
+            shift.x = 0
+
+        [graphics.objects.target]
+            id = @OBJECTS_TARGETID@
+            frame-count = 8
+            pos.x = 0
+            pos.y = 121
+            width = 81
+            height = 31
             shift.x = 0

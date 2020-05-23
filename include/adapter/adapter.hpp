@@ -110,6 +110,7 @@ private:
 
 	state::holder &m_state;
 
+	std::optional<view_handle> m_target_handle{};
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;

@@ -37,9 +37,10 @@ public:
 	};
 
 	enum class object_id {
-		button = OBJECTS_BUTTONID,
-		gate   = OBJECTS_GATEID,
-		autoshooter,
+		button      = OBJECTS_BUTTONID,
+		gate        = OBJECTS_GATEID,
+		autoshooter = OBJECTS_AUTOSHOOTERID,
+		target      = OBJECTS_TARGETID,
 	};
 
 	enum class tile_id {
@@ -47,7 +48,6 @@ public:
 		iron     = TILES_IRONID,
 		concrete = TILES_CONCRETEID,
 		frame    = TILES_FRAMEID,
-		target   = TILES_TARGETID,
 	};
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;

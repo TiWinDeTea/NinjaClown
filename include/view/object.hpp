@@ -42,8 +42,8 @@ private:
 
     utils::resource_manager::object_id m_object_id;
 	shifted_animation m_animation;
-	float m_xshift;
-	float m_yshift;
+	float m_xshift{0.f};
+	float m_yshift{0.f};
 };
 } // namespace view
 

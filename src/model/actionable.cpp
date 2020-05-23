@@ -31,9 +31,6 @@ void behaviours_namespace::gate(const instance_data& data, const argument_type &
 			arg.world.grid[data.pos.x][data.pos.y].type = cell_type::WALL;
             arg.adapter.update_map(data.pos, cell_type::WALL);
 			break;
-		case cell_type::TARGET:
-			spdlog::warn("Attempting to activate gatedata.pos tile [{}, {}]", data.pos.x, data.pos.y);
-			break;
 	}
 }
 
