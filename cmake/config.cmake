@@ -64,6 +64,8 @@ add_compile_definitions(TILES_TARGETID=4)
 # objects
 set(OBJECTS_BUTTONID 0)
 add_compile_definitions(OBJECTS_BUTTONID=0)
+set(OBJECTS_GATEID 1)
+add_compile_definitions(OBJECTS_GATEID=1)
 
 # command ids
 set(COMMANDS_CLEARID 0)

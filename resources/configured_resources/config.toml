@@ -126,7 +126,7 @@
             pos.y = 121
 
     [graphics.objects]
-        list = ["button"]
+        list = ["button", "gate"]
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
@@ -137,3 +137,13 @@
             height = 24
             shift.y = -4 # the button shall be printed with a sprite starting 4 extra upwards from usual
             shift.x = 33
+
+        [graphics.objects.gate]
+            id = @OBJECTS_GATEID@
+            frame-count = 5
+            pos.x = 246
+            pos.y = 0
+            width = 82
+            height = 51
+            shift.y = -20
+            shift.x = 0

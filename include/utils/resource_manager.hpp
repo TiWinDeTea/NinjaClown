@@ -31,15 +31,12 @@ class resource_manager {
 	} m_tiles_infos;
 
 public:
-
 	enum class mob_id {
-		player = MOBS_PLAYERID,
+		player    = MOBS_PLAYERID,
 		scientist = MOBS_SCIENTISTID,
 	};
 
-	enum class object_id {
-		button = OBJECTS_BUTTONID,
-	};
+	enum class object_id { button = OBJECTS_BUTTONID, gate = OBJECTS_GATEID };
 
 	enum class tile_id {
 		chasm    = TILES_CHASMID,
@@ -51,7 +48,7 @@ public:
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
 
-    [[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
+	[[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
 		resource_manager new_config{};
 		if (new_config.load_config(path)) {
 			*this = std::move(new_config);
@@ -66,7 +63,7 @@ public:
 
 	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(mob_id) const noexcept;
 
-    [[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
+	[[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
 
 	[[nodiscard]] const tiles_infos_t &tiles_infos() const noexcept {
 		return m_tiles_infos;
@@ -83,10 +80,10 @@ private:
 
 	[[nodiscard]] bool load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config) noexcept;
 
-	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table>& config, const std::filesystem::path& resources_directory) noexcept;
-	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table>& lang_file) noexcept;
+	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept;
+	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 
-	sf::Texture* get_texture(const std::string& file) noexcept;
+	sf::Texture *get_texture(const std::string &file) noexcept;
 
 	std::unordered_map<std::string, sf::Texture *> m_textures_by_file{};
 	std::forward_list<sf::Texture> m_textures_holder{};
