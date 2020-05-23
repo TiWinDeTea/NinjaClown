@@ -400,7 +400,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		error("Error while loading mob spawn locations");
 		return false;
 	}
-	if (mobs.size() > model::max_entities) {
+	if (mobs.size() > model::cst::max_entities) {
 		error("Too many mob spawns");
 		return false;
 	}

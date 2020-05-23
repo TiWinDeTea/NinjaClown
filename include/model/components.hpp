@@ -112,14 +112,16 @@ constexpr const char *to_string(decision d) {
 
 namespace model {
 
-constexpr size_t max_entities = 10;
+namespace cst {
+	constexpr size_t max_entities = 10;
+}
 
 struct components {
-	std::array<std::optional<component::health>, max_entities> health;
-	std::array<std::optional<component::hitbox>, max_entities> hitbox;
-	std::array<std::optional<component::decision>, max_entities> decision;
-	std::array<component::properties, max_entities> properties;
-	std::array<component::metadata, max_entities> metadata;
+	std::array<std::optional<component::health>, cst::max_entities> health;
+	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
+	std::array<std::optional<component::decision>, cst::max_entities> decision;
+	std::array<component::properties, cst::max_entities> properties;
+	std::array<component::metadata, cst::max_entities> metadata;
 };
 
 } // namespace model

@@ -56,13 +56,13 @@ void NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::cell *map_view) 
 }
 
 size_t NINJACLOWN_CALLCONV ffi::max_entities() {
-	return model::max_entities;
+	return model::cst::max_entities;
 }
 
 void NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, bot::entity *entities) {
 	model::world *world = get_world(ninja_data);
 
-	for (size_t i = 0; i < model::max_entities; ++i) {
+	for (size_t i = 0; i < model::cst::max_entities; ++i) {
 		entities[i].type = world->components.metadata[i].kind;
 		if (entities[i].type != bot::entity_kind::EK_NOT_AN_ENTITY) {
 			if (world->components.hitbox[i]) {

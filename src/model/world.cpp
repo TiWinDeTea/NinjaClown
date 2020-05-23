@@ -9,7 +9,7 @@
 const float PI = 3.14159f;
 
 void model::world::update(adapter::adapter &adapter) {
-	for (size_t handle = max_entities; handle--;) {
+	for (size_t handle = cst::max_entities; handle--;) {
 		single_entity_simple_update(adapter, handle);
 	}
 }
