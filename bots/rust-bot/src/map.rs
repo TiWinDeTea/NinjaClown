@@ -109,10 +109,10 @@ pub mod path {
                         let mut successors = Vec::new();
 
                         for (x, y) in [
-                            (column - 1, line),
+                            (column.saturating_sub(1), line),
                             (column + 1, line),
                             (column, line + 1),
-                            (column, line - 1),
+                            (column, line.saturating_sub(1)),
                         ]
                         .iter()
                         {
