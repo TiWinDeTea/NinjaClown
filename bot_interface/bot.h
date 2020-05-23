@@ -22,7 +22,6 @@ enum cell_type {
 	CT_CHASM   = 1,
 	CT_GROUND  = 2,
 	CT_WALL    = 3,
-	CT_TARGET  = 4,
 };
 
 enum interaction_kind {

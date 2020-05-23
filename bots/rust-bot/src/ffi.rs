@@ -52,7 +52,6 @@ pub enum CellType {
     Chasm = 1,
     Ground = 2,
     Wall = 3,
-    Target = 4,
 }
 
 #[repr(C)]

@@ -54,7 +54,6 @@ impl fmt::Display for Map {
                 CellType::Chasm => write!(f, "O")?,
                 CellType::Ground => write!(f, " ")?,
                 CellType::Wall => write!(f, "#")?,
-                CellType::Target => write!(f, "X")?,
             }
         }
         Ok(())
@@ -103,30 +102,24 @@ pub mod path {
                 let column = i % map.width;
                 let line = i / map.width;
 
-                match cell.typ {
-                    CellType::Ground | CellType::Target => {
-                        let pos = Pos(column, line);
-                        let mut successors = Vec::new();
+                if let CellType::Ground = cell.typ {
+                    let pos = Pos(column, line);
+                    let mut successors = Vec::new();
 
-                        for (x, y) in [
-                            (column.saturating_sub(1), line),
-                            (column + 1, line),
-                            (column, line + 1),
-                            (column, line.saturating_sub(1)),
-                        ]
-                        .iter()
-                        {
-                            match map.cell_at(*x, *y).map(|c| c.typ) {
-                                Some(CellType::Ground) | Some(CellType::Target) => {
-                                    successors.push(Pos(*x, *y));
-                                }
-                                _ => {}
-                            }
+                    for (x, y) in [
+                        (column.saturating_sub(1), line),
+                        (column + 1, line),
+                        (column, line + 1),
+                        (column, line.saturating_sub(1)),
+                    ]
+                    .iter()
+                    {
+                        if let Some(CellType::Ground) = map.cell_at(*x, *y).map(|c| c.typ) {
+                            successors.push(Pos(*x, *y));
                         }
-
-                        self.successors.insert(pos, successors);
                     }
-                    _ => {}
+
+                    self.successors.insert(pos, successors);
                 }
             }
         }
