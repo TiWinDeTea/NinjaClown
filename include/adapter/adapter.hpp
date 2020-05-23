@@ -7,8 +7,8 @@
 #include <variant>
 #include <vector>
 
-#include "utils/utils.hpp"
 #include "model/grid_point.hpp"
+#include "utils/utils.hpp"
 
 namespace model {
 enum class cell_type;
@@ -52,7 +52,7 @@ struct model_hhash: private std::hash<utils::ssize_t> {
 	}
 };
 struct view_hhash {
-    std::size_t operator()(const view_handle &h) const noexcept;
+	std::size_t operator()(const view_handle &h) const noexcept;
 };
 
 namespace request {
@@ -79,6 +79,9 @@ public:
 
 	bool map_is_loaded() noexcept;
 
+	void close_gate(model_handle gate) noexcept;
+	void open_gate(model_handle gate) noexcept;
+
 	void update_map(const model::grid_point &target, model::cell_type new_cell) noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
@@ -95,8 +98,10 @@ private:
 
 	state::holder &m_state;
 
-	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
+	std::unordered_map<model_handle, view_handle, model_hhash> m_mobs_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
+
+	std::unordered_map<model_handle, view_handle, model_hhash> m_gates_model2view;
 };
 } // namespace adapter
 

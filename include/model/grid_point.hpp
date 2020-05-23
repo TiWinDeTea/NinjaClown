@@ -1,6 +1,8 @@
 #ifndef NINJACLOWN_MODEL_GRID_POINT_HPP
 #define NINJACLOWN_MODEL_GRID_POINT_HPP
 
+#include "utils/utils.hpp"
+
 namespace model {
 struct grid_point {
     utils::ssize_t x;

@@ -48,7 +48,9 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 					if (c.interaction_handle) {
 						interaction &i = interactions[c.interaction_handle.value()];
 						if (i.interactable == interactable_kind::BUTTON) {
-							toggle_button(adapter, buttons[i.interactable_handler], grid);
+							for (size_t target : activators[i.interactable_handler].targets) {
+								actionables[target].make_action({target, c.pos, *this, adapter});
+							}
 							break;
 						}
 					}

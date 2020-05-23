@@ -6,11 +6,12 @@
 #include <string>
 #include <vector>
 
-#include "cell.hpp"
-#include "components.hpp"
-#include "grid.hpp"
-#include "activator.hpp"
-#include "interaction.hpp"
+#include "model/actionable.hpp"
+#include "model/activator.hpp"
+#include "model/cell.hpp"
+#include "model/components.hpp"
+#include "model/grid.hpp"
+#include "model/interaction.hpp"
 
 namespace model {
 
@@ -28,7 +29,6 @@ struct world {
 	std::vector<interaction> interactions{};
 	std::vector<activator> activators{};
 	std::vector<actionable> actionables{};
-
 
 private:
 	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);

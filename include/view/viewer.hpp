@@ -1,6 +1,10 @@
 #ifndef NINJACLOWN_VIEW_VIEWER_HPP
 #define NINJACLOWN_VIEW_VIEWER_HPP
 
+#include <unordered_set>
+#include <memory>
+#include <atomic>
+
 #include "utils/synchronized.hpp"
 
 #include "view/fps_limiter.hpp"
@@ -91,6 +95,7 @@ public:
 	sf::RenderWindow *window;
 
 private:
+
 	std::pair<float, float> to_screen_coords_base(float x, float y) const noexcept;
 
 	void do_run() noexcept;

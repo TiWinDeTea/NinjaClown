@@ -26,10 +26,31 @@
 
 [actors]
 	[[actors.spawn]]
+	    name = "gate1"
+	    type = "gate"
+	    pos.x = 4
+	    pos.y = 11
+	    closed = true
+
+	[[actors.spawn]]
+	    name = "gate2"
+	    type = "gate"
+	    pos.x = 3
+	    pos.y = 11
+	    closed = true
+
+	[[actors.spawn]]
+	    name = "gate3"
+	    type = "gate"
+	    pos.x = 3
+	    pos.y = 12
+	    closed = false
+
+	[[actors.spawn]]
 		type = "button"
 		pos.x = 6
 		pos.y = 1
-		acts_on = [[4, 11], [3, 11], [3, 12]]
+		acts_on = ["gate1", "gate2", "gate3"]
 
 [map]
 	layout = [

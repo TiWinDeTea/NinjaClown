@@ -13,6 +13,8 @@ enum class interaction_kind {
 
 enum class interactable_kind {
 	BUTTON,
+	INDUCTION_LOOP,
+	INFRARED_LASER,
 };
 
 struct interaction {

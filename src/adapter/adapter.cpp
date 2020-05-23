@@ -5,6 +5,7 @@
 #include "adapter/adapter.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
+#include "model/grid_point.hpp"
 #include "state_holder.hpp"
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
@@ -38,31 +39,37 @@ bool adapter::adapter::map_is_loaded() noexcept {
 	return !view.acquire_map()->m_cells.empty();
 }
 
-void adapter::adapter::update_map(size_t x, size_t y, model::cell_type new_cell) noexcept {
-	cells_changed_since_last_update.emplace_back(x, y);
-
-	view::viewer &view = state::access<adapter>::view(m_state);
-
-	view::map::cell current_cell = view.acquire_map()->m_cells[x][y];
-	view::map::cell output_cell;
-	switch (new_cell) {
-		case model::cell_type::WALL:
-			[[fallthrough]];
-		case model::cell_type::CHASM:
-			output_cell = view::map::cell::abyss;
-			break;
-		case model::cell_type::GROUND:
-			output_cell = view::map::cell::concrete_tile; // FIXME
+void adapter::adapter::close_gate(model_handle gate) noexcept {
+	auto it = m_gates_model2view.find(gate);
+	if (it == m_gates_model2view.end()) {
+		// todo externalize
+		spdlog::warn("Unknown handle encountered when trying to close gate.");
+		spdlog::warn("Model handle value: {}", gate.handle);
+	} else {
+		state::access<adapter>::view(m_state).acquire_overmap()->reveal(it->second);
 	}
-	view.acquire_map()->m_cells[x][y] = output_cell;
-	spdlog::trace("Changed tile ({} ; {}) from {} to {}", x, y, static_cast<int>(current_cell),
-	              static_cast<int>(output_cell)); // TODO: res_manager::to_string(cell)
+}
+
+void adapter::adapter::open_gate(model_handle gate) noexcept {
+    auto it = m_gates_model2view.find(gate);
+    if (it == m_gates_model2view.end()) {
+        // todo externalize
+        spdlog::warn("Unknown handle encountered when trying to close gate.");
+        spdlog::warn("Model handle value: {}", gate.handle);
+    } else {
+        state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
+    }
+}
+
+
+void adapter::adapter::update_map(const model::grid_point &target, model::cell_type new_cell) noexcept {
+	cells_changed_since_last_update.emplace_back(target);
 }
 
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
+	if (auto it = m_mobs_model2view.find(handle); it != m_mobs_model2view.end()) {
 		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
 	}
 	else {
@@ -73,7 +80,7 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
+	if (auto it = m_mobs_model2view.find(handle); it != m_mobs_model2view.end()) {
 		spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
 		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 	}
@@ -108,13 +115,12 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 		else {
 			// FIXME: why buttons and not something else ?
 			// (code is assuming second.handle refers to a button)
-			auto targets = world.buttons[it->second.handle].targets;
+			auto targets = world.activators[it->second.handle].targets;
 			request::coords_list list;
-			for (const auto &target : targets) {
+			for (size_t target : targets) {
 				ImGui::BeginTooltip();
-				ImGui::Text("Button target: (%zu ; %zu)", target.column, target.row);
+				ImGui::Text("Button target: %zu", target);
 				ImGui::EndTooltip();
-				list.coords.push_back({target.column, target.row});
 			}
 			return list;
 		}
@@ -125,7 +131,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	return {};
 }
 
-size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
+std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
 	if (h.is_mob) {
 		return h.handle;
 	}

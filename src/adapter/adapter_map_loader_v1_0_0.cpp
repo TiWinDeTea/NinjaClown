@@ -57,7 +57,7 @@ struct activator {
 	unsigned int delay;
 	unsigned int refire_after;
 	activator_type type;
-	std::vector<point> target_tiles;
+	std::vector<size_t> target_tiles;
 };
 
 struct gate {
@@ -116,16 +116,22 @@ void perror(std::string_view map, std::string_view fmt, Args &&... args) {
 }
 
 template <typename T, typename... Args>
-bool try_get(std::string_view map, const std::shared_ptr<cpptoml::table> &table, const char* key, T &value, std::string_view error_fmt,
-             Args &&... error_args) {
+bool try_get_silent(const std::shared_ptr<cpptoml::table> &table, const char *key, T &value) {
 	cpptoml::option<T> maybe_value = table->get_qualified_as<T>(key);
 	if (maybe_value) {
 		value = *maybe_value;
 	}
-	else {
-		perror(map, error_fmt, std::forward<Args>(error_args)...);
-	}
 	return maybe_value.operator bool();
+}
+
+template <typename T, typename... Args>
+bool try_get(std::string_view map, const std::shared_ptr<cpptoml::table> &table, const char *key, T &value, std::string_view error_fmt,
+             Args &&... error_args) {
+	if (!try_get_silent(table, key, value)) {
+		perror(map, error_fmt, std::forward<Args>(error_args)...);
+		return false;
+	}
+	return true;
 }
 
 void init_maps() {
@@ -255,6 +261,8 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 	std::vector<std::variant<activator, gate, autoshooter>> actors;
 
+	std::unordered_map<std::string, size_t> gates_handles;
+
 	for (const auto &actor : *tables) {
 		auto type = actor->get_as<std::string>(keys::type);
 		if (!type) {
@@ -262,8 +270,13 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			return {};
 		}
 
-		auto try_get = [&map, &actor, &type](const char *key, auto &value) -> bool {
-			return ::try_get(map, actor, key, value, "key {} was not specified (actor type: {})", key, *type);
+		auto try_get = [&map, &actor, &type](const char *key, auto &value, bool silent = false) -> bool {
+			if (silent) {
+				return try_get_silent(actor, key, value);
+			}
+			else {
+				return ::try_get(map, actor, key, value, "key {} was not specified (actor type: {})", key, *type);
+			}
 		};
 
 		int x_pos{};
@@ -296,7 +309,13 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				return {};
 			}
 
-			actors.emplace_back(gate{point{x_pos, y_pos}, closed});
+			std::string name;
+			if (!try_get(keys::name, name)) {
+				return {};
+			}
+
+            gates_handles[name] = actors.size();
+            actors.emplace_back(gate{point{x_pos, y_pos}, closed});
 		}
 		else {
 			activator activator;
@@ -310,32 +329,28 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			activator.type = parsed_type->second;
 
 			activator.refire_after = std::numeric_limits<decltype(activator.refire_after)>::max();
-			if (!try_get(keys::refire_after, activator.refire_after)) {
-				try_get(keys::duration, activator.refire_after);
+			if (!try_get(keys::refire_after, activator.refire_after, true)) {
+				try_get(keys::duration, activator.refire_after, true);
 			}
 
 			activator.delay = 0;
-			try_get(keys::delay, activator.delay);
+			try_get(keys::delay, activator.delay, true);
 
-			auto targets = actor->get_array(keys::acts_on_table);
+			auto targets = actor->get_array_of<std::string>(keys::acts_on_table);
 			if (!targets) {
 				error("actor {} has no target to act on (key: {})", *type, keys::acts_on_table);
+				spdlog::error("(or value is malformed)", *type, keys::acts_on_table);
 				return {};
 			}
-			for (const auto &target : *targets) {
-				auto sub_array = target->as_array();
-				if (!sub_array) {
-					error("Malformed target list for actor {} (key: {})", *type, keys::acts_on_table);
+			for (const std::string &target : *targets) {
+
+                auto it = gates_handles.find(target);
+				if (it == gates_handles.end()) {
+					error("Unknown referenced gate {}", target); // FIXME do not search only for gates wtf
 					return {};
 				}
 
-				std::vector<std::shared_ptr<cpptoml::value<std::int64_t>>> target_xy = sub_array->array_of<int64_t>();
-				if (target_xy.size() != 2 || !target_xy.front() || !target_xy.back()) {
-					error("Malformed target list for actor {} (key: {})", *type, keys::acts_on_table);
-					return {};
-				}
-
-				activator.target_tiles.push_back({static_cast<int>(target_xy.front()->get()), static_cast<int>(target_xy.back()->get())});
+				activator.target_tiles.push_back(it->second);
 			}
 			actors.emplace_back(std::move(activator));
 		}
@@ -409,6 +424,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	view::viewer &view  = state::access<adapter>::view(m_state);
 	model::world &world = state::access<adapter>::model(m_state).world;
 
+
 	std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
 	world.grid.resize(map_width, map_height);
 
@@ -446,6 +462,9 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		++line_idx;
 	}
+
+    view.acquire_overmap()->clear();
+    // TODO FIXME : clear logic
 
 	// TODO externalize
 	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.5f;
@@ -491,12 +510,12 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		view::mob m{};
 		m.set_mob_id(resource_id, m_state.resources);
-		m.set_direction(view::facing_direction::E); // TODO
+		m.set_direction(view::facing_direction::from_angle(mob.facing));
 		m.set_pos(hitbox.center.x, hitbox.center.y);
 
 		view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
 		model_handle model_handle{model_entity_handle};
-		m_model2view[model_handle] = view_handle;
+		m_mobs_model2view[model_handle] = view_handle;
 		m_view2model[view_handle]  = model_handle;
 
 		++model_entity_handle;
@@ -504,60 +523,76 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 	for (const std::variant<activator, gate, autoshooter> &actor : actors) {
 
-		utils::visitor visitor{[&](const activator &activator) {
-			                       const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cell_width;
-			                       const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cell_height;
+		utils::visitor visitor{
+		  [&](const activator &activator) {
+			  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cell_width;
+			  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cell_height;
 
-			                       switch (activator.type) {
+			  world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
 
-				                       case activator_type::BUTTON: {
-					                       world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
-					                       world.interactions.push_back({model::interaction_kind::LIGHT_MANUAL,
-					                                                     model::interactable_kind::BUTTON, world.buttons.size()});
-					                       std::vector<model::button::target_t> mtargets;
-					                       mtargets.reserve(activator.target_tiles.size());
-					                       for (const point &pt : activator.target_tiles) {
-						                       mtargets.push_back({pt.x, pt.y});
-					                       }
-					                       world.buttons.emplace_back(model::button{std::move(mtargets)});
+			  view::object o{};
+			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
 
-					                       view::object o{};
-					                       o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-					                       o.set_id(utils::resource_manager::object_id::button, m_state.resources);
+			  switch (activator.type) {
 
-					                       view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-					                       model_handle model_handle{world.buttons.size() - 1};
-					                       m_model2view[model_handle] = view_handle;
-					                       m_view2model[view_handle]  = model_handle;
-					                       break;
-				                       }
-				                       case activator_type::INDUCTION_LOOP: {
-					                       // TODO
-					                       break;
-				                       }
-				                       case activator_type::INFRARED_LASER: {
-					                       // TODO
-					                       break;
-				                       }
-				                       case activator_type::NONE:
-					                       [[fallthrough]];
-				                       default:
-					                       error("Internal error");
-					                       break;
-			                       }
-		                       },
-		                       [&](const gate &gate) {
-			                       if (gate.closed) {
-				                       world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
-				                       view_map[gate.pos.x][gate.pos.y]        = view::map::cell::abyss;
-			                       }
-			                       // TODO
-		                       },
-		                       [&](const autoshooter &autoshooter) {
-			                       // TODO
-		                       }};
+				  case activator_type::BUTTON:
+					  world.interactions.push_back(
+					    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
+                      o.set_id(utils::resource_manager::object_id::button, m_state.resources);
+					  break;
+				  case activator_type::INDUCTION_LOOP:
+					  world.interactions.push_back(
+					    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
+                      o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  break;
+				  case activator_type::INFRARED_LASER:
+					  world.interactions.push_back(
+					    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
+                      o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  break;
+				  case activator_type::NONE:
+					  [[fallthrough]];
+				  default:
+					  error("Internal error");
+					  break;
+			  }
+
+              view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+              model_handle model_handle{world.activators.size()};
+              // m_model2view[model_handle] = view_handle; // fixme: clashes with mob handles. Model2View for activators can be ignored for now AFAIK
+              m_view2model[view_handle]  = model_handle;
+
+              world.activators.push_back({std::move(activator.target_tiles),
+                                          activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
+                                          std::optional<unsigned int>{} :
+                                          std::optional<unsigned int>(activator.refire_after),
+                                          activator.delay});
+		  },
+		  [&](const gate &gate) {
+			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cell_width;
+              const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cell_height;
+
+              world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}}, model::actionable::behaviours_ns::gate});
+
+              view::object o{};
+              o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+			  o.set_id(utils::resource_manager::object_id::gate, m_state.resources);
+              view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+              model_handle model_handle{world.actionables.size() - 1};
+              m_gates_model2view[model_handle] = view_handle;
+              m_view2model[view_handle]  = model_handle;
+			  if (gate.closed) {
+				  world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
+			  } else {
+                  view.acquire_overmap()->hide(view_handle);
+			  }
+		  },
+		  [&](const autoshooter &autoshooter) {
+			  // TODO
+		  }};
 		std::visit(visitor, actor);
 	}
+
 	view.set_map(std::move(view_map));
 
 	spdlog::info("Loaded map \"{}\"", map);
