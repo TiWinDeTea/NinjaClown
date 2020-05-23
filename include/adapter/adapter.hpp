@@ -25,13 +25,21 @@ class table;
 namespace adapter {
 
 struct model_handle {
+	enum type_t {
+		ACTIVATOR  = 1,
+		ACTIONABLE = 2,
+		ENTITY     = 4,
+	};
+
 	explicit model_handle() noexcept = default;
-	explicit constexpr model_handle(size_t handle_) noexcept
-	    : handle{handle_} { }
+	explicit constexpr model_handle(size_t handle_, type_t type_) noexcept
+	    : handle{handle_}, type{type_} { }
 	constexpr bool operator==(const model_handle &other) const noexcept {
-		return other.handle == handle;
+		return other.handle == handle && type == other.type;
 	}
+
 	size_t handle{};
+	type_t type{};
 };
 
 struct view_handle {
@@ -48,7 +56,7 @@ struct view_handle {
 
 struct model_hhash: private std::hash<utils::ssize_t> {
 	utils::ssize_t operator()(const model_handle &h) const noexcept {
-		return std::hash<utils::ssize_t>::operator()(h.handle);
+		return std::hash<utils::ssize_t>::operator()(h.handle | h.type << 16u);
 	}
 };
 struct view_hhash {
@@ -90,7 +98,7 @@ public:
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
-public:
+public: // fixme friendship
 	std::vector<model::grid_point> cells_changed_since_last_update{};
 
 private:
@@ -98,10 +106,9 @@ private:
 
 	state::holder &m_state;
 
-	std::unordered_map<model_handle, view_handle, model_hhash> m_mobs_model2view;
+	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
-
-	std::unordered_map<model_handle, view_handle, model_hhash> m_gates_model2view;
+	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
 };
 } // namespace adapter
 

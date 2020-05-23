@@ -10,9 +10,9 @@
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	auto clear = [this] {
-        state::access<adapter>::model(m_state).world.reset();
-        state::access<adapter>::view(m_state).acquire_overmap()->clear();
-        state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
+		state::access<adapter>::model(m_state).world.reset();
+		state::access<adapter>::view(m_state).acquire_overmap()->clear();
+		state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
 	};
 
 	clear();
@@ -33,15 +33,15 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		return false;
 	}
 
-    bool success{false};
+	bool success{false};
 	if (*version == "1.0.0") {
 		success = load_map_v1_0_0(map_file, string_path);
 	}
 
 	if (!success) {
-        spdlog::error(R"(Unsupported version "{}" for map "{}")", *version, string_path);
+		spdlog::error(R"(Unsupported version "{}" for map "{}")", *version, string_path);
 		clear();
-    }
+	}
 	return success;
 }
 
@@ -51,27 +51,28 @@ bool adapter::adapter::map_is_loaded() noexcept {
 }
 
 void adapter::adapter::close_gate(model_handle gate) noexcept {
-	auto it = m_gates_model2view.find(gate);
-	if (it == m_gates_model2view.end()) {
+	auto it = m_model2view.find(gate);
+	if (it == m_model2view.end()) {
 		// todo externalize
 		spdlog::warn("Unknown handle encountered when trying to close gate.");
 		spdlog::warn("Model handle value: {}", gate.handle);
-	} else {
+	}
+	else {
 		state::access<adapter>::view(m_state).acquire_overmap()->reveal(it->second);
 	}
 }
 
 void adapter::adapter::open_gate(model_handle gate) noexcept {
-    auto it = m_gates_model2view.find(gate);
-    if (it == m_gates_model2view.end()) {
-        // todo externalize
-        spdlog::warn("Unknown handle encountered when trying to close gate.");
-        spdlog::warn("Model handle value: {}", gate.handle);
-    } else {
-        state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
-    }
+	auto it = m_model2view.find(gate);
+	if (it == m_model2view.end()) {
+		// todo externalize
+		spdlog::warn("Unknown handle encountered when trying to close gate.");
+		spdlog::warn("Model handle value: {}", gate.handle);
+	}
+	else {
+		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
+	}
 }
-
 
 void adapter::adapter::update_map(const model::grid_point &target, model::cell_type new_cell) noexcept {
 	cells_changed_since_last_update.emplace_back(target);
@@ -80,7 +81,7 @@ void adapter::adapter::update_map(const model::grid_point &target, model::cell_t
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_mobs_model2view.find(handle); it != m_mobs_model2view.end()) {
+	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
 	}
 	else {
@@ -91,7 +92,7 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_mobs_model2view.find(handle); it != m_mobs_model2view.end()) {
+	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
 		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 	}
@@ -100,6 +101,8 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	}
 }
 
+
+// TODO traductions
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	model::world &world = state::access<adapter>::model(m_state).world;
 
@@ -124,20 +127,56 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			ImGui::EndTooltip();
 		}
 		else {
-			// FIXME: why buttons and not something else ?
-			// (code is assuming second.handle refers to a button)
-			auto targets = world.activators[it->second.handle].targets;
-			request::coords_list list;
-			for (size_t target : targets) {
-				ImGui::BeginTooltip();
-				ImGui::Text("Button target: %zu", target);
-				ImGui::EndTooltip();
+			auto model_it = m_view2model.find(entity);
+			assert(it != m_view2model.end()); // NOLINT
+
+			switch (model_it->second.type) {
+				case model_handle::ACTIVATOR: {
+					auto targets = world.activators[it->second.handle].targets;
+					request::coords_list list;
+					ImGui::BeginTooltip();
+					for (size_t target : targets) {
+
+						std::string target_name;
+						auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
+						if (target_view_handle != m_model2view.end()) {
+							auto target_name_it = m_view2name.find(target_view_handle->second);
+							if (target_name_it != m_view2name.end()) {
+								target_name = target_name_it->second;
+							}
+						}
+
+						if (!target_name.empty()) {
+                            ImGui::Text("Activator target: %zu, %s", target, target_name.c_str());
+						} else {
+                            ImGui::Text("Activator target: %zu", target);
+							spdlog::warn("Name not found for activator target {}", target);
+                        }
+					}
+					ImGui::EndTooltip();
+					return list;
+				}
+				case model_handle::ACTIONABLE: {
+					ImGui::BeginTooltip();
+					auto target_name = m_view2name.find(entity);
+					if (target_name != m_view2name.end()) {
+                        ImGui::Text("Door : %zu, %s", model_it->second.handle, target_name->second.c_str());
+					} else {
+                        spdlog::warn("Name not found for actionable {}", model_it->second.handle);
+                        ImGui::Text("Door : %zu", model_it->second.handle);
+					}
+					ImGui::EndTooltip();
+					break;
+				}
+				case model_handle::ENTITY:
+					spdlog::warn("Non coherent entity type, logic and view might be out of sync (internal error)");
+					break;
 			}
-			return list;
 		}
 	}
 	else {
-		spdlog::error("Tried to fetch data for unknown view entity with handle {}", entity.handle);
+		spdlog::warn("Tried to fetch data for unknown view entity with handle {}", entity.handle);
+        spdlog::warn("logic and view might be out of sync (internal error)");
 	}
 	return {};
 }

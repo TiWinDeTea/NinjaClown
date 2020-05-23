@@ -15,7 +15,7 @@ namespace model {
 struct actionable {
 
 	struct argument_type {
-		size_t handle;
+		size_t handle; // FIXME
 		grid_point source;
         struct world& world;
 		adapter::adapter& adapter;
@@ -23,6 +23,8 @@ struct actionable {
 
 	struct instance_data {
 		grid_point pos;
+		unsigned int firing_rate;
+		float angle;
 	};
 
 	using behaviour_type = void (*)(const instance_data&, const argument_type &) noexcept;

@@ -13,13 +13,13 @@ namespace view {
 class mob_animations {
 public:
 	[[nodiscard]] const std::optional<shifted_animation> &animation_for(facing_direction::type dir) const noexcept {
-		assert(dir != facing_direction::MAX_VAL);
+		assert(dir != facing_direction::MAX_VAL); // NOLINT
 		return m_animations_by_direction[dir];
 	}
 
 	void add_animation(shifted_animation &&anim, facing_direction::type dir) noexcept {
-		assert(dir != facing_direction::MAX_VAL);
-		assert(!m_animations_by_direction[dir]);
+		assert(dir != facing_direction::MAX_VAL); // NOLINT
+		assert(!m_animations_by_direction[dir]); // NOLINT
 		m_animations_by_direction[dir] = std::move(anim);
 	}
 

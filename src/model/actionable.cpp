@@ -22,12 +22,12 @@ void behaviours_namespace::gate(const instance_data& data, const argument_type &
 		case cell_type::WALL:
 			spdlog::info("Opening gate at [{}, {}]", data.pos.x, data.pos.y);
 			arg.world.grid[data.pos.x][data.pos.y].type = cell_type::GROUND;
-            arg.adapter.open_gate(adapter::model_handle{arg.handle});
+            arg.adapter.open_gate(adapter::model_handle{arg.handle, adapter::model_handle::ACTIONABLE});
             arg.adapter.update_map(data.pos, cell_type::GROUND);
 			break;
 		case cell_type::GROUND:
 			spdlog::info("Closing gate at [{}, {}]", data.pos.x, data.pos.y);
-			arg.adapter.close_gate(adapter::model_handle{arg.handle});
+			arg.adapter.close_gate(adapter::model_handle{arg.handle, adapter::model_handle::ACTIONABLE});
 			arg.world.grid[data.pos.x][data.pos.y].type = cell_type::WALL;
             arg.adapter.update_map(data.pos, cell_type::WALL);
 			break;

@@ -23,24 +23,25 @@ public:
 	}
 
 	void reload_sprites(const utils::resource_manager& res) {
-        m_animation = &*res.object_animation(m_object_id);
+		utils::optional<const shifted_animation&> animation = res.object_animation(m_object_id);
+		assert(animation); // NOLINT
+        m_animation = *animation;
 	}
 
 private:
     void vprint(view::viewer &view) const override {
-        assert(m_animation);
-        m_animation->print(view, p_posx, p_posy);
+		assert(!m_animation.empty());
+        m_animation.print(view, p_posx, p_posy);
     }
 
     bool vis_hovered(view::viewer &view) const noexcept override {
-        assert(m_animation);
-        return m_animation->is_hovered(view);
-		return false;
+        assert(!m_animation.empty());
+        return m_animation.is_hovered(view);
     }
 
 
     utils::resource_manager::object_id m_object_id;
-	const shifted_animation *m_animation;
+	shifted_animation m_animation;
 	float m_xshift;
 	float m_yshift;
 };

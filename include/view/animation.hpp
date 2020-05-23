@@ -37,7 +37,7 @@ public:
 	    : m_frames{std::move(o.m_frames)} {}
 
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
-	shifted_animation &operator=(const shifted_animation &) noexcept = default;
+	shifted_animation &operator=(const shifted_animation &) = default;
 
 	bool is_hovered(view::viewer& viewer) const noexcept;
 
@@ -51,6 +51,10 @@ public:
 	}
 
 	void print(view::viewer& viewer, float posx, float posy) const noexcept;
+
+	bool empty() const noexcept {
+		return m_frames.empty();
+	}
 
 private:
 	mutable std::vector<sf::Sprite> m_frames;

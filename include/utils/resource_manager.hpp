@@ -36,7 +36,11 @@ public:
 		scientist = MOBS_SCIENTISTID,
 	};
 
-	enum class object_id { button = OBJECTS_BUTTONID, gate = OBJECTS_GATEID };
+	enum class object_id {
+		button = OBJECTS_BUTTONID,
+		gate   = OBJECTS_GATEID,
+		autoshooter,
+	};
 
 	enum class tile_id {
 		chasm    = TILES_CHASMID,

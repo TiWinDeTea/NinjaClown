@@ -24,7 +24,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 				if (angle >= PI) {
 					angle -= 2 * PI;
 				}
-				adapter.rotate_entity(adapter::model_handle{handle}, angle);
+				adapter.rotate_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, angle);
 				break;
 			case component::decision::TURN_RIGHT:
 				// TODO: check collision
@@ -32,7 +32,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 				if (angle <= -PI) {
 					angle += 2 * PI;
 				}
-				adapter.rotate_entity(adapter::model_handle{handle}, angle);
+				adapter.rotate_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, angle);
 				break;
 			case component::decision::MOVE_FORWARD:
 				move_entity(adapter, handle, +components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
@@ -75,7 +75,7 @@ void model::world::move_entity(adapter::adapter &adapter, size_t handle, float d
 		hitbox.center.y = old_y;
 	}
 
-	adapter.move_entity(adapter::model_handle{handle}, hitbox.center.x, hitbox.center.y);
+	adapter.move_entity(adapter::model_handle{handle, adapter::model_handle::ENTITY}, hitbox.center.x, hitbox.center.y);
 }
 
 bool model::world::entity_check_collision(const component::hitbox &hitbox) {

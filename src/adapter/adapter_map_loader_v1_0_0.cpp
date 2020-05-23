@@ -65,11 +65,13 @@ struct activator {
 };
 
 struct gate {
+	std::string name;
 	point pos;
 	bool closed;
 };
 
 struct autoshooter {
+	std::string name;
 	point pos;
 	unsigned int firing_rate;
 	float facing;
@@ -304,17 +306,17 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				return {};
 			}
 
-            std::string name;
-            if (!try_get(keys::name, name)) {
-                return {};
-            }
+			std::string name;
+			if (!try_get(keys::name, name)) {
+				return {};
+			}
 
 			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
 			if (!insert_result.second) {
 				spdlog::warn("Actor {} is duplicated", name);
-                spdlog::warn(R"((while parsing map "{}"))", map);
+				spdlog::warn(R"((while parsing map "{}"))", map);
 			}
-			actors.emplace_back(autoshooter{point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
+			actors.emplace_back(autoshooter{name, point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
 		}
 		else if (*type == values::gate) {
 
@@ -328,12 +330,12 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				return {};
 			}
 
-            auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
-            if (!insert_result.second) {
-                spdlog::warn("Actor {} is duplicated", name);
-                spdlog::warn(R"((while parsing map "{}"))", map);
-            }
-            actors.emplace_back(gate{point{x_pos, y_pos}, closed});
+			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
+			if (!insert_result.second) {
+				spdlog::warn("Actor {} is duplicated", name);
+				spdlog::warn(R"((while parsing map "{}"))", map);
+			}
+			actors.emplace_back(gate{name, point{x_pos, y_pos}, closed});
 		}
 		else {
 			activator activator;
@@ -362,7 +364,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			}
 			for (const std::string &target : *targets) {
 
-                auto it = actionable_handles.find(target);
+				auto it = actionable_handles.find(target);
 				if (it == actionable_handles.end()) {
 					error("Unknown referenced gate {}", target);
 					return {};
@@ -442,7 +444,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	view::viewer &view  = state::access<adapter>::view(m_state);
 	model::world &world = state::access<adapter>::model(m_state).world;
 
-
 	std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
 	world.grid.resize(map_width, map_height);
 
@@ -481,7 +482,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		++line_idx;
 	}
 
-
 	// TODO externalize
 	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.5f;
 	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.5f;
@@ -496,6 +496,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				world.components.metadata[model_entity_handle].kind = bot::entity_kind::EK_HARMLESS;
 				break;
 			case mob_behaviour::SCIENTIST:
+				// TODO
 				break;
 			case mob_behaviour::CLOWN:
 				// TODO
@@ -530,8 +531,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		m.set_pos(hitbox.center.x, hitbox.center.y);
 
 		view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
-		model_handle model_handle{model_entity_handle};
-		m_mobs_model2view[model_handle] = view_handle;
+		model_handle model_handle{model_entity_handle, model_handle::ENTITY};
+		m_model2view[model_handle] = view_handle;
 		m_view2model[view_handle]  = model_handle;
 
 		++model_entity_handle;
@@ -554,17 +555,17 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  case activator_type::BUTTON:
 					  world.interactions.push_back(
 					    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
-                      o.set_id(utils::resource_manager::object_id::button, m_state.resources);
+					  o.set_id(utils::resource_manager::object_id::button, m_state.resources);
 					  break;
 				  case activator_type::INDUCTION_LOOP:
 					  world.interactions.push_back(
 					    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
-                      o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
 					  break;
 				  case activator_type::INFRARED_LASER:
 					  world.interactions.push_back(
 					    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
-                      o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
 					  break;
 				  case activator_type::NONE:
 					  [[fallthrough]];
@@ -573,38 +574,57 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					  break;
 			  }
 
-              view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-              model_handle model_handle{world.activators.size()};
-              // m_model2view[model_handle] = view_handle; // fixme: clashes with mob handles. Model2View for activators can be ignored for now AFAIK
-              m_view2model[view_handle]  = model_handle;
+			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+			  model_handle model_handle{world.activators.size(), model_handle::ACTIVATOR};
+			  m_model2view[model_handle] = view_handle;
+			  m_view2model[view_handle]  = model_handle;
 
-              world.activators.push_back({std::move(activator.target_tiles),
-                                          activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
-                                          std::optional<unsigned int>{} :
-                                          std::optional<unsigned int>(activator.refire_after),
-                                          activator.delay});
+			  world.activators.push_back({std::move(activator.target_tiles),
+			                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
+			                                std::optional<unsigned int>{} :
+			                                std::optional<unsigned int>(activator.refire_after),
+			                              activator.delay});
 		  },
 		  [&](const gate &gate) {
 			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cell_width;
-              const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cell_height;
+			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cell_height;
 
-              world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}}, model::actionable::behaviours_ns::gate});
+			  world.actionables.push_back(
+			    {model::actionable::instance_data{{gate.pos.x, gate.pos.y}}, model::actionable::behaviours_ns::gate});
 
-              view::object o{};
-              o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+			  view::object o{};
+			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
 			  o.set_id(utils::resource_manager::object_id::gate, m_state.resources);
-              view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-              model_handle model_handle{world.actionables.size() - 1};
-              m_gates_model2view[model_handle] = view_handle;
-              m_view2model[view_handle]  = model_handle;
+			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
+			  m_model2view[model_handle] = view_handle;
+			  m_view2model[view_handle]  = model_handle;
 			  if (gate.closed) {
 				  world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
-			  } else {
-                  view.acquire_overmap()->hide(view_handle);
 			  }
+			  else {
+				  view.acquire_overmap()->hide(view_handle);
+			  }
+
+			  m_view2name[view_handle] = gate.name;
 		  },
 		  [&](const autoshooter &autoshooter) {
-			  // TODO
+			  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cell_width;
+			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cell_height;
+
+			  world.actionables.push_back(
+			    {model::actionable::instance_data{{autoshooter.pos.x, autoshooter.pos.y}, autoshooter.firing_rate, autoshooter.facing},
+			     model::actionable::behaviours_ns::autoshooter});
+
+			  view::object o{};
+			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+			  o.set_id(utils::resource_manager::object_id::autoshooter, m_state.resources);
+			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
+			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
+			  m_model2view[model_handle] = view_handle;
+			  m_view2model[view_handle]  = model_handle;
+
+			  m_view2name[view_handle] = autoshooter.name;
 		  }};
 		std::visit(visitor, actor);
 	}

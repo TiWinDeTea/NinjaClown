@@ -163,9 +163,9 @@ public:
 		assert(begin.x < end.x); // NOLINT
 		assert(begin.y < end.y); // NOLINT
 		return grid_view{m_inner,
-		                 begin,
+                         {std::max<utils::ssize_t>(begin.x, 0), std::max<utils::ssize_t>(begin.y, 0)},
 		                 {std::min(static_cast<utils::ssize_t>(m_inner.size()), end.x),
-		                  std::min(static_cast<utils::ssize_t>(m_inner[0].size()), end.y)}}; // FIXME ??
+		                  std::min(static_cast<utils::ssize_t>(m_inner[0].size()), end.y)}};
 	}
 
 	[[nodiscard]] grid_view subgrid(const bounding_box &box) {
