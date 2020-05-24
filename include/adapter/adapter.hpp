@@ -35,7 +35,8 @@ struct model_handle {
 
 	explicit model_handle() noexcept = default;
 	explicit constexpr model_handle(size_t handle_, type_t type_) noexcept
-	    : handle{handle_}, type{type_} { }
+	    : handle{handle_}
+	    , type{type_} { }
 	constexpr bool operator==(const model_handle &other) const noexcept {
 		return other.handle == handle && type == other.type;
 	}
@@ -93,6 +94,8 @@ public:
 	void open_gate(model_handle gate) noexcept;
 
 	void update_map(const model::grid_point &target, model::cell_type new_cell) noexcept;
+	void clear_cells_changed_since_last_update() noexcept;
+	const std::vector<model::grid_point> &cells_changed_since_last_update() noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 
@@ -100,11 +103,8 @@ public:
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
-public: // fixme friendship
-	std::vector<model::grid_point> cells_changed_since_last_update{};
-
 private:
-    friend terminal_commands;
+	friend terminal_commands;
 
 	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
 
@@ -114,6 +114,8 @@ private:
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
+
+	std::vector<model::grid_point> m_cells_changed_since_last_update{};
 };
 } // namespace adapter
 

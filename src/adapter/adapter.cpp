@@ -77,7 +77,7 @@ void adapter::adapter::open_gate(model_handle gate) noexcept {
 }
 
 void adapter::adapter::update_map(const model::grid_point &target, model::cell_type new_cell) noexcept {
-	cells_changed_since_last_update.emplace_back(target);
+	m_cells_changed_since_last_update.emplace_back(target);
 }
 
 void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
@@ -189,6 +189,14 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 		spdlog::warn("logic and view might be out of sync (internal error)");
 	}
 	return {};
+}
+
+void adapter::adapter::clear_cells_changed_since_last_update() noexcept {
+	m_cells_changed_since_last_update.clear();
+}
+
+const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last_update() noexcept {
+	return m_cells_changed_since_last_update;
 }
 
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {

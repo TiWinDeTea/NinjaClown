@@ -44,7 +44,7 @@ void NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::cell *map_view) 
 	model::world *world       = get_world(ninja_data);
 	model::grid_t &grid       = world->grid;
 
-	for (auto &changed : adapter->cells_changed_since_last_update) {
+	for (const auto &changed : adapter->cells_changed_since_last_update()) {
 		const auto &model_cell = grid[changed.x][changed.y];
 		bot::cell &bot_cell    = map_view[changed.x + changed.y * grid.width()]; // NOLINT
 

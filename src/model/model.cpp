@@ -65,7 +65,7 @@ void model::model::do_run() noexcept {
 		bot_think();
 
 		adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
-		adapter.cells_changed_since_last_update.clear();
+		adapter.clear_cells_changed_since_last_update();
 		world.update(adapter);
 
 		m_fps_limiter.wait();

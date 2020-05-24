@@ -223,7 +223,7 @@ void terminal_commands::load_map(argument_type &arg) {
 
 void terminal_commands::update_world(argument_type &arg) {
 	arg.val.m_model.bot_think();
-	arg.val.m_adapter.cells_changed_since_last_update.clear();
+	arg.val.m_adapter.m_cells_changed_since_last_update.clear();
 	arg.val.m_model.world.update(arg.val.m_adapter);
 }
 
