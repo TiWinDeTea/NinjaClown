@@ -132,9 +132,11 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				ImGui::Text("Current decision: %s", to_string(*components.decision[entity.handle]));
 			}
 			if (components.hitbox[handle]) {
-				model::vec2 top_left     = components.hitbox[handle]->top_left();
-				model::vec2 bottom_right = components.hitbox[handle]->bottom_right();
+				model::component::hitbox &hitbox = *components.hitbox[handle];
+				model::vec2 top_left             = hitbox.top_left();
+				model::vec2 bottom_right         = hitbox.bottom_right();
 				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", top_left.x, top_left.y, bottom_right.x, bottom_right.y);
+				ImGui::Text("Position: (%f ; %f)", hitbox.center.x, hitbox.center.y);
 				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
 			}
 		}
