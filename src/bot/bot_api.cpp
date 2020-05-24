@@ -7,8 +7,8 @@
 
 namespace {
 
-void set_decision(model::world *world, model::component::decision decision) {
-	world->components.decision[world->ninja_clown_handle] = {decision};
+void set_decision(model::world *world, bot::decision decision) {
+	world->components.decision[world->ninja_clown_handle] = decision;
 }
 
 } // namespace
@@ -95,19 +95,31 @@ float NINJACLOWN_CALLCONV ffi::get_y_position(void *ninja_data) {
 }
 
 void NINJACLOWN_CALLCONV ffi::turn_right(void *ninja_data) {
-	set_decision(get_world(ninja_data), model::component::decision::TURN_RIGHT);
+	bot::decision decision;
+	decision.kind              = bot::DK_MOVEMENT;
+	decision.data.movement_req = bot::movement_request{-1, 0, 0};
+	set_decision(get_world(ninja_data), decision);
 }
 
 void NINJACLOWN_CALLCONV ffi::turn_left(void *ninja_data) {
-	set_decision(get_world(ninja_data), model::component::decision::TURN_LEFT);
+	bot::decision decision;
+	decision.kind              = bot::DK_MOVEMENT;
+	decision.data.movement_req = bot::movement_request{1, 0, 0};
+	set_decision(get_world(ninja_data), decision);
 }
 
 void NINJACLOWN_CALLCONV ffi::move_forward(void *ninja_data) {
-	set_decision(get_world(ninja_data), model::component::decision::MOVE_FORWARD);
+	bot::decision decision;
+	decision.kind              = bot::DK_MOVEMENT;
+	decision.data.movement_req = bot::movement_request{0, 0, 1};
+	set_decision(get_world(ninja_data), decision);
 }
 
 void NINJACLOWN_CALLCONV ffi::move_backward(void *ninja_data) {
-	set_decision(get_world(ninja_data), model::component::decision::MOVE_BACKWARD);
+	bot::decision decision;
+	decision.kind              = bot::DK_MOVEMENT;
+	decision.data.movement_req = bot::movement_request{0, 0, -1};
+	set_decision(get_world(ninja_data), decision);
 }
 
 void NINJACLOWN_CALLCONV ffi::move_backward_dummy([[maybe_unused]] void *model) {
@@ -115,7 +127,11 @@ void NINJACLOWN_CALLCONV ffi::move_backward_dummy([[maybe_unused]] void *model) 
 }
 
 void NINJACLOWN_CALLCONV ffi::activate_button(void *ninja_data) {
-	set_decision(get_world(ninja_data), model::component::decision::ACTIVATE_BUTTON);
+	bot::decision decision;
+	decision.kind = bot::DK_ACTIVATE;
+	decision.data.activate_req
+	  = bot::activate_request{static_cast<std::size_t>(get_x_position(ninja_data)), static_cast<std::size_t>(get_y_position(ninja_data))};
+	set_decision(get_world(ninja_data), decision);
 }
 
 model::model *ffi::get_model(void *ninja_data) {

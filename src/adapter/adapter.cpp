@@ -128,9 +128,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			if (components.health[handle]) {
 				ImGui::Text("Current HP: %u", components.health[handle]->points);
 			}
-			if (components.decision[handle]) { // FIXME: this component is reset before this function call
-				ImGui::Text("Current decision: %s", to_string(*components.decision[entity.handle]));
-			}
+
 			if (components.hitbox[handle]) {
 				model::component::hitbox &hitbox = *components.hitbox[handle];
 				model::vec2 top_left             = hitbox.top_left();

@@ -53,6 +53,45 @@ struct entity {
 	float angle;
 };
 
+enum decision_kind {
+	DK_NONE     = 0,
+	DK_MOVEMENT = 1,
+	DK_ACTIVATE = 2,
+	DK_ATTACK   = 3,
+	DK_THROW    = 4,
+};
+
+struct movement_request {
+	float rotation; // radians
+	float lateral_diff;
+	float forward_diff;
+};
+
+struct activate_request {
+	size_t column;
+	size_t line;
+};
+
+struct attack_request {
+	size_t target_handle;
+};
+
+struct throw_request {
+	float angle; // radians
+};
+
+union decision_data {
+	struct movement_request movement_req;
+	struct activate_request activate_req;
+	struct attack_request attack_req;
+	struct throw_request throw_req;
+};
+
+struct decision {
+	enum decision_kind kind;
+	union decision_data data;
+};
+
 struct bot_api {
 	void *ninja_descriptor;
 

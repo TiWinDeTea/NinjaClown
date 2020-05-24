@@ -82,32 +82,6 @@ struct hitbox {
 		return half.y * 2;
 	}
 };
-
-enum class decision {
-	TURN_LEFT,
-	TURN_RIGHT,
-	MOVE_FORWARD,
-	MOVE_BACKWARD,
-	ACTIVATE_BUTTON,
-};
-
-constexpr const char *to_string(decision d) {
-#define COMPONENTS_DECISION_CASE(x)                                                                                                        \
-	case decision::x:                                                                                                                      \
-		return #x
-	// TODO: use resource_manager::to_string(decision);
-	switch (d) {
-		COMPONENTS_DECISION_CASE(TURN_LEFT);
-		COMPONENTS_DECISION_CASE(TURN_RIGHT);
-		COMPONENTS_DECISION_CASE(MOVE_FORWARD);
-		COMPONENTS_DECISION_CASE(MOVE_BACKWARD);
-		COMPONENTS_DECISION_CASE(ACTIVATE_BUTTON);
-		default:
-			return "UNKNOWN";
-	}
-#undef COMPONENTS_DECISION_CASE
-}
-
 } // namespace model::component
 
 namespace model {
@@ -119,7 +93,7 @@ namespace cst {
 struct components {
 	std::array<std::optional<component::health>, cst::max_entities> health;
 	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
-	std::array<std::optional<component::decision>, cst::max_entities> decision;
+	std::array<bot::decision, cst::max_entities> decision;
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
 };

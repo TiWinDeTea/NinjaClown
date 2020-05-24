@@ -23,63 +23,82 @@ void model::world::reset() {
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
 		components.metadata[i]   = {};
 		components.properties[i] = {};
-		components.decision[i].reset();
+		components.decision[i]   = bot::decision{bot::DK_NONE};
 		components.health[i].reset();
 		components.hitbox[i].reset();
 	}
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-	if (components.decision[handle]) {
-		switch (*components.decision[handle]) {
-			case component::decision::TURN_LEFT:
-				rotate_entity(adapter, handle, components.properties[handle].rotation_speed);
-				break;
-			case component::decision::TURN_RIGHT:
-				rotate_entity(adapter, handle, -components.properties[handle].rotation_speed);
-				break;
-			case component::decision::MOVE_FORWARD:
-				move_entity(adapter, handle, +components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
-				            -components.properties[handle].move_speed * std::sin(components.hitbox[handle]->rad));
-				if (handle == ninja_clown_handle) {
-					float distance = components.hitbox[handle]
-					                   ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
-					                   .norm();
-					if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
-						spdlog::info("You win."); // TODO
-					}
+	bot::decision &decision           = components.decision[handle];
+	component::properties &properties = components.properties[handle];
+
+	switch (decision.kind) {
+		case bot::DK_NONE:
+			// nothing to do here
+			break;
+		case bot::DK_MOVEMENT: {
+			spdlog::info("{} {} {}", decision.data.movement_req.rotation, decision.data.movement_req.forward_diff,
+			             decision.data.movement_req.lateral_diff);
+
+			float rotation = std::clamp(decision.data.movement_req.rotation, -properties.rotation_speed, properties.rotation_speed);
+			if (std::abs(rotation) > 0.001) { // FIXME: eta variable
+				rotate_entity(adapter, handle, rotation);
+			}
+
+			float dx = std::cos(components.hitbox[handle]->rad) * decision.data.movement_req.forward_diff
+			           + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.data.movement_req.lateral_diff;
+			float dy = -(std::sin(components.hitbox[handle]->rad) * decision.data.movement_req.forward_diff
+			             + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.data.movement_req.lateral_diff);
+			vec2 movement{dx, dy};
+			if (movement.norm() > properties.move_speed) {
+				// cap movement vector to max speed
+				movement.unitify();
+				movement.x *= properties.move_speed;
+				movement.y *= properties.move_speed;
+			}
+			if (movement.norm() != 0) {
+				move_entity(adapter, handle, movement);
+			}
+
+			if (handle == ninja_clown_handle) {
+				float distance = components.hitbox[handle]
+				                   ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
+				                   .norm();
+				if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
+					spdlog::info("You win."); // TODO
 				}
-				break;
-			case component::decision::MOVE_BACKWARD:
-				move_entity(adapter, handle, -components.properties[handle].move_speed * std::cos(components.hitbox[handle]->rad),
-				            +components.properties[handle].move_speed * std::sin(components.hitbox[handle]->rad));
-				break;
-			case component::decision::ACTIVATE_BUTTON:
-				component::hitbox &hitbox = components.hitbox[handle].value();
-				for (cell_view c : grid.radius(hitbox.center.x, hitbox.center.y, 0.5f)) {
-					if (c.interaction_handle) {
-						interaction &i = interactions[c.interaction_handle.value()];
-						if (i.interactable == interactable_kind::BUTTON) {
-							fire_activator(adapter, i.interactable_handler);
-						}
-					}
-				}
+			}
+			break;
 		}
-		components.decision[handle] = {};
+		case bot::DK_ACTIVATE: {
+			component::hitbox &hitbox = components.hitbox[handle].value();
+			const cell &c             = grid[decision.data.activate_req.column][decision.data.activate_req.line];
+			interaction &i            = interactions[c.interaction_handle.value()];
+			if (i.interactable == interactable_kind::BUTTON) { // TODO: change check to interaction_kind instead
+				fire_activator(adapter, i.interactable_handler); // TODO: check for distance from entity
+			}
+			break;
+		}
+		default:
+			spdlog::warn("decision kind not yet implemented");
+			break;
 	}
+
+	components.decision[handle].kind = bot::DK_NONE;
 }
 
-void model::world::move_entity(adapter::adapter &adapter, size_t handle, float dx, float dy) {
-	component::hitbox &hitbox = components.hitbox[handle].value();
+void model::world::move_entity(adapter::adapter &adapter, size_t handle, vec2 movement) {
+	component::hitbox &hitbox = *components.hitbox[handle];
 
 	float old_x = hitbox.center.x;
-	hitbox.center.x += dx;
+	hitbox.center.x += movement.x;
 	if (entity_check_collision(handle)) {
 		hitbox.center.x = old_x;
 	}
 
 	float old_y = hitbox.center.y;
-	hitbox.center.y += dy;
+	hitbox.center.y += movement.y;
 	if (entity_check_collision(handle)) {
 		hitbox.center.y = old_y;
 	}
