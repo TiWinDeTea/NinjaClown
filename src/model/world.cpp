@@ -23,14 +23,14 @@ void model::world::reset() {
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
 		components.metadata[i]   = {};
 		components.properties[i] = {};
-		components.decision[i]   = bot::decision{bot::DK_NONE};
+		components.decision[i]   = bot::nnj_decision{bot::DK_NONE};
 		components.health[i].reset();
 		components.hitbox[i].reset();
 	}
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-	bot::decision &decision           = components.decision[handle];
+	bot::nnj_decision &decision       = components.decision[handle];
 	component::properties &properties = components.properties[handle];
 
 	switch (decision.kind) {
@@ -71,7 +71,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 		case bot::DK_ACTIVATE: {
 			component::hitbox &hitbox = components.hitbox[handle].value();
 			const cell &c             = grid[decision.activate.column][decision.activate.line];
-			interaction &i            = interactions[c.interaction_handle.value()];
+			interaction &i            = interactions[c.interaction_handle.value()]; // FIXME: check there is an interaction handle
 			if (i.interactable == interactable_kind::BUTTON) { // TODO: change check to interaction_kind instead
 				fire_activator(adapter, i.interactable_handler); // TODO: check for distance from entity
 			}

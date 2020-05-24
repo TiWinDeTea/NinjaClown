@@ -6,8 +6,8 @@
 
 namespace bot {
 
-struct move_backward {
-	decltype(bot_api::move_backward) ptr;
+struct commit_decision {
+	decltype(bot_api::commit_decision) ptr;
 };
 
 template <typename... Funcs>

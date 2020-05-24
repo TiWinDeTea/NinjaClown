@@ -375,7 +375,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				activator.target_tiles.push_back(it->second);
 			}
 
-            try_get(keys::dialog, activator.dialog, true);
+			try_get(keys::dialog, activator.dialog, true);
 			actors.emplace_back(std::move(activator));
 		}
 	}
@@ -506,7 +506,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		switch (mob.type.behaviour) {
 			case mob_behaviour::NONE:
-				world.components.metadata[model_entity_handle].kind = bot::entity_kind::EK_HARMLESS;
+				world.components.metadata[model_entity_handle].kind = bot::nnj_entity_kind::EK_HARMLESS;
 				break;
 			case mob_behaviour::SCIENTIST:
 				// TODO
@@ -515,7 +515,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				// TODO
 				break;
 			case mob_behaviour::DLL:
-				world.components.metadata[model_entity_handle].kind = bot::entity_kind::EK_DLL;
+				world.components.metadata[model_entity_handle].kind = bot::nnj_entity_kind::EK_DLL;
 				world.ninja_clown_handle                            = model_entity_handle; // TODO : multi-handle for DLL
 				break;
 		}
@@ -603,42 +603,46 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  if (!activator.dialog.empty()) {
 				  if (!dialogs) {
 					  spdlog::warn("No dialog founds, but activator required dialog {}", activator.dialog);
-				  } else {
+				  }
+				  else {
 					  auto dialog = dialogs->get_table_qualified(activator.dialog);
 					  if (!dialog) {
-                          spdlog::warn("Requested dialog {} not found", activator.dialog);
-					  } else {
+						  spdlog::warn("Requested dialog {} not found", activator.dialog);
+					  }
+					  else {
 						  auto words = dialog->get_array(keys::dialog_text); // TODO translations support
 						  if (!words) {
 							  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
-						  } else {
+						  }
+						  else {
 							  view::dialog dialog;
-                              for (auto word : *words) {
-                                  auto word_array = word->as_array();
-                                  if (!word_array) {
-                                      spdlog::warn("Requested dialog {} malformed.", activator.dialog);
-                                      dialog.words.clear();
-                                      break;
-                                  } else {
-                                      auto word_string_array = word_array->get_array_of<std::string>();
-                                      if (!word_string_array || word_string_array->size() != 2) {
-                                          spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+							  for (auto word : *words) {
+								  auto word_array = word->as_array();
+								  if (!word_array) {
+									  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+									  dialog.words.clear();
+									  break;
+								  }
+								  else {
+									  auto word_string_array = word_array->get_array_of<std::string>();
+									  if (!word_string_array || word_string_array->size() != 2) {
+										  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
 										  dialog.words.clear();
-                                          break;
-                                      } else {
+										  break;
+									  }
+									  else {
 										  dialog.words.emplace_back();
-										  dialog.words.back().author = std::move((*word_string_array)[0]);
+										  dialog.words.back().author   = std::move((*word_string_array)[0]);
 										  dialog.words.back().sentence = std::move((*word_string_array)[1]);
 									  }
-                                  }
-                              }
+								  }
+							  }
 							  m_model2dialog[model_handle] = dialog_list.size();
 							  dialog_list.emplace_back(std::move(dialog));
 						  }
 					  }
 				  }
 			  }
-
 		  },
 		  [&](const gate &gate) {
 			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;

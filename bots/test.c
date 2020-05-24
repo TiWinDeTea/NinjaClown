@@ -2,11 +2,16 @@
 #include <bot_interface/helpers.h>
 
 static _Bool finished;
-static int action_choice;
+static size_t ninja_clown_handle = 0;
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV on_start() {
-	finished      = 0;
-	action_choice = 0;
+	finished = 0;
+
+	for (size_t i = 0; i < MAX_ENTITIES; ++i) {
+		if (ENTITIES[i].kind == EK_DLL) {
+			ninja_clown_handle = i;
+		}
+	}
 }
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init() {
@@ -14,34 +19,33 @@ void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_init() {
 }
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_destroy() {
-	ninja_log("No... no... NO! DON'T DESTROY M");
+	nnj_log(LL_CRITICAL, "No... no... NO! DON'T DESTROY M");
 }
 
 void NINJACLOWN_DLLEXPORT NINJACLOWN_CALLCONV bot_think() {
-	ninja_map_update();
-	ninja_entities_update();
+	nnj_map_update();
+	nnj_entities_update();
+
+	struct nnj_decision_commit commit;
+	commit.target_handle = ninja_clown_handle;
+	commit.decision      = nnj_build_decision_none();
 
 	if (finished) {
-		action_choice = action_choice + 1;
-		if (action_choice >= 3) {
-			action_choice = 0;
-			ninja_turn_right();
-		}
-		else {
-			ninja_move_forward();
-		}
-
-		return;
-	}
-
-	if (ninja_get_angle() < 2.8f) {
-		ninja_turn_left();
-	}
-	else if (ninja_get_x() > 7.5) {
-		ninja_move_forward();
+		commit.decision = nnj_build_decision_movement(1, 1, 0);
 	}
 	else {
-		ninja_activate_button();
-		finished = 1;
+		if (ENTITIES[ninja_clown_handle].angle < 2.8f) {
+			commit.decision = nnj_build_decision_movement(-1, 0, 0);
+		}
+		else if (ENTITIES[ninja_clown_handle].x > 7.5) {
+			commit.decision = nnj_build_decision_movement(0, 1, 0);
+		}
+		else {
+			commit.decision = nnj_build_decision_activate(6, 1);
+			finished        = 1;
+			nnj_log(LL_INFO, "Me pushed button bip bop");
+		}
 	}
+
+	nnj_commit_decision(&commit, 1);
 }

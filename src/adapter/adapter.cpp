@@ -102,6 +102,7 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
+		m_entities_changed_since_last_update.emplace_back(handle.handle);
 	}
 	else {
 		spdlog::error("Move request for unknown entity {}", handle.handle);
@@ -114,10 +115,19 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
 		spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
 		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
+		m_entities_changed_since_last_update.emplace_back(handle.handle);
 	}
 	else {
 		spdlog::error("Rotate request for unknown model entity {}", handle.handle);
 	}
+}
+
+void adapter::adapter::clear_entities_changed_since_last_update() noexcept {
+	m_entities_changed_since_last_update.clear();
+}
+
+const std::vector<std::size_t> &adapter::adapter::entities_changed_since_last_update() noexcept {
+	return m_entities_changed_since_last_update;
 }
 
 void adapter::adapter::dll_log(const char *log) {

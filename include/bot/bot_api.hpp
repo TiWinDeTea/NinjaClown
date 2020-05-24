@@ -15,26 +15,19 @@ class adapter;
 namespace bot {
 
 struct ffi {
-	static void NINJACLOWN_CALLCONV log(void* ninja_data, const char *text);
+	static void NINJACLOWN_CALLCONV log(bot::nnj_log_level level, const char *text);
 
 	static size_t NINJACLOWN_CALLCONV map_width(void *ninja_data);
 	static size_t NINJACLOWN_CALLCONV map_height(void *ninja_data);
-	static void NINJACLOWN_CALLCONV map_scan(void *ninja_data, bot::cell *map_view);
-	static void NINJACLOWN_CALLCONV map_update(void *ninja_data, bot::cell *map_view);
+	static void NINJACLOWN_CALLCONV map_scan(void *ninja_data, bot::nnj_cell *map_view);
+	static size_t NINJACLOWN_CALLCONV map_update(void *ninja_data, bot::nnj_cell *map_view, bot::nnj_cell_pos *changed_cells,
+	                                             size_t changed_size);
+
 	static size_t NINJACLOWN_CALLCONV max_entities();
-	static void NINJACLOWN_CALLCONV entities_update(void *ninja_data, bot::entity *entities);
+	static void NINJACLOWN_CALLCONV entities_scan(void *ninja_data, bot::nnj_entity *entities);
+	static size_t NINJACLOWN_CALLCONV entities_update(void *ninja_data, bot::nnj_entity *entities);
 
-	static float NINJACLOWN_CALLCONV get_angle(void *ninja_data);
-	static float NINJACLOWN_CALLCONV get_x_position(void *ninja_data);
-	static float NINJACLOWN_CALLCONV get_y_position(void *ninja_data);
-
-	static void NINJACLOWN_CALLCONV turn_right(void *ninja_data);
-	static void NINJACLOWN_CALLCONV turn_left(void *ninja_data);
-	static void NINJACLOWN_CALLCONV move_forward(void *ninja_data);
-	static void NINJACLOWN_CALLCONV move_backward(void *ninja_data);
-	static void NINJACLOWN_CALLCONV move_backward_dummy(void *ninja_data);
-
-	static void NINJACLOWN_CALLCONV activate_button(void *ninja_data);
+	static void NINJACLOWN_CALLCONV commit_decision(void *ninja_data, bot::nnj_decision_commit *commits, size_t num_commits);
 
 private:
 	static model::model *get_model(void *ninja_data);

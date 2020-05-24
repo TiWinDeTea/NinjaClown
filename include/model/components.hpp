@@ -21,7 +21,7 @@ struct properties {
 };
 
 struct metadata {
-	bot::entity_kind kind = bot::entity_kind::EK_NOT_AN_ENTITY;
+	bot::nnj_entity_kind kind = bot::nnj_entity_kind::EK_NOT_AN_ENTITY;
 };
 
 struct health {
@@ -93,7 +93,7 @@ namespace cst {
 struct components {
 	std::array<std::optional<component::health>, cst::max_entities> health;
 	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
-	std::array<bot::decision, cst::max_entities> decision;
+	std::array<bot::nnj_decision, cst::max_entities> decision;
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
 };
