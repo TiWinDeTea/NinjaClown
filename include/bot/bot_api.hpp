@@ -15,7 +15,7 @@ class adapter;
 namespace bot {
 
 struct ffi {
-	static void NINJACLOWN_CALLCONV log(const char *text);
+	static void NINJACLOWN_CALLCONV log(void* ninja_data, const char *text);
 
 	static size_t NINJACLOWN_CALLCONV map_width(void *ninja_data);
 	static size_t NINJACLOWN_CALLCONV map_height(void *ninja_data);

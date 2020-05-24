@@ -30,6 +30,7 @@ set(NINJA_CLOWN_SOURCES
 		src/utils/resource_manager.cpp
 
 		src/view/animation.cpp
+		src/view/dialogs.cpp
 		src/view/map.cpp
 		src/view/mob_animations.cpp
 		src/view/overmap_collection.cpp

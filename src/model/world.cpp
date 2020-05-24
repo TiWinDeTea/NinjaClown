@@ -157,6 +157,7 @@ void model::world::fire_activator(adapter::adapter &adapter, size_t handle) {
 	for (size_t target : activators[handle].targets) {
 		fire_actionable(adapter, target);
 	}
+	adapter.fire_activator(adapter::model_handle{handle, adapter::model_handle::ACTIVATOR});
 }
 
 void model::world::fire_actionable(adapter::adapter &adapter, size_t handle) {

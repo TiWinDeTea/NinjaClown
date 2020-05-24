@@ -15,7 +15,8 @@ void set_decision(model::world *world, bot::decision decision) {
 
 namespace bot {
 
-void NINJACLOWN_CALLCONV ffi::log(const char *text) {
+void NINJACLOWN_CALLCONV ffi::log(void* ninja_data, const char *text) {
+	get_adapter(ninja_data)->dll_log(text);
 	spdlog::info("{}", text);
 }
 

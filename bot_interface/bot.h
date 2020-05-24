@@ -95,7 +95,7 @@ struct decision {
 struct bot_api {
 	void *ninja_descriptor;
 
-	void(NINJACLOWN_CALLCONV *log)(const char *);
+	void(NINJACLOWN_CALLCONV *log)(void* ninja_data, const char *);
 
 	size_t(NINJACLOWN_CALLCONV *map_width)(void *ninja_data);
 	size_t(NINJACLOWN_CALLCONV *map_height)(void *ninja_data);

@@ -7,6 +7,7 @@
 
 #include "utils/synchronized.hpp"
 
+#include "view/dialogs.hpp"
 #include "view/fps_limiter.hpp"
 #include "view/map.hpp"
 #include "view/mob.hpp"
@@ -76,6 +77,10 @@ public:
 		return m_map.acquire();
 	}
 
+	class dialog_viewer& dialog_viewer() noexcept {
+		return m_dialog_viewer;
+	}
+
 	void set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept {
 		auto map = m_map.acquire();
 		map->set(std::move(new_map));
@@ -118,6 +123,8 @@ private:
 	sf::FloatRect m_viewport{};
 
 	fps_limiter m_fps_limiter{};
+
+	class dialog_viewer m_dialog_viewer{};
 
 };
 } // namespace view

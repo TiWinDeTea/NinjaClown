@@ -24,7 +24,7 @@ unsafe fn get_data() -> &'static mut UserData {
 pub struct RawApi {
     pub ninja_descriptor: *mut c_void,
 
-    pub log: unsafe extern "sysv64" fn(*const c_char),
+    pub log: unsafe extern "sysv64" fn(ninja_data: *mut c_void, *const c_char),
 
     pub map_width: unsafe extern "sysv64" fn(ninja_data: *mut c_void) -> usize,
     pub map_height: unsafe extern "sysv64" fn(ninja_data: *mut c_void) -> usize,

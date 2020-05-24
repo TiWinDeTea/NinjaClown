@@ -14,7 +14,7 @@ extern size_t MAX_ENTITIES;
 extern void(NINJACLOWN_CALLCONV *USER_START_LEVEL)();
 extern void(NINJACLOWN_CALLCONV *USER_END_LEVEL)();
 
-#define ninja_log(text)         BOT.log(text)
+#define ninja_log(text)         BOT.log(BOT.ninja_descriptor, text)
 #define ninja_map_scan()        BOT.map_scan(BOT.ninja_descriptor, MAP)
 #define ninja_map_update()      BOT.map_update(BOT.ninja_descriptor, MAP)
 #define ninja_entities_update() BOT.entities_update(BOT.ninja_descriptor, ENTITIES)

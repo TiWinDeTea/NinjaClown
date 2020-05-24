@@ -90,6 +90,8 @@ public:
 
 	bool map_is_loaded() noexcept;
 
+    void fire_activator(model_handle handle) noexcept;
+
 	void close_gate(model_handle gate) noexcept;
 	void open_gate(model_handle gate) noexcept;
 
@@ -100,6 +102,8 @@ public:
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
+
+	void dll_log(const char* log);
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
@@ -114,6 +118,8 @@ private:
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
+
+	std::unordered_map<model_handle, unsigned int, model_hhash> m_model2dialog{};
 
 	std::vector<model::grid_point> m_cells_changed_since_last_update{};
 };

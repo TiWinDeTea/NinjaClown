@@ -60,6 +60,7 @@ struct activator {
 	unsigned int refire_after;
 	activator_type type;
 	std::vector<size_t> target_tiles;
+	std::string dialog;
 };
 
 struct gate {
@@ -95,6 +96,9 @@ namespace keys {
 	constexpr const char *mobs_spawn_table   = "mobs.spawn";
 	constexpr const char *actors_spawn_table = "actors.spawn";
 	constexpr const char *map_layout         = "map.layout";
+	constexpr const char *dialog             = "dialog";
+	constexpr const char *dialog_table       = "dialogs";
+	constexpr const char *dialog_text        = "text";
 } // namespace keys
 
 namespace values {
@@ -370,6 +374,8 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 				activator.target_tiles.push_back(it->second);
 			}
+
+            try_get(keys::dialog, activator.dialog, true);
 			actors.emplace_back(std::move(activator));
 		}
 	}
@@ -390,6 +396,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	auto mobs_spawns_toml = map_file->get_table_array_qualified(keys::mobs_spawn_table);
 	auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
 	auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
+	auto dialogs          = map_file->get_table_qualified(keys::dialog_table);
 
 	if (!mobs_defs_toml || !mobs_spawns_toml || !actors_toml || !map_layout_toml) {
 		if (!mobs_defs_toml) {
@@ -468,15 +475,15 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
 					break;
 				case 'T': {
-                    world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
-                    view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-                    world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
+					world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+					view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+					world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 
-                    view::object obj;
-                    obj.set_id(utils::resource_manager::object_id::target, m_state.resources);
-                    obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
-                    obj.reveal();
-                    m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
+					view::object obj;
+					obj.set_id(utils::resource_manager::object_id::target, m_state.resources);
+					obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
+					obj.reveal();
+					m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
 					break;
 				}
 				default:
@@ -544,6 +551,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		++model_entity_handle;
 	}
 
+	std::vector<view::dialog> dialog_list;
+
 	for (const std::variant<activator, gate, autoshooter> &actor : actors) {
 
 		utils::visitor visitor{
@@ -590,13 +599,53 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			                                std::optional<unsigned int>{} :
 			                                std::optional<unsigned int>(activator.refire_after),
 			                              activator.delay});
+
+			  if (!activator.dialog.empty()) {
+				  if (!dialogs) {
+					  spdlog::warn("No dialog founds, but activator required dialog {}", activator.dialog);
+				  } else {
+					  auto dialog = dialogs->get_table_qualified(activator.dialog);
+					  if (!dialog) {
+                          spdlog::warn("Requested dialog {} not found", activator.dialog);
+					  } else {
+						  auto words = dialog->get_array(keys::dialog_text); // TODO translations support
+						  if (!words) {
+							  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+						  } else {
+							  view::dialog dialog;
+                              for (auto word : *words) {
+                                  auto word_array = word->as_array();
+                                  if (!word_array) {
+                                      spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+                                      dialog.words.clear();
+                                      break;
+                                  } else {
+                                      auto word_string_array = word_array->get_array_of<std::string>();
+                                      if (!word_string_array || word_string_array->size() != 2) {
+                                          spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+										  dialog.words.clear();
+                                          break;
+                                      } else {
+										  dialog.words.emplace_back();
+										  dialog.words.back().author = std::move((*word_string_array)[0]);
+										  dialog.words.back().sentence = std::move((*word_string_array)[1]);
+									  }
+                                  }
+                              }
+							  m_model2dialog[model_handle] = dialog_list.size();
+							  dialog_list.emplace_back(std::move(dialog));
+						  }
+					  }
+				  }
+			  }
+
 		  },
 		  [&](const gate &gate) {
 			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;
 			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cst::cell_height;
 
-			  world.actionables.push_back(
-			    {model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()}, model::actionable::behaviours_ns::gate});
+			  world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()},
+			                               model::actionable::behaviours_ns::gate});
 
 			  view::object o{};
 			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
@@ -619,7 +668,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cst::cell_height;
 
 			  world.actionables.push_back(
-			    {model::actionable::instance_data{{autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
+			    {model::actionable::instance_data{
+			       {autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
 			     model::actionable::behaviours_ns::autoshooter});
 
 			  view::object o{};
@@ -635,7 +685,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		std::visit(visitor, actor);
 	}
 
-    view.set_map(std::move(view_map));
+	view.set_map(std::move(view_map));
+	view.dialog_viewer().set_dialogs(std::move(dialog_list));
 
 	spdlog::info("Loaded map \"{}\"", map);
 	return true;

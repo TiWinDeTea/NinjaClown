@@ -22,7 +22,7 @@ impl Bot {
 
     pub fn log<S: Into<String>>(&self, s: S) {
         let s = CString::new(s.into()).expect("CString::new failed");
-        unsafe { (self.raw.log)(s.as_ptr()) };
+        unsafe { (self.raw.log)(self.raw.ninja_descriptor, s.as_ptr()) };
     }
 
     pub fn map_update(&mut self) {

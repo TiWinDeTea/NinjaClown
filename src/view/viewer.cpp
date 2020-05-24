@@ -8,12 +8,12 @@
 
 #include <imgui-SFML.h>
 #include <imgui.h>
-
-#include <adapter/adapter.hpp>
 #include <imterm/terminal.hpp>
 
+#include "adapter/adapter.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
+#include "view/dialogs.hpp"
 
 #include "view/viewer.hpp"
 
@@ -25,8 +25,7 @@ namespace cst {
 } // namespace
 
 view::viewer::viewer(state::holder *state_holder) noexcept
-    : m_state_holder{*state_holder} {
-}
+    : m_state_holder{*state_holder} { }
 
 void view::viewer::run() {
 	m_running = true;
@@ -61,7 +60,7 @@ void view::viewer::do_run() noexcept {
 	window = &local_window;
 
 	m_window_size = {cst::window_width, cst::window_height};
-    local_window.setView(sf::View{m_viewport});
+	local_window.setView(sf::View{m_viewport});
 
 	bool resized_once = false;
 	local_window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
@@ -80,6 +79,7 @@ void view::viewer::do_run() noexcept {
 	bool displaying_term = true;
 
 	while (local_window.isOpen() && m_running) {
+
 		sf::Event event{};
 		while (local_window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
@@ -167,12 +167,18 @@ void view::viewer::do_run() noexcept {
 					}
 					mouse_pos = {event.mouseMove.x, event.mouseMove.y};
 					break;
+				case sf::Event::MouseButtonReleased:
+					if (event.mouseButton.button == sf::Mouse::Button::Left) {
+                        m_dialog_viewer.on_click(event.mouseButton.x, event.mouseButton.y);
+					}
 				default:
 					break;
 			}
 		}
 
 		ImGui::SFML::Update(local_window, delta_clock.restart());
+
+		m_dialog_viewer.show(local_window.getSize().x, local_window.getSize().y);
 
 		if (displaying_term) {
 			ImGui::SetNextWindowPos({0.f, 0.f}, ImGuiCond_Always);
@@ -185,7 +191,7 @@ void view::viewer::do_run() noexcept {
 		local_window.clear();
 		m_map.acquire()->print(*this, m_state_holder.resources);
 
-        if (show_debug_data) {
+		if (show_debug_data) {
 			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
 		}
 		else {

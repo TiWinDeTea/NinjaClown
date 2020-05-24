@@ -8,13 +8,23 @@
 #include "model/grid_point.hpp"
 #include "state_holder.hpp"
 #include "utils/scope_guards.hpp"
+#include "view/dialogs.hpp"
+#include "view/viewer.hpp"
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	auto clear = [this] {
 		state::access<adapter>::model(m_state).world.reset();
 		state::access<adapter>::view(m_state).acquire_overmap()->clear();
 		state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
+		state::access<adapter>::view(m_state).dialog_viewer().clear(); // TODO: mutex pour ici ?
 		m_target_handle.reset();
+
+		m_target_handle.reset();
+		m_model2dialog.clear();
+		m_model2view.clear();
+		m_view2model.clear();
+		m_view2name.clear();
+		m_cells_changed_since_last_update.clear();
 	};
 
 	clear();
@@ -50,6 +60,13 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 bool adapter::adapter::map_is_loaded() noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 	return !view.acquire_map()->m_cells.empty();
+}
+
+void adapter::adapter::fire_activator(model_handle handle) noexcept {
+	auto it = m_model2dialog.find(handle);
+	if (it != m_model2dialog.end()) {
+		state::access<adapter>::view(m_state).dialog_viewer().select_dialog(it->second);
+	}
 }
 
 void adapter::adapter::close_gate(model_handle gate) noexcept {
@@ -101,6 +118,12 @@ void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcep
 	else {
 		spdlog::error("Rotate request for unknown model entity {}", handle.handle);
 	}
+}
+
+void adapter::adapter::dll_log(const char *log) {
+	view::dialog_viewer &dialog = state::access<adapter>::view(m_state).dialog_viewer();
+	dialog.dll_word(log, std::chrono::milliseconds{2500}); // TODO : externalize/parameterify
+	spdlog::info("BOT LOG: {}", log);
 }
 
 // TODO traductions
