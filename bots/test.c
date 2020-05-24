@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-
-#include "bot_interface/bot.h"
-
-#define NINJAHELPER_IMPLEMENT
-#include "bot_interface/helpers.h"
+#include <bot_interface/bot.h>
+#include <bot_interface/helpers.h>
 
 static _Bool finished;
 static int action_choice;

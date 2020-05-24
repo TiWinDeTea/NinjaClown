@@ -96,31 +96,19 @@ float NINJACLOWN_CALLCONV ffi::get_y_position(void *ninja_data) {
 }
 
 void NINJACLOWN_CALLCONV ffi::turn_right(void *ninja_data) {
-	bot::decision decision;
-	decision.kind              = bot::DK_MOVEMENT;
-	decision.data.movement_req = bot::movement_request{-1, 0, 0};
-	set_decision(get_world(ninja_data), decision);
+	set_decision(get_world(ninja_data), bot::build_decision_movement(-1, 0, 0));
 }
 
 void NINJACLOWN_CALLCONV ffi::turn_left(void *ninja_data) {
-	bot::decision decision;
-	decision.kind              = bot::DK_MOVEMENT;
-	decision.data.movement_req = bot::movement_request{1, 0, 0};
-	set_decision(get_world(ninja_data), decision);
+	set_decision(get_world(ninja_data), bot::build_decision_movement(1, 0, 0));
 }
 
 void NINJACLOWN_CALLCONV ffi::move_forward(void *ninja_data) {
-	bot::decision decision;
-	decision.kind              = bot::DK_MOVEMENT;
-	decision.data.movement_req = bot::movement_request{0, 0, 1};
-	set_decision(get_world(ninja_data), decision);
+	set_decision(get_world(ninja_data), bot::build_decision_movement(0, 1, 0));
 }
 
 void NINJACLOWN_CALLCONV ffi::move_backward(void *ninja_data) {
-	bot::decision decision;
-	decision.kind              = bot::DK_MOVEMENT;
-	decision.data.movement_req = bot::movement_request{0, 0, -1};
-	set_decision(get_world(ninja_data), decision);
+	set_decision(get_world(ninja_data), bot::build_decision_movement(0, -1, 0));
 }
 
 void NINJACLOWN_CALLCONV ffi::move_backward_dummy([[maybe_unused]] void *model) {
@@ -128,11 +116,8 @@ void NINJACLOWN_CALLCONV ffi::move_backward_dummy([[maybe_unused]] void *model) 
 }
 
 void NINJACLOWN_CALLCONV ffi::activate_button(void *ninja_data) {
-	bot::decision decision;
-	decision.kind = bot::DK_ACTIVATE;
-	decision.data.activate_req
-	  = bot::activate_request{static_cast<std::size_t>(get_x_position(ninja_data)), static_cast<std::size_t>(get_y_position(ninja_data))};
-	set_decision(get_world(ninja_data), decision);
+	set_decision(get_world(ninja_data), bot::build_decision_activate(static_cast<std::size_t>(get_x_position(ninja_data)),
+	                                                                 static_cast<std::size_t>(get_y_position(ninja_data))));
 }
 
 model::model *ffi::get_model(void *ninja_data) {

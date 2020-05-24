@@ -35,6 +35,9 @@ set(NINJA_CLOWN_SOURCES
 		src/view/mob_animations.cpp
 		src/view/overmap_collection.cpp
 		src/view/viewer.cpp
+
+		bot_interface/helpers.c
+		bot_interface/bot.c
 )
 
 add_executable(ninja-clown ${OPTIONS} ${NINJA_CLOWN_SOURCES} src/main.cpp)
@@ -77,7 +80,7 @@ foreach(file ${files})
 endforeach()
 
 
-add_library(ninja-clown-bot MODULE bots/test.c)
+add_library(ninja-clown-bot MODULE bots/test.c bot_interface/bot.c bot_interface/helpers.c)
 target_include_directories(ninja-clown-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 add_dependencies(ninja-clown ninja-clown-bot)

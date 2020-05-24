@@ -63,8 +63,8 @@ enum decision_kind {
 
 struct movement_request {
 	float rotation; // radians
-	float lateral_diff;
 	float forward_diff;
+	float lateral_diff;
 };
 
 struct activate_request {
@@ -76,21 +76,19 @@ struct attack_request {
 	size_t target_handle;
 };
 
-struct throw_request {
-	float angle; // radians
-};
-
-union decision_data {
-	struct movement_request movement_req;
-	struct activate_request activate_req;
-	struct attack_request attack_req;
-	struct throw_request throw_req;
-};
-
 struct decision {
 	enum decision_kind kind;
-	union decision_data data;
+	union {
+		struct movement_request movement;
+		struct activate_request activate;
+		struct attack_request attack;
+	};
 };
+
+struct decision build_decision_movement(float rotation, float forward_diff, float lateral_diff);
+struct decision build_decision_attack(size_t target_handle);
+struct decision build_decision_activate(size_t column, size_t line);
+struct decision build_decision_throw();
 
 struct bot_api {
 	void *ninja_descriptor;

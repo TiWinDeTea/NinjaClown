@@ -38,18 +38,15 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			// nothing to do here
 			break;
 		case bot::DK_MOVEMENT: {
-			spdlog::info("{} {} {}", decision.data.movement_req.rotation, decision.data.movement_req.forward_diff,
-			             decision.data.movement_req.lateral_diff);
-
-			float rotation = std::clamp(decision.data.movement_req.rotation, -properties.rotation_speed, properties.rotation_speed);
+			float rotation = std::clamp(decision.movement.rotation, -properties.rotation_speed, properties.rotation_speed);
 			if (std::abs(rotation) > 0.001) { // FIXME: eta variable
 				rotate_entity(adapter, handle, rotation);
 			}
 
-			float dx = std::cos(components.hitbox[handle]->rad) * decision.data.movement_req.forward_diff
-			           + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.data.movement_req.lateral_diff;
-			float dy = -(std::sin(components.hitbox[handle]->rad) * decision.data.movement_req.forward_diff
-			             + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.data.movement_req.lateral_diff);
+			float dx = std::cos(components.hitbox[handle]->rad) * decision.movement.forward_diff
+			           + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.movement.lateral_diff;
+			float dy = -(std::sin(components.hitbox[handle]->rad) * decision.movement.forward_diff
+			             + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.movement.lateral_diff);
 			vec2 movement{dx, dy};
 			if (movement.norm() > properties.move_speed) {
 				// cap movement vector to max speed
@@ -73,7 +70,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 		}
 		case bot::DK_ACTIVATE: {
 			component::hitbox &hitbox = components.hitbox[handle].value();
-			const cell &c             = grid[decision.data.activate_req.column][decision.data.activate_req.line];
+			const cell &c             = grid[decision.activate.column][decision.activate.line];
 			interaction &i            = interactions[c.interaction_handle.value()];
 			if (i.interactable == interactable_kind::BUTTON) { // TODO: change check to interaction_kind instead
 				fire_activator(adapter, i.interactable_handler); // TODO: check for distance from entity
