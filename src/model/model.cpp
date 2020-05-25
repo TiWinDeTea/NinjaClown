@@ -26,7 +26,7 @@ model::model::~model() noexcept {
 	return false;
 }
 
-void model::model::bot_start_level(bot::bot_api api) noexcept {
+void model::model::bot_start_level(ninja_api::nnj_api api) noexcept {
 	api.ninja_descriptor = &m_state_holder;
 	m_dll.bot_start_level(api);
 }

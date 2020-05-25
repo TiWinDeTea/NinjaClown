@@ -4,12 +4,12 @@ namespace bot::details {
 template <typename>
 constexpr bool dependant_false = false;
 
-constexpr void make_api_impl(bot_api &) { } // ends template recursion
+constexpr void make_api_impl(ninja_api::nnj_api &) { } // ends template recursion
 
 template <typename Func, typename... OtherFuncs>
-void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others) {
+void make_api_impl(ninja_api::nnj_api &api, Func f, OtherFuncs &&... others) {
 	if constexpr (std::is_same_v<Func, commit_decision>) {
-		api.commit_decision = f.ptr;
+		api.commit_decisions = f.ptr;
 	}
 	else {
 		static_assert(dependant_false<Func>, "unknown given type");
@@ -19,8 +19,8 @@ void make_api_impl(bot_api &api, Func f, OtherFuncs &&... others) {
 } // namespace bot::details
 
 template <typename... Funcs>
-bot::bot_api bot::make_api(Funcs &&... funcs) {
-	bot_api api{};
+ninja_api::nnj_api bot::make_api(Funcs &&... funcs) {
+    ninja_api::nnj_api api{};
 
 	api.log = &ffi::log;
 
@@ -33,7 +33,7 @@ bot::bot_api bot::make_api(Funcs &&... funcs) {
 	api.entities_scan   = &ffi::entities_scan;
 	api.entities_update = &ffi::entities_update;
 
-	api.commit_decision = &ffi::commit_decision;
+	api.commit_decisions = &ffi::commit_decisions;
 
 	details::make_api_impl(api, std::forward<Funcs>(funcs)...);
 

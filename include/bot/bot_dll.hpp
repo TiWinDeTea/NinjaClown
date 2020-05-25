@@ -1,16 +1,16 @@
 #ifndef NINJACLOWN_BOT_DLL_HPP
 #define NINJACLOWN_BOT_DLL_HPP
 
-#include <bot_interface/bot.h>
 #include <optional>
+
+#include <ninja_clown/api.h>
 
 #include "utils/dll.hpp"
 
 namespace bot {
-struct bot_api; // forward declaration
 
 using init_fn_type        = void(NINJACLOWN_CALLCONV *)();
-using start_level_fn_type = void(NINJACLOWN_CALLCONV *)(bot_api);
+using start_level_fn_type = void(NINJACLOWN_CALLCONV *)(ninja_api::nnj_api);
 using think_fn_type       = void(NINJACLOWN_CALLCONV *)();
 using end_level_fn_type   = void(NINJACLOWN_CALLCONV *)();
 using destroy_fn_type     = void(NINJACLOWN_CALLCONV *)();
@@ -29,7 +29,7 @@ struct bot_dll {
 	[[nodiscard]] bool reload() noexcept;
 
 	void bot_init() noexcept;
-	void bot_start_level(bot_api api) noexcept;
+	void bot_start_level(ninja_api::nnj_api api) noexcept;
 	void bot_think() noexcept;
 	void bot_end_level() noexcept;
 
@@ -49,7 +49,7 @@ private:
 	end_level_fn_type m_end_level_fn{};
 	destroy_fn_type m_destroy_fn{};
 
-	std::optional<bot_api> m_cached_bot_api;
+	std::optional<ninja_api::nnj_api> m_cached_bot_api;
 };
 } // namespace bot
 

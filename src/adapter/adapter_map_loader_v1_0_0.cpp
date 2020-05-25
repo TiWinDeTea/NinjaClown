@@ -1,4 +1,4 @@
-#include <bot_interface/bot.h>
+#include <ninja_clown/api.h>
 #include <cpptoml.h>
 #include <spdlog/spdlog.h>
 
@@ -506,7 +506,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		switch (mob.type.behaviour) {
 			case mob_behaviour::NONE:
-				world.components.metadata[model_entity_handle].kind = bot::nnj_entity_kind::EK_HARMLESS;
+				world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
 				break;
 			case mob_behaviour::SCIENTIST:
 				// TODO
@@ -515,7 +515,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				// TODO
 				break;
 			case mob_behaviour::DLL:
-				world.components.metadata[model_entity_handle].kind = bot::nnj_entity_kind::EK_DLL;
+				world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
 				world.ninja_clown_handle                            = model_entity_handle; // TODO : multi-handle for DLL
 				break;
 		}

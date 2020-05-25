@@ -10,11 +10,11 @@
 #endif
 
 #ifdef __cplusplus
-#	include <cstddef>
-namespace bot {
+#include <cstddef>
+namespace ninja_api {
 extern "C" {
 #else
-#	include <stddef.h>
+#include <stddef.h>
 #endif
 
 enum nnj_log_level {
@@ -26,7 +26,7 @@ enum nnj_log_level {
 	LL_CRITICAL = 5,
 };
 
-enum nnj_cell_type {
+enum nnj_cell_kind {
 	CT_UNKNOWN = 0,
 	CT_CHASM   = 1,
 	CT_GROUND  = 2,
@@ -43,7 +43,7 @@ enum nnj_interaction_kind {
 };
 
 struct nnj_cell {
-	enum nnj_cell_type type;
+	enum nnj_cell_kind kind;
 	enum nnj_interaction_kind interaction;
 };
 
@@ -101,18 +101,12 @@ struct nnj_decision {
 	};
 };
 
-struct nnj_decision nnj_build_decision_none();
-struct nnj_decision nnj_build_decision_movement(float rotation, float forward_diff, float lateral_diff);
-struct nnj_decision nnj_build_decision_attack(size_t target_handle);
-struct nnj_decision nnj_build_decision_activate(size_t column, size_t line);
-struct nnj_decision nnj_build_decision_throw();
-
 struct nnj_decision_commit {
 	size_t target_handle;
 	struct nnj_decision decision;
 };
 
-struct bot_api {
+struct nnj_api {
 	void *ninja_descriptor;
 
 	void(NINJACLOWN_CALLCONV *log)(enum nnj_log_level level, const char *text);
@@ -127,12 +121,12 @@ struct bot_api {
 	void(NINJACLOWN_CALLCONV *entities_scan)(void *ninja_data, struct nnj_entity *entities);
 	size_t(NINJACLOWN_CALLCONV *entities_update)(void *ninja_data, struct nnj_entity *entities);
 
-	void(NINJACLOWN_CALLCONV *commit_decision)(void *ninja_data, struct nnj_decision_commit *commits, size_t num_commits);
+	void(NINJACLOWN_CALLCONV *commit_decisions)(void *ninja_data, struct nnj_decision_commit const *commits, size_t num_commits);
 };
 
 #ifdef __cplusplus
 } // extern "C"
-} // namespace bot
+} // namespace ninja_api
 #endif
 
 #endif //NINJACLOWN_BOT_INTERFACE_BOT_H

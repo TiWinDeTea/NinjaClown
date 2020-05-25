@@ -1,17 +1,17 @@
 #ifndef NINJACLOWN_BOT_BOT_FACTORY_HPP
 #define NINJACLOWN_BOT_BOT_FACTORY_HPP
 
+#include "ninja_clown/api.h"
 #include "bot/bot_api.hpp"
-#include "bot_interface/bot.h"
 
 namespace bot {
 
 struct commit_decision {
-	decltype(bot_api::commit_decision) ptr;
+	decltype(ninja_api::nnj_api::commit_decisions) ptr;
 };
 
 template <typename... Funcs>
-bot_api make_api(Funcs &&... funcs);
+ninja_api::nnj_api make_api(Funcs &&... funcs);
 
 } // namespace bot
 

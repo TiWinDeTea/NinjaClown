@@ -23,26 +23,27 @@ void model::world::reset() {
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
 		components.metadata[i]   = {};
 		components.properties[i] = {};
-		components.decision[i]   = bot::nnj_decision{bot::DK_NONE};
+		components.decision[i]   = ninja_api::nnj_decision{ninja_api::DK_NONE};
 		components.health[i].reset();
 		components.hitbox[i].reset();
 	}
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-	bot::nnj_decision &decision       = components.decision[handle];
+    ninja_api::nnj_decision &decision       = components.decision[handle];
 	component::properties &properties = components.properties[handle];
 
 	switch (decision.kind) {
-		case bot::DK_NONE:
+		case ninja_api::DK_NONE:
 			// nothing to do here
 			break;
-		case bot::DK_MOVEMENT: {
+		case ninja_api::DK_MOVEMENT: {
 			float rotation = std::clamp(decision.movement.rotation, -properties.rotation_speed, properties.rotation_speed);
 			if (std::abs(rotation) > 0.001) { // FIXME: eta variable
 				rotate_entity(adapter, handle, rotation);
 			}
 
+			// FIXME: check for NaN in user input
 			float dx = std::cos(components.hitbox[handle]->rad) * decision.movement.forward_diff
 			           + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.movement.lateral_diff;
 			float dy = -(std::sin(components.hitbox[handle]->rad) * decision.movement.forward_diff
@@ -68,7 +69,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			}
 			break;
 		}
-		case bot::DK_ACTIVATE: {
+		case ninja_api::DK_ACTIVATE: {
 			component::hitbox &hitbox = components.hitbox[handle].value();
 			const cell &c             = grid[decision.activate.column][decision.activate.line];
 			interaction &i            = interactions[c.interaction_handle.value()]; // FIXME: check there is an interaction handle
@@ -82,7 +83,7 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			break;
 	}
 
-	components.decision[handle].kind = bot::DK_NONE;
+	components.decision[handle].kind = ninja_api::DK_NONE;
 }
 
 void model::world::move_entity(adapter::adapter &adapter, size_t handle, vec2 movement) {

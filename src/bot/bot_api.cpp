@@ -7,24 +7,24 @@
 
 namespace bot {
 
-void NINJACLOWN_CALLCONV ffi::log(bot::nnj_log_level level, const char *text) {
+void NINJACLOWN_CALLCONV ffi::log(ninja_api::nnj_log_level level, const char *text) {
 	switch (level) {
-		case bot::LL_TRACE:
+		case ninja_api::LL_TRACE:
 			spdlog::trace("[BOT] {}", text);
 			break;
-		case bot::LL_DEBUG:
+		case ninja_api::LL_DEBUG:
 			spdlog::debug("[BOT] {}", text);
 			break;
-		case bot::LL_INFO:
+		case ninja_api::LL_INFO:
 			spdlog::info("[BOT] {}", text);
 			break;
-		case bot::LL_WARN:
+		case ninja_api::LL_WARN:
 			spdlog::warn("[BOT] {}", text);
 			break;
-		case bot::LL_ERROR:
+		case ninja_api::LL_ERROR:
 			spdlog::error("[BOT] {}", text);
 			break;
-		case bot::LL_CRITICAL:
+		case ninja_api::LL_CRITICAL:
 			spdlog::critical("[BOT] {}", text);
 			break;
 		default:
@@ -41,19 +41,19 @@ size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
 	return get_world(ninja_data)->grid.height();
 }
 
-void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, bot::nnj_cell *map_view) {
+void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, ninja_api::nnj_cell *map_view) {
 	model::world *world = get_world(ninja_data);
 	model::grid_t &grid = world->grid;
 	for (const auto &cell : grid.subgrid({0, 0}, {static_cast<utils::ssize_t>(grid.width()), static_cast<utils::ssize_t>(grid.height())})) {
-		map_view->type = static_cast<bot::nnj_cell_type>(cell.type);
+		map_view->kind = static_cast<ninja_api::nnj_cell_kind>(cell.type);
 		if (cell.interaction_handle) {
-			map_view->interaction = static_cast<bot::nnj_interaction_kind>(world->interactions[*cell.interaction_handle].kind);
+			map_view->interaction = static_cast<ninja_api::nnj_interaction_kind>(world->interactions[*cell.interaction_handle].kind);
 		}
 		++map_view; // NOLINT
 	}
 }
 
-size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::nnj_cell *map_view, bot::nnj_cell_pos *changed_cells,
+size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, ninja_api::nnj_cell *map_view, ninja_api::nnj_cell_pos *changed_cells,
                                            size_t changed_size) {
 	adapter::adapter *adapter = get_adapter(ninja_data);
 	model::world *world       = get_world(ninja_data);
@@ -67,11 +67,11 @@ size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, bot::nnj_cell *map_
 		}
 
 		const auto &model_cell  = grid[changed.x][changed.y];
-		bot::nnj_cell &bot_cell = map_view[changed.x + changed.y * grid.width()]; // NOLINT
+        ninja_api::nnj_cell &bot_cell = map_view[changed.x + changed.y * grid.width()]; // NOLINT
 
-		bot_cell.type = static_cast<bot::nnj_cell_type>(model_cell.type);
+		bot_cell.kind = static_cast<ninja_api::nnj_cell_kind>(model_cell.type);
 		if (model_cell.interaction_handle) {
-			bot_cell.interaction = static_cast<bot::nnj_interaction_kind>(world->interactions[*model_cell.interaction_handle].kind);
+			bot_cell.interaction = static_cast<ninja_api::nnj_interaction_kind>(world->interactions[*model_cell.interaction_handle].kind);
 		}
 
 		++changed_count;
@@ -84,12 +84,12 @@ size_t NINJACLOWN_CALLCONV ffi::max_entities() {
 	return model::cst::max_entities;
 }
 
-void NINJACLOWN_CALLCONV ffi::entities_scan(void *ninja_data, bot::nnj_entity *entities) {
+void NINJACLOWN_CALLCONV ffi::entities_scan(void *ninja_data, ninja_api::nnj_entity *entities) {
 	model::world *world = get_world(ninja_data);
 
 	for (size_t i = 0; i < model::cst::max_entities; ++i) {
 		entities[i].kind = world->components.metadata[i].kind;
-		if (entities[i].kind != bot::nnj_entity_kind::EK_NOT_AN_ENTITY) {
+		if (entities[i].kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
 			if (world->components.hitbox[i]) {
 				auto &hitbox       = world->components.hitbox[i];
 				entities[i].x      = hitbox->center.x;
@@ -99,19 +99,19 @@ void NINJACLOWN_CALLCONV ffi::entities_scan(void *ninja_data, bot::nnj_entity *e
 			}
 			else {
 				// bot can't work with entity with no hitbox
-				entities[i].kind = bot::nnj_entity_kind::EK_NOT_AN_ENTITY;
+				entities[i].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
 			}
 		}
 	}
 }
 
-size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, bot::nnj_entity *entities) {
+size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj_entity *entities) {
 	adapter::adapter *adapter = get_adapter(ninja_data);
 	model::world *world       = get_world(ninja_data);
 
 	for (size_t changed : adapter->entities_changed_since_last_update()) {
 		entities[changed].kind = world->components.metadata[changed].kind;
-		if (entities[changed].kind != bot::nnj_entity_kind::EK_NOT_AN_ENTITY) {
+		if (entities[changed].kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
 			if (world->components.hitbox[changed]) {
 				auto &hitbox             = world->components.hitbox[changed];
 				entities[changed].x      = hitbox->center.x;
@@ -121,7 +121,7 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, bot::nnj_entit
 			}
 			else {
 				// bot can't work with entity with no hitbox
-				entities[changed].kind = bot::nnj_entity_kind::EK_NOT_AN_ENTITY;
+				entities[changed].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
 			}
 		}
 	}
@@ -129,10 +129,10 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, bot::nnj_entit
 	return adapter->entities_changed_since_last_update().size();
 }
 
-void NINJACLOWN_CALLCONV ffi::commit_decision(void *ninja_data, bot::nnj_decision_commit *commits, size_t num_commits) {
+void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_decision_commit const *commits, size_t num_commits) {
 	model::world *world = get_world(ninja_data);
 	for (size_t i = 0; i < num_commits; ++i) {
-		if (world->components.metadata[commits[i].target_handle].kind == bot::EK_DLL) {
+		if (world->components.metadata[commits[i].target_handle].kind == ninja_api::EK_DLL) {
 			world->components.decision[commits[i].target_handle] = commits[i].decision;
 		}
 	}

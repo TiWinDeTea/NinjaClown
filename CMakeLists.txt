@@ -35,9 +35,6 @@ set(NINJA_CLOWN_SOURCES
 		src/view/mob_animations.cpp
 		src/view/overmap_collection.cpp
 		src/view/viewer.cpp
-
-		bot_interface/helpers.c
-		bot_interface/bot.c
 )
 
 add_executable(ninja-clown ${OPTIONS} ${NINJA_CLOWN_SOURCES} src/main.cpp)
@@ -49,7 +46,7 @@ set_target_properties(
 	CXX_EXTENSIONS OFF
 )
 
-target_include_directories(ninja-clown PUBLIC include/ ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(ninja-clown PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/ ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}
         ${IMTERM_INCLUDE_DIR}
@@ -80,10 +77,10 @@ foreach(file ${files})
 endforeach()
 
 
-add_library(ninja-clown-bot MODULE bots/test.c bot_interface/bot.c bot_interface/helpers.c)
-target_include_directories(ninja-clown-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+add_library(ninja-clown-basic-bot MODULE examples/basic.c)
+target_include_directories(ninja-clown-basic-bot SYSTEM PRIVATE ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
 
-add_dependencies(ninja-clown ninja-clown-bot)
+add_dependencies(ninja-clown ninja-clown-basic-bot)
 
 # tests
 
@@ -107,9 +104,9 @@ target_include_directories(ninja-clown-tests SYSTEM PUBLIC
 		${SFML_INCLUDE_DIR}
 		${FMT_INCLUDE_DIR}
 		${CPPTOML_INCLUDE_DIR}
-		${CMAKE_CURRENT_LIST_DIR}
-		external/
-		include
+		${CMAKE_CURRENT_LIST_DIR}/bindings/c/
+		${CMAKE_CURRENT_LIST_DIR}/external/
+		${CMAKE_CURRENT_LIST_DIR}/include/
 )
 
 target_link_libraries(

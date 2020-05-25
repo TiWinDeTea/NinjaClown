@@ -1,20 +1,21 @@
 #include "terminal_commands.hpp"
-#include "bot/bot_dll.hpp"
-#include "bot/bot_factory.hpp"
-#include "bot_interface/bot.h"
-#include "model/world.hpp"
-#include "state_holder.hpp"
-#include "utils/resource_manager.hpp"
-#include "utils/utils.hpp"
-
-#include <imterm/misc.hpp>
-#include <spdlog/sinks/base_sink.h>
-#include <spdlog/spdlog.h>
 
 #include <array>
 #include <charconv>
 #include <filesystem>
-#include <utils/visitor.hpp>
+
+#include <ninja_clown/api.h>
+#include <imterm/misc.hpp>
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/spdlog.h>
+
+#include "utils/visitor.hpp"
+#include "bot/bot_dll.hpp"
+#include "bot/bot_factory.hpp"
+#include "model/world.hpp"
+#include "state_holder.hpp"
+#include "utils/resource_manager.hpp"
+#include "utils/utils.hpp"
 
 // TODO translations
 
