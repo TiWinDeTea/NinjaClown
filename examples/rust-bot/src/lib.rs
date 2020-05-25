@@ -23,14 +23,14 @@ unsafe fn get_data() -> &'static mut UserData {
 /// # Safety
 /// Called by NinjaClown game
 #[no_mangle]
-pub unsafe extern "sysv64" fn bot_init() {
+pub unsafe extern "C" fn bot_init() {
     bot::init();
 }
 
 /// # Safety
 /// Called by NinjaClown game
 #[no_mangle]
-pub unsafe extern "sysv64" fn bot_start_level(api: RawApi) {
+pub unsafe extern "C" fn bot_start_level(api: RawApi) {
     let bot = Api::new(api);
     API.as_mut_ptr().write(bot);
 
@@ -42,7 +42,7 @@ pub unsafe extern "sysv64" fn bot_start_level(api: RawApi) {
 /// # Safety
 /// Called by NinjaClown game
 #[no_mangle]
-pub unsafe extern "sysv64" fn bot_think() {
+pub unsafe extern "C" fn bot_think() {
     let bot = get_api();
     bot.entities_update();
     bot.map_update();
@@ -52,13 +52,13 @@ pub unsafe extern "sysv64" fn bot_think() {
 /// # Safety
 /// Called by NinjaClown game
 #[no_mangle]
-pub unsafe extern "sysv64" fn bot_end_level() {
+pub unsafe extern "C" fn bot_end_level() {
     bot::end_level(get_api(), get_data())
 }
 
 /// # Safety
 /// Called by NinjaClown game
 #[no_mangle]
-pub unsafe extern "sysv64" fn bot_destroy() {
+pub unsafe extern "C" fn bot_destroy() {
     bot::destroy(get_api())
 }
