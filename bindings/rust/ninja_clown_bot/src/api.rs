@@ -1,16 +1,16 @@
-use crate::{decision::DecisionCommit, Entities, LogLevel, Map};
-use ninja_clown_bot_sys::{nnj_api, nnj_cell, nnj_decision_commit, nnj_entity, nnj_log_level, size_t};
+use crate::{decision::DecisionCommit, Entities, LogLevel, Map, RawApi};
+use ninja_clown_bot_sys::{nnj_cell, nnj_decision_commit, nnj_entity, nnj_log_level, size_t};
 use std::ffi::CString;
 
 pub struct Api {
     pub map: Map,
     pub entities: Entities,
 
-    raw: nnj_api,
+    raw: RawApi,
 }
 
 impl Api {
-    pub fn new(raw: nnj_api) -> Self {
+    pub fn new(raw: RawApi) -> Self {
         Self {
             map: Map::new(&raw),
             entities: Entities::new(&raw),

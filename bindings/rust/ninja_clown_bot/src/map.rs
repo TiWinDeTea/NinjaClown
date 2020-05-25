@@ -1,4 +1,5 @@
-use ninja_clown_bot_sys::{nnj_api, nnj_cell, nnj_cell_kind, nnj_cell_pos};
+use crate::RawApi;
+use ninja_clown_bot_sys::{nnj_cell, nnj_cell_kind, nnj_cell_pos};
 use std::fmt;
 
 #[derive(Clone, Debug, Copy)]
@@ -46,7 +47,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(raw: &nnj_api) -> Self {
+    pub fn new(raw: &RawApi) -> Self {
         let width;
         let height;
 

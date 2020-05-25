@@ -1,4 +1,5 @@
-use ninja_clown_bot_sys::{nnj_api, nnj_entity, nnj_entity_kind};
+use crate::RawApi;
+use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind};
 
 #[derive(Clone, Debug, Copy)]
 #[repr(u32)]
@@ -50,7 +51,7 @@ impl Entity {
 pub struct Entities(Vec<Entity>);
 
 impl Entities {
-    pub fn new(raw: &nnj_api) -> Self {
+    pub fn new(raw: &RawApi) -> Self {
         let entities = unsafe {
             let max_entities = (raw.max_entities.unwrap())() as usize;
             let mut entities = Vec::new();
