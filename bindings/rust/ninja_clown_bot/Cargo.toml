@@ -1,0 +1,8 @@
+[package]
+name = "ninja_clown_bot"
+version = "0.1.0"
+authors = ["Benoît CORTIER <benoit.cortier@fried-world.eu>"]
+edition = "2018"
+
+[dependencies]
+ninja_clown_bot_sys = { "path" = "../ninja_clown_bot_sys", version = "0.1" }

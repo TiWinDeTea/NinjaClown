@@ -1,0 +1,60 @@
+use ninja_clown_bot_sys::*;
+
+#[repr(transparent)]
+pub struct DecisionCommit(nnj_decision_commit);
+
+#[derive(Default)]
+#[repr(transparent)]
+pub struct Decision(nnj_decision);
+
+impl Decision {
+    pub fn movement(rotation: f32, forward_diff: f32, lateral_diff: f32) -> Self {
+        Self(nnj_decision {
+            kind: nnj_decision_kind::DK_MOVEMENT,
+            __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
+                movement: nnj_movement_request {
+                    rotation,
+                    forward_diff,
+                    lateral_diff,
+                },
+            },
+        })
+    }
+
+    pub fn attack(target_handle: usize) -> Self {
+        Self(nnj_decision {
+            kind: nnj_decision_kind::DK_ATTACK,
+            __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
+                attack: nnj_attack_request {
+                    target_handle: target_handle as size_t,
+                },
+            },
+        })
+    }
+
+    pub fn activate(column: usize, line: usize) -> Self {
+        Self(nnj_decision {
+            kind: nnj_decision_kind::DK_ACTIVATE,
+            __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
+                activate: nnj_activate_request {
+                    column: column as size_t,
+                    line: line as size_t,
+                },
+            },
+        })
+    }
+
+    pub fn throw() -> Self {
+        Self(nnj_decision {
+            kind: nnj_decision_kind::DK_THROW,
+            __bindgen_anon_1: nnj_decision__bindgen_ty_1::default(),
+        })
+    }
+
+    pub fn commit(self, entity_handle: usize) -> DecisionCommit {
+        DecisionCommit(nnj_decision_commit {
+            target_handle: entity_handle as size_t,
+            decision: self.0,
+        })
+    }
+}

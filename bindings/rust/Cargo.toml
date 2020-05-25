@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "ninja_clown_bot",
+    "ninja_clown_bot_sys",
+]
