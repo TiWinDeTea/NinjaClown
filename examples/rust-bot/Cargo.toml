@@ -9,3 +9,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pathfinding = "2.0"
+ninja_clown_bot = { "path" = "../../bindings/rust/ninja_clown_bot", version = "0.1" }
