@@ -25,6 +25,7 @@ impl EntityKind {
 pub struct Entity(nnj_entity);
 
 impl Entity {
+    #[inline]
     pub fn kind(&self) -> EntityKind {
         unsafe {
             // # Safety
@@ -35,18 +36,22 @@ impl Entity {
         }
     }
 
+    #[inline]
     pub fn x(&self) -> f32 {
         self.0.x
     }
 
+    #[inline]
     pub fn y(&self) -> f32 {
         self.0.y
     }
 
+    #[inline]
     pub fn angle(&self) -> f32 {
         self.0.angle
     }
 
+    #[inline]
     pub fn handle(&self) -> usize {
         self.0.handle
     }
@@ -57,8 +62,6 @@ pub struct Entities(Vec<nnj_entity>);
 impl Entities {
     pub fn new(raw: &RawApi) -> Self {
         let entities = unsafe {
-            // # Safety
-            // We're performing calls to functions bot API C
             let max_entities = (raw.max_entities.unwrap())();
             let mut entities = Vec::new();
             entities.resize_with(max_entities, nnj_entity::default);
@@ -86,6 +89,10 @@ impl Entities {
         })
     }
 
+    pub fn iter(&self) -> Iter<'_> {
+        Iter(self.0.iter())
+    }
+
     pub(crate) fn as_mut_ptr(&mut self) -> *mut nnj_entity {
         self.0.as_mut_ptr()
     }
@@ -96,7 +103,7 @@ impl<'a> IntoIterator for &'a Entities {
     type IntoIter = Iter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        Iter(self.0.iter())
+        self.iter()
     }
 }
 

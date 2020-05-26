@@ -1,13 +1,13 @@
-use crate::path;
-use ninja_clown_bot::{entity::EntityKind, Api, Decision, LogLevel};
+use crate::path::PathGraph;
+use ninja_clown_bot::{entity::EntityKind, map::CellPos, Api, Decision, LogLevel};
 use pathfinding::utils::absdiff;
 
 #[derive(Debug)]
 pub struct UserData {
     ninja_handle: usize,
-    target: path::Pos,
-    button: path::Pos,
-    path: Vec<path::Pos>,
+    target: CellPos,
+    button: CellPos,
+    path: Vec<CellPos>,
     path_idx: usize,
 }
 
@@ -26,8 +26,8 @@ pub fn start_level(api: &mut Api) -> UserData {
 
     UserData {
         ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
-        target: path::Pos(2, 1),
-        button: path::Pos(6, 1),
+        target: CellPos::new(2, 1),
+        button: CellPos::new(6, 1),
         path: Vec::new(),
         path_idx: 0,
     }
@@ -37,8 +37,8 @@ pub fn think(api: &mut Api, data: &mut UserData) {
     let ninja_clown = api.entities.get(data.ninja_handle).expect("ninja clown not found");
 
     if data.path.is_empty() {
-        let start = path::Pos(ninja_clown.x() as usize, ninja_clown.y() as usize);
-        let graph = path::PathGraph::build(&api.map);
+        let start = CellPos::new(ninja_clown.x() as usize, ninja_clown.y() as usize);
+        let graph = PathGraph::build(&api.map);
 
         data.path = if let Some(path) = graph.path_to(&start, &data.target) {
             api.log(LogLevel::Info, "Moving to the target!");
@@ -64,7 +64,9 @@ pub fn think(api: &mut Api, data: &mut UserData) {
             let pos_to_activate = next_target.clone();
             data.path_idx = 0;
             data.path.clear();
-            api.commit_decisions(&[Decision::activate(pos_to_activate.0, pos_to_activate.1).commit(data.ninja_handle)]);
+            api.commit_decisions(&[
+                Decision::activate(pos_to_activate.column(), pos_to_activate.line()).commit(data.ninja_handle)
+            ]);
         } else {
             think(api, data);
         }

@@ -1,5 +1,5 @@
 use crate::{decision::DecisionCommit, Entities, LogLevel, Map, RawApi};
-use ninja_clown_bot_sys::{nnj_cell, nnj_decision_commit, nnj_entity, nnj_log_level};
+use ninja_clown_bot_sys::{nnj_decision_commit, nnj_log_level};
 use std::ffi::CString;
 
 pub struct Api {
@@ -29,7 +29,7 @@ impl Api {
         unsafe {
             (self.raw.map_update.unwrap())(
                 self.raw.ninja_descriptor,
-                self.map.as_mut_ptr() as *mut nnj_cell,
+                self.map.as_mut_ptr(),
                 std::ptr::null_mut(),
                 0,
             )
@@ -37,12 +37,7 @@ impl Api {
     }
 
     pub fn entities_update(&mut self) -> usize {
-        unsafe {
-            (self.raw.entities_update.unwrap())(
-                self.raw.ninja_descriptor,
-                self.entities.as_mut_ptr() as *mut nnj_entity,
-            )
-        }
+        unsafe { (self.raw.entities_update.unwrap())(self.raw.ninja_descriptor, self.entities.as_mut_ptr()) }
     }
 
     pub fn commit_decisions(&self, commits: &[DecisionCommit]) {

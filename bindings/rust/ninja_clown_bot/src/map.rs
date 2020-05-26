@@ -1,6 +1,6 @@
 use crate::RawApi;
 use ninja_clown_bot_sys::{nnj_cell, nnj_cell_kind, nnj_cell_pos};
-use std::fmt;
+use std::{fmt, iter::Enumerate, ops::Deref};
 
 #[derive(Clone, Debug, Copy)]
 #[repr(u32)]
@@ -35,13 +35,39 @@ impl Cell {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct CellPos(nnj_cell_pos);
 
+impl CellPos {
+    pub fn new(column: usize, line: usize) -> Self {
+        Self(nnj_cell_pos { column, line })
+    }
+
+    #[inline]
+    pub fn column(&self) -> usize {
+        self.0.column
+    }
+
+    #[inline]
+    pub fn line(&self) -> usize {
+        self.0.line
+    }
+
+    #[inline]
+    pub fn center_x(&self) -> f32 {
+        (self.column() as f32) + 0.5
+    }
+
+    #[inline]
+    pub fn center_y(&self) -> f32 {
+        (self.line() as f32) + 0.5
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Map {
-    pub grid: Vec<Cell>, // FIXME: shouldn't be public
+    grid: Vec<nnj_cell>,
     width: usize,
     height: usize,
 }
@@ -58,37 +84,57 @@ impl Map {
             let mut grid = Vec::new();
             grid.resize_with(width * height, nnj_cell::default);
             (raw.map_scan.unwrap())(raw.ninja_descriptor, grid.as_mut_ptr());
-            std::mem::transmute(grid)
+            grid
         };
 
         Self { grid, width, height }
     }
 
-    pub fn as_mut_ptr(&mut self) -> *mut Cell {
-        self.grid.as_mut_ptr()
-    }
-
     pub fn cell_at(&self, column: usize, line: usize) -> Option<&Cell> {
-        if column >= self.width || line >= self.height {
-            None
-        } else {
-            Some(&self.grid[column + line * self.width])
+        if column >= self.width {
+            return None;
         }
+
+        self.grid.get(column + line * self.width).map(|c| {
+            unsafe {
+                // # Safety
+                // Cell struct repr is marked as "transparent", as such &nnj_cell
+                // to &Cell cast is okay.
+                &*(c as *const nnj_cell as *const Cell)
+            }
+        })
     }
 
+    #[inline]
     pub fn width(&self) -> usize {
         self.width
     }
 
+    #[inline]
     pub fn height(&self) -> usize {
         self.height
+    }
+
+    pub fn iter(&self) -> Iter<'_> {
+        Iter(self.grid.iter())
+    }
+
+    pub fn iter_pos(&self) -> IterPos<'_> {
+        IterPos {
+            inner: self.iter().enumerate(),
+            width: self.width,
+        }
+    }
+
+    pub(crate) fn as_mut_ptr(&mut self) -> *mut nnj_cell {
+        self.grid.as_mut_ptr()
     }
 }
 
 impl fmt::Display for Map {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}x{}", self.width, self.height)?;
-        for (i, cell) in self.grid.iter().enumerate() {
+        for (i, cell) in self.iter().enumerate() {
             if i % self.width == 0 {
                 writeln!(f)?;
             }
@@ -101,5 +147,76 @@ impl fmt::Display for Map {
             }
         }
         Ok(())
+    }
+}
+
+impl<'a> IntoIterator for &'a Map {
+    type Item = &'a Cell;
+    type IntoIter = Iter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+pub struct Iter<'a>(core::slice::Iter<'a, nnj_cell>);
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = &'a Cell;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next().map(|c| {
+            unsafe {
+                // # Safety
+                // Cell struct repr is marked as "transparent", as such &nnj_cell
+                // to &Cell cast is okay.
+                &*(c as *const nnj_cell as *const Cell)
+            }
+        })
+    }
+}
+
+pub struct IterPos<'a> {
+    inner: Enumerate<Iter<'a>>,
+    width: usize,
+}
+
+impl<'a> Iterator for IterPos<'a> {
+    type Item = CellPosWrapper<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|(i, c)| {
+            let column = i % self.width;
+            let line = i / self.width;
+            CellPosWrapper {
+                inner: c,
+                pos: CellPos::new(column, line),
+            }
+        })
+    }
+}
+
+pub struct CellPosWrapper<'a> {
+    pub inner: &'a Cell,
+    pub pos: CellPos,
+}
+
+impl<'a> CellPosWrapper<'a> {
+    #[inline]
+    pub fn column(&self) -> usize {
+        self.pos.column()
+    }
+
+    #[inline]
+    pub fn line(&self) -> usize {
+        self.pos.line()
+    }
+}
+
+impl<'a> Deref for CellPosWrapper<'a> {
+    type Target = Cell;
+
+    fn deref(&self) -> &Self::Target {
+        self.inner
     }
 }
