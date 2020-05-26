@@ -46,36 +46,78 @@ impl Entity {
     pub fn angle(&self) -> f32 {
         self.0.angle
     }
+
+    pub fn handle(&self) -> usize {
+        self.0.handle
+    }
 }
 
-pub struct Entities(Vec<Entity>);
+pub struct Entities(Vec<nnj_entity>);
 
 impl Entities {
     pub fn new(raw: &RawApi) -> Self {
         let entities = unsafe {
-            let max_entities = (raw.max_entities.unwrap())() as usize;
+            // # Safety
+            // We're performing calls to functions bot API C
+            let max_entities = (raw.max_entities.unwrap())();
             let mut entities = Vec::new();
             entities.resize_with(max_entities, nnj_entity::default);
             (raw.entities_scan.unwrap())(raw.ninja_descriptor, entities.as_mut_ptr());
-            std::mem::transmute(entities)
+            entities
         };
 
         Self(entities)
     }
 
-    pub fn as_mut_ptr(&mut self) -> *mut Entity {
-        self.0.as_mut_ptr()
-    }
-
     pub fn get(&self, handle: usize) -> Option<&Entity> {
         self.0.get(handle).and_then(|e| {
-            if e.0.kind == nnj_entity_kind::EK_NOT_AN_ENTITY {
-                None
-            } else {
-                Some(e)
+            unsafe {
+                // # Safety
+                // Entity struct repr is marked as "transparent", as such &nnj_entity
+                // to &Entity cast is okay. Also, we check kind is not EK_NOT_AN_ENTITY because
+                // our EntityKind enum doesn't represent this case. We return None instead.
+                if e.kind == nnj_entity_kind::EK_NOT_AN_ENTITY {
+                    None
+                } else {
+                    let entity = &*(e as *const nnj_entity as *const Entity);
+                    Some(entity)
+                }
             }
         })
     }
+
+    pub(crate) fn as_mut_ptr(&mut self) -> *mut nnj_entity {
+        self.0.as_mut_ptr()
+    }
 }
 
-// TODO: add way to iterate over Entities (ignoring EK_NOT_AN_ENTITY entities)
+impl<'a> IntoIterator for &'a Entities {
+    type Item = &'a Entity;
+    type IntoIter = Iter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter(self.0.iter())
+    }
+}
+
+pub struct Iter<'a>(core::slice::Iter<'a, nnj_entity>);
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = &'a Entity;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let e = self.0.next()?;
+        unsafe {
+            // # Safety
+            // Entity struct repr is marked as "transparent", as such &nnj_entity
+            // to &Entity cast is okay. Also, we check kind is not EK_NOT_AN_ENTITY because
+            // our EntityKind enum doesn't represent this case. We return None instead.
+            if e.kind == nnj_entity_kind::EK_NOT_AN_ENTITY {
+                self.next()
+            } else {
+                let entity = &*(e as *const nnj_entity as *const Entity);
+                Some(entity)
+            }
+        }
+    }
+}

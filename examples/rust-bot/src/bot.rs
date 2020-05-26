@@ -1,9 +1,10 @@
 use crate::path;
-use ninja_clown_bot::{Api, Decision, LogLevel};
+use ninja_clown_bot::{entity::EntityKind, Api, Decision, LogLevel};
 use pathfinding::utils::absdiff;
 
 #[derive(Debug)]
 pub struct UserData {
+    ninja_handle: usize,
     target: path::Pos,
     button: path::Pos,
     path: Vec<path::Pos>,
@@ -16,7 +17,15 @@ pub fn start_level(api: &mut Api) -> UserData {
     api.log(LogLevel::Info, "Bib bop I'm Rust bot");
     api.log(LogLevel::Info, api.map.to_string());
 
+    let mut ninja_handle_opt = None;
+    for entity in &api.entities {
+        if let EntityKind::Dll = entity.kind() {
+            ninja_handle_opt = Some(entity.handle());
+        }
+    }
+
     UserData {
+        ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
         target: path::Pos(2, 1),
         button: path::Pos(6, 1),
         path: Vec::new(),
@@ -25,7 +34,7 @@ pub fn start_level(api: &mut Api) -> UserData {
 }
 
 pub fn think(api: &mut Api, data: &mut UserData) {
-    let ninja_clown = api.entities.get(0).expect("ninja clown not found"); // FIXME: do not assume 0 is ninja clown
+    let ninja_clown = api.entities.get(data.ninja_handle).expect("ninja clown not found");
 
     if data.path.is_empty() {
         let start = path::Pos(ninja_clown.x() as usize, ninja_clown.y() as usize);
@@ -55,7 +64,7 @@ pub fn think(api: &mut Api, data: &mut UserData) {
             let pos_to_activate = next_target.clone();
             data.path_idx = 0;
             data.path.clear();
-            api.commit_decisions(&[Decision::activate(pos_to_activate.0, pos_to_activate.1).commit(0)]);
+            api.commit_decisions(&[Decision::activate(pos_to_activate.0, pos_to_activate.1).commit(data.ninja_handle)]);
         } else {
             think(api, data);
         }
@@ -81,7 +90,7 @@ pub fn think(api: &mut Api, data: &mut UserData) {
         };
 
         let decision = Decision::movement(delta_angle, forward, 0.0);
-        api.commit_decisions(&[decision.commit(0)]);
+        api.commit_decisions(&[decision.commit(data.ninja_handle)]);
     }
 }
 
