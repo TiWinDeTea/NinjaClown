@@ -8,6 +8,7 @@ fn main() {
         .newtype_enum("nnj_.*")
         .derive_default(true)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .size_t_is_usize(true) // we don't expect to target platform where size_t != uintptr_t
         .generate()
         .expect("Unable to generate bindings");
 

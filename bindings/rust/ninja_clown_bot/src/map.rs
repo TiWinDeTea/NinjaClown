@@ -52,8 +52,8 @@ impl Map {
         let height;
 
         let grid = unsafe {
-            width = (raw.map_width.unwrap())(raw.ninja_descriptor) as usize;
-            height = (raw.map_height.unwrap())(raw.ninja_descriptor) as usize;
+            width = (raw.map_width.unwrap())(raw.ninja_descriptor);
+            height = (raw.map_height.unwrap())(raw.ninja_descriptor);
 
             let mut grid = Vec::new();
             grid.resize_with(width * height, nnj_cell::default);

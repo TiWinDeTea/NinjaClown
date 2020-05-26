@@ -25,9 +25,7 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_ATTACK,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                attack: nnj_attack_request {
-                    target_handle: target_handle as size_t,
-                },
+                attack: nnj_attack_request { target_handle },
             },
         })
     }
@@ -36,10 +34,7 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_ACTIVATE,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                activate: nnj_activate_request {
-                    column: column as size_t,
-                    line: line as size_t,
-                },
+                activate: nnj_activate_request { column, line },
             },
         })
     }
@@ -53,7 +48,7 @@ impl Decision {
 
     pub fn commit(self, entity_handle: usize) -> DecisionCommit {
         DecisionCommit(nnj_decision_commit {
-            target_handle: entity_handle as size_t,
+            target_handle: entity_handle,
             decision: self.0,
         })
     }
