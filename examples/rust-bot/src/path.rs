@@ -24,6 +24,8 @@ impl PathGraph {
     }
 
     pub fn rebuild(&mut self, map: &Map) {
+        self.successors.clear();
+
         for cell in map.iter_pos() {
             if let CellKind::Ground = cell.kind() {
                 let mut successors = Vec::new();

@@ -1,8 +1,8 @@
 use crate::RawApi;
-use ninja_clown_bot_sys::{nnj_cell, nnj_cell_kind, nnj_cell_pos};
+use ninja_clown_bot_sys::{nnj_cell, nnj_cell_kind, nnj_cell_pos, nnj_interaction_kind};
 use std::{fmt, iter::Enumerate, ops::Deref};
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq)]
 #[repr(u32)]
 pub enum CellKind {
     Unknown = nnj_cell_kind::CT_UNKNOWN.0,
@@ -20,6 +20,26 @@ impl CellKind {
     }
 }
 
+#[derive(Clone, Debug, Copy, PartialEq)]
+#[repr(u32)]
+pub enum InteractionKind {
+    NoInteraction = nnj_interaction_kind::IK_NO_INTERACTION.0,
+    LightManual = nnj_interaction_kind::IK_LIGHT_MANUAL.0,
+    HeavyManual = nnj_interaction_kind::IK_HEAVY_MANUAL.0,
+    LightMidair = nnj_interaction_kind::IK_LIGHT_MIDAIR.0,
+    HeavyMidair = nnj_interaction_kind::IK_HEAVY_MIDAIR.0,
+    WalkOnGround = nnj_interaction_kind::IK_WALK_ON_GROUND.0,
+}
+
+impl InteractionKind {
+    /// # Safety
+    /// Calling this function with a value not representable by InteractionKind
+    /// is undefined behavior.
+    unsafe fn from_u32_unchecked(v: u32) -> Self {
+        std::mem::transmute(v)
+    }
+}
+
 #[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct Cell(nnj_cell);
@@ -31,6 +51,15 @@ impl Cell {
             // Kind should be a valid CellKind value at any given time
             debug_assert!(self.0.kind.0 <= nnj_cell_kind::CT_WALL.0);
             CellKind::from_u32_unchecked(self.0.kind.0)
+        }
+    }
+
+    pub fn interaction(&self) -> InteractionKind {
+        unsafe {
+            // # Safety
+            // Kind should be a valid InteractionKind value at any given time
+            debug_assert!(self.0.kind.0 <= nnj_interaction_kind::IK_WALK_ON_GROUND.0);
+            InteractionKind::from_u32_unchecked(self.0.interaction.0)
         }
     }
 }

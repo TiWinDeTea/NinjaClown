@@ -1,7 +1,7 @@
 use crate::RawApi;
 use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind};
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq)]
 #[repr(u32)]
 pub enum EntityKind {
     Harmless = nnj_entity_kind::EK_HARMLESS.0,

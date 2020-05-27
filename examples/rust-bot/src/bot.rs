@@ -1,14 +1,20 @@
 use crate::path::PathGraph;
-use ninja_clown_bot::{entity::EntityKind, map::CellPos, Api, Decision, LogLevel};
+use ninja_clown_bot::{
+    entity::EntityKind,
+    map::{CellPos, InteractionKind},
+    Api, Decision, LogLevel,
+};
 use pathfinding::utils::absdiff;
+use std::vec;
 
 #[derive(Debug)]
 pub struct UserData {
     ninja_handle: usize,
     target: CellPos,
     button: CellPos,
-    path: Vec<CellPos>,
-    path_idx: usize,
+    path: vec::IntoIter<CellPos>,
+    current_target: Option<CellPos>,
+    activated: bool,
 }
 
 pub fn init() {}
@@ -24,23 +30,31 @@ pub fn start_level(api: &mut Api) -> UserData {
         }
     }
 
+    let mut button_bos = None;
+    for cell in api.map.iter_pos() {
+        if cell.interaction() != InteractionKind::NoInteraction {
+            button_bos = Some(cell.pos);
+        }
+    }
+
     UserData {
         ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
         target: CellPos::new(2, 1),
-        button: CellPos::new(6, 1),
-        path: Vec::new(),
-        path_idx: 0,
+        button: button_bos.expect("button not found"),
+        path: Vec::new().into_iter(),
+        current_target: None,
+        activated: false,
     }
 }
 
 pub fn think(api: &mut Api, data: &mut UserData) {
     let ninja_clown = api.entities.get(data.ninja_handle).expect("ninja clown not found");
 
-    if data.path.is_empty() {
+    if data.current_target.is_none() {
         let start = CellPos::new(ninja_clown.x() as usize, ninja_clown.y() as usize);
         let graph = PathGraph::build(&api.map);
 
-        data.path = if let Some(path) = graph.path_to(&start, &data.target) {
+        let path = if let Some(path) = graph.path_to(&start, &data.target) {
             api.log(LogLevel::Info, "Moving to the target!");
             path
         } else if let Some(path) = graph.path_to(&start, &data.button) {
@@ -51,30 +65,31 @@ pub fn think(api: &mut Api, data: &mut UserData) {
             return;
         };
 
-        data.path_idx = 0;
+        data.path = path.into_iter();
+        data.current_target = data.path.next();
     }
 
-    let next_target = &data.path[data.path_idx];
+    let target = if let Some(target) = &data.current_target {
+        target
+    } else {
+        return;
+    };
 
-    let dist = absdiff(next_target.center_x(), ninja_clown.x()) + absdiff(next_target.center_y(), ninja_clown.y());
+    let dist = absdiff(target.center_x(), ninja_clown.x()) + absdiff(target.center_y(), ninja_clown.y());
     if dist < 0.6 {
-        data.path_idx += 1;
-
-        if data.path_idx >= data.path.len() {
-            let pos_to_activate = next_target.clone();
-            data.path_idx = 0;
-            data.path.clear();
-            api.commit_decisions(&[
-                Decision::activate(pos_to_activate.column(), pos_to_activate.line()).commit(data.ninja_handle)
-            ]);
+        let interaction = api.map.cell_at(target.column(), target.line()).unwrap().interaction();
+        if !data.activated && interaction != InteractionKind::NoInteraction {
+            api.commit_decisions(&[Decision::activate(target.column(), target.line()).commit(data.ninja_handle)]);
+            data.activated = true;
         } else {
-            think(api, data);
+            data.current_target = data.path.next();
+            think(api, data)
         }
     } else {
         let angle = ninja_clown.angle();
 
-        let delta_x = next_target.center_x() - ninja_clown.x();
-        let delta_y = ninja_clown.y() - next_target.center_y();
+        let delta_x = target.center_x() - ninja_clown.x();
+        let delta_y = ninja_clown.y() - target.center_y();
         let target_angle = delta_y.atan2(delta_x);
 
         let mut delta_angle = target_angle - angle;
