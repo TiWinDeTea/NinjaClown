@@ -93,7 +93,7 @@ namespace cst {
 struct components {
 	std::array<std::optional<component::health>, cst::max_entities> health;
 	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
-	std::array<ninja_api::nnj_decision, cst::max_entities> decision;
+	std::array<ninja_api::nnj_decision, cst::max_entities> decision{};
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
 };

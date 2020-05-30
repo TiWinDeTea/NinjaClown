@@ -5,6 +5,30 @@
 #include "model/model.hpp"
 #include "state_holder.hpp"
 
+namespace {
+
+void fill_entity_struct(const ::model::components &components, ninja_api::nnj_entity *entity) {
+	entity->kind = components.metadata[entity->handle].kind;
+	if (entity->kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
+		if (components.hitbox[entity->handle]) {
+			const auto &hitbox = components.hitbox[entity->handle];
+			entity->x          = hitbox->center.x;
+			entity->y          = hitbox->center.y;
+			entity->angle      = hitbox->rad;
+
+			const auto &properties            = components.properties[entity->handle];
+			entity->properties.move_speed     = properties.move_speed;
+			entity->properties.rotation_speed = properties.rotation_speed;
+		}
+		else {
+			// bot can't work with entity with no hitbox
+			entity->kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
+		}
+	}
+}
+
+} // namespace
+
 namespace bot {
 
 void NINJACLOWN_CALLCONV ffi::log(ninja_api::nnj_log_level level, const char *text) {
@@ -66,8 +90,8 @@ size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, ninja_api::nnj_cell
 			changed_cells[changed_count].line   = changed.y; // NOLINT
 		}
 
-		const auto &model_cell  = grid[changed.x][changed.y];
-        ninja_api::nnj_cell &bot_cell = map_view[changed.x + changed.y * grid.width()]; // NOLINT
+		const auto &model_cell        = grid[changed.x][changed.y];
+		ninja_api::nnj_cell &bot_cell = map_view[changed.x + changed.y * grid.width()]; // NOLINT
 
 		bot_cell.kind = static_cast<ninja_api::nnj_cell_kind>(model_cell.type);
 		if (model_cell.interaction_handle) {
@@ -88,20 +112,8 @@ void NINJACLOWN_CALLCONV ffi::entities_scan(void *ninja_data, ninja_api::nnj_ent
 	model::world *world = get_world(ninja_data);
 
 	for (size_t i = 0; i < model::cst::max_entities; ++i) {
-		entities[i].kind = world->components.metadata[i].kind;
-		if (entities[i].kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
-			if (world->components.hitbox[i]) {
-				auto &hitbox       = world->components.hitbox[i];
-				entities[i].x      = hitbox->center.x;
-				entities[i].y      = hitbox->center.y;
-				entities[i].angle  = hitbox->rad;
-				entities[i].handle = i;
-			}
-			else {
-				// bot can't work with entity with no hitbox
-				entities[i].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
-			}
-		}
+		entities[i].handle = i; // NOLINT
+		fill_entity_struct(world->components, entities + i); // NOLINT
 	}
 }
 
@@ -110,20 +122,8 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 	model::world *world       = get_world(ninja_data);
 
 	for (size_t changed : adapter->entities_changed_since_last_update()) {
-		entities[changed].kind = world->components.metadata[changed].kind;
-		if (entities[changed].kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
-			if (world->components.hitbox[changed]) {
-				auto &hitbox             = world->components.hitbox[changed];
-				entities[changed].x      = hitbox->center.x;
-				entities[changed].y      = hitbox->center.y;
-				entities[changed].angle  = hitbox->rad;
-				entities[changed].handle = changed;
-			}
-			else {
-				// bot can't work with entity with no hitbox
-				entities[changed].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
-			}
-		}
+		entities[changed].handle = changed; // NOLINT
+		fill_entity_struct(world->components, entities + changed); // NOLINT
 	}
 
 	return adapter->entities_changed_since_last_update().size();
@@ -132,8 +132,8 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_decision_commit const *commits, size_t num_commits) {
 	model::world *world = get_world(ninja_data);
 	for (size_t i = 0; i < num_commits; ++i) {
-		if (world->components.metadata[commits[i].target_handle].kind == ninja_api::EK_DLL) {
-			world->components.decision[commits[i].target_handle] = commits[i].decision;
+		if (world->components.metadata[commits[i].target_handle].kind == ninja_api::EK_DLL) { // NOLINT
+			world->components.decision[commits[i].target_handle] = commits[i].decision; // NOLINT
 		}
 	}
 }

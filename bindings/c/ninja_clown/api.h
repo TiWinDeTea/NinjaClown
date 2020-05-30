@@ -10,11 +10,11 @@
 #endif
 
 #ifdef __cplusplus
-#include <cstddef>
+#	include <cstddef>
 namespace ninja_api {
 extern "C" {
 #else
-#include <stddef.h>
+#	include <stddef.h>
 #endif
 
 enum nnj_log_level {
@@ -61,12 +61,17 @@ enum nnj_entity_kind {
 	EK_DLL           = 5, // controlled by dll
 };
 
+struct nnj_properties {
+	float move_speed;
+	float rotation_speed;
+};
+
 struct nnj_entity {
 	enum nnj_entity_kind kind;
+	struct nnj_properties properties;
 	float x, y;
 	float angle;
 	size_t handle;
-	// TODO: expose properties
 };
 
 enum nnj_decision_kind {
