@@ -103,7 +103,7 @@ pub fn think(api: &mut Api, data: &mut UserData) {
         let forward = if delta_angle.abs() > 0.05 {
             0.1 / delta_angle.abs()
         } else {
-            1.0
+            ninja_clown.properties().move_speed()
         };
 
         let decision = Decision::movement(delta_angle, forward, 0.0);

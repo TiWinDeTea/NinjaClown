@@ -1,5 +1,21 @@
 use crate::RawApi;
-use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind};
+use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind, nnj_properties};
+
+#[derive(Clone, Debug)]
+#[repr(transparent)]
+pub struct Properties(nnj_properties);
+
+impl Properties {
+    #[inline]
+    pub fn move_speed(&self) -> f32 {
+        self.0.move_speed
+    }
+
+    #[inline]
+    pub fn rotation_speed(&self) -> f32 {
+        self.0.rotation_speed
+    }
+}
 
 #[derive(Clone, Debug, Copy, PartialEq)]
 #[repr(u32)]
@@ -54,6 +70,15 @@ impl Entity {
     #[inline]
     pub fn handle(&self) -> usize {
         self.0.handle
+    }
+
+    #[inline]
+    pub fn properties(&self) -> &Properties {
+        unsafe {
+            // # Safety
+            // Properties is a transparent type around nnj_properties
+            &*(&self.0.properties as *const nnj_properties as *const Properties)
+        }
     }
 }
 
