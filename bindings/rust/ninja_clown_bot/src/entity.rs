@@ -82,7 +82,10 @@ impl Entity {
     }
 }
 
-pub struct Entities(Vec<nnj_entity>);
+pub struct Entities {
+    inner: Vec<nnj_entity>,
+    pub(crate) changed: bool,
+}
 
 impl Entities {
     pub fn new(raw: &RawApi) -> Self {
@@ -94,11 +97,14 @@ impl Entities {
             entities
         };
 
-        Self(entities)
+        Self {
+            inner: entities,
+            changed: true,
+        }
     }
 
     pub fn get(&self, handle: usize) -> Option<&Entity> {
-        self.0.get(handle).and_then(|e| {
+        self.inner.get(handle).and_then(|e| {
             unsafe {
                 // # Safety
                 // Entity struct repr is marked as "transparent", as such &nnj_entity
@@ -115,11 +121,11 @@ impl Entities {
     }
 
     pub fn iter(&self) -> Iter<'_> {
-        Iter(self.0.iter())
+        Iter(self.inner.iter())
     }
 
     pub(crate) fn as_mut_ptr(&mut self) -> *mut nnj_entity {
-        self.0.as_mut_ptr()
+        self.inner.as_mut_ptr()
     }
 }
 

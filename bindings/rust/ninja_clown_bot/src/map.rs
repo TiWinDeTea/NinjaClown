@@ -99,6 +99,7 @@ pub struct Map {
     grid: Vec<nnj_cell>,
     width: usize,
     height: usize,
+    pub(crate) changed: bool, // TODO: expose changed cell positions
 }
 
 impl Map {
@@ -116,7 +117,16 @@ impl Map {
             grid
         };
 
-        Self { grid, width, height }
+        Self {
+            grid,
+            width,
+            height,
+            changed: true,
+        }
+    }
+
+    pub fn changed(&self) -> bool {
+        self.changed
     }
 
     pub fn cell_at(&self, column: usize, line: usize) -> Option<&Cell> {
@@ -132,6 +142,10 @@ impl Map {
                 &*(c as *const nnj_cell as *const Cell)
             }
         })
+    }
+
+    pub fn cell_at_pos(&self, pos: &CellPos) -> Option<&Cell> {
+        self.cell_at(pos.column(), pos.line())
     }
 
     #[inline]

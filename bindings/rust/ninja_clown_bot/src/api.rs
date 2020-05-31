@@ -48,21 +48,25 @@ impl Api {
     }
 
     pub fn map_update(&mut self) -> usize {
-        unsafe {
+        let n = unsafe {
             (self.raw.map_update.unwrap())(
                 self.raw.ninja_descriptor,
                 self.map.as_mut_ptr(),
                 std::ptr::null_mut(),
                 0,
             )
-        }
+        };
+        self.map.changed = n != 0;
+        n
     }
 
     pub fn entities_update(&mut self) -> usize {
-        unsafe { (self.raw.entities_update.unwrap())(self.raw.ninja_descriptor, self.entities.as_mut_ptr()) }
+        let n = unsafe { (self.raw.entities_update.unwrap())(self.raw.ninja_descriptor, self.entities.as_mut_ptr()) };
+        self.entities.changed = n != 0;
+        n
     }
 
-    pub fn commit_decisions(&self, commits: &[DecisionCommit]) {
+    pub fn commit_decisions(&mut self, commits: &[DecisionCommit]) {
         unsafe {
             (self.raw.commit_decisions.unwrap())(
                 self.raw.ninja_descriptor,
