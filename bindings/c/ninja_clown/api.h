@@ -99,7 +99,9 @@ struct nnj_attack_request {
 	size_t target_handle;
 };
 
-struct nnj_throw_request { };
+struct nnj_throw_request {
+	void* unused;
+};
 
 struct nnj_decision {
 	enum nnj_decision_kind kind;

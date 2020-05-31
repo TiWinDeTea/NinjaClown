@@ -88,11 +88,12 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 		  }
 	  },
 	  [&](ninja_api::nnj_attack_request &attack_req) {
-		  if (components.health[attack_req.target_handle] && components.hitbox[attack_req.target_handle]) {
+		  auto& health = components.health;
+		  if (health[attack_req.target_handle] && components.hitbox[attack_req.target_handle]) {
 			  component::hitbox &target_hitbox = *components.hitbox[attack_req.target_handle];
 			  if (hitbox.center.to(target_hitbox.center).norm() <= components.properties[handle].attack_range) {
-				  components.health[attack_req.target_handle]->points -= 1;
-				  if (components.health[attack_req.target_handle]->points == 0) {
+				  health[attack_req.target_handle]->points -= 1;
+				  if (health[attack_req.target_handle]->points == 0) {
 					  reset_entity(attack_req.target_handle);
 					  adapter.hide_entity(adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
 				  }
