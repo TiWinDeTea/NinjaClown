@@ -4,8 +4,26 @@
 #include "utils/visitor.hpp"
 #include "view/viewer.hpp"
 
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <spdlog/spdlog.h>
+
+
+
+void view::overmap_collection::reload_sprites(const utils::resource_manager& res) noexcept {
+    for (mob& mob : m_mobs) {
+        mob.reload_sprites(res);
+    }
+    for (object& object : m_objects) {
+        object.reload_sprites(res);
+    }
+}
+
+void view::overmap_collection::clear() noexcept {
+    m_ordered_displayable.clear();
+    m_mobs.clear();
+    m_objects.clear();
+}
 
 void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
 	for (const auto &displayable : m_ordered_displayable) {

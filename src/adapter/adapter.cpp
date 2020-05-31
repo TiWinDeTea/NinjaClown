@@ -1,11 +1,13 @@
 #include <cpptoml.h>
-#include <ninja_clown/api.h>
+#include <imgui.h>
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
 #include "model/grid_point.hpp"
+#include "model/model.hpp"
+#include "ninja_clown/api.h"
 #include "state_holder.hpp"
 #include "utils/scope_guards.hpp"
 #include "view/dialogs.hpp"

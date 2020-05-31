@@ -1,13 +1,19 @@
-#include <ninja_clown/api.h>
 #include <cpptoml.h>
+#include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
+#include "model/model.hpp"
 #include "state_holder.hpp"
+#include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
 #include "view/facing_dir.hpp"
+#include "view/map.hpp"
+#include "view/mob.hpp"
+#include "view/object.hpp"
+#include "view/viewer.hpp"
 
 // TODO Effets sonores
 
@@ -480,7 +486,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 
 					view::object obj;
-					obj.set_id(utils::resource_manager::object_id::target, m_state.resources);
+					obj.set_id(utils::resources_type::object_id::target, m_state.resources());
 					obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
 					obj.reveal();
 					m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
@@ -520,16 +526,16 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				break;
 		}
 
-		utils::resource_manager::mob_id resource_id;
+		utils::resources_type::mob_id resource_id;
 		switch (mob.type.sprite) {
 			case mob_sprite::NONE:
 				error("Internal error");
 				return false;
 			case mob_sprite::SCIENTIST:
-				resource_id = utils::resource_manager::mob_id::scientist;
+				resource_id = utils::resources_type::mob_id::scientist;
 				break;
 			case mob_sprite::CLOWN:
-				resource_id = utils::resource_manager::mob_id::player;
+				resource_id = utils::resources_type::mob_id::player;
 				break;
 		}
 
@@ -539,7 +545,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
 
 		view::mob m{};
-		m.set_mob_id(resource_id, m_state.resources);
+		m.set_mob_id(resource_id, m_state.resources());
 		m.set_direction(view::facing_direction::from_angle(mob.facing));
 		m.set_pos(hitbox.center.x, hitbox.center.y);
 
@@ -570,17 +576,17 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  case activator_type::BUTTON:
 					  world.interactions.push_back(
 					    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
-					  o.set_id(utils::resource_manager::object_id::button, m_state.resources);
+					  o.set_id(utils::resources_type::object_id::button, m_state.resources());
 					  break;
 				  case activator_type::INDUCTION_LOOP:
 					  world.interactions.push_back(
 					    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
-					  o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
 					  break;
 				  case activator_type::INFRARED_LASER:
 					  world.interactions.push_back(
 					    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
-					  o.set_id(utils::resource_manager::object_id::gate, m_state.resources); // TODO
+					  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
 					  break;
 				  case activator_type::NONE:
 					  [[fallthrough]];
@@ -653,7 +659,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 			  view::object o{};
 			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-			  o.set_id(utils::resource_manager::object_id::gate, m_state.resources);
+			  o.set_id(utils::resources_type::object_id::gate, m_state.resources());
 			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
 			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
 			  m_model2view[model_handle] = view_handle;
@@ -678,7 +684,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 			  view::object o{};
 			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-			  o.set_id(utils::resource_manager::object_id::autoshooter, m_state.resources);
+			  o.set_id(utils::resources_type::object_id::autoshooter, m_state.resources());
 			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
 			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
 			  m_model2view[model_handle] = view_handle;

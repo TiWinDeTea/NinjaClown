@@ -54,7 +54,6 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 					}
 					break;
 				case sf::Keyboard::F4:
-					state.autostep_bot = !state.autostep_bot;
 					if (std::exchange(state.autostep_bot, !state.autostep_bot)) {
 						terminal_commands::stop_model(state.empty_arg);
 					}

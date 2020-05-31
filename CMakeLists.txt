@@ -32,7 +32,10 @@ set(NINJA_CLOWN_SOURCES
         src/view/animation.cpp
         src/view/dialogs.cpp
         src/view/event_inspector.cpp
+        src/view/facing_dir.cpp
+        src/view/fps_limiter.cpp
         src/view/map.cpp
+        src/view/mob_object.cpp
         src/view/mob_animations.cpp
         src/view/overmap_collection.cpp
         src/view/viewer.cpp

@@ -2,6 +2,7 @@
 #include <spdlog/spdlog.h>
 
 #include "utils/resource_manager.hpp"
+#include "utils/resources_type.hpp"
 
 using utils::optional;
 using utils::resource_manager;
@@ -131,6 +132,7 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 
 } // namespace
 
+
 bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	auto config = parse_file(path.generic_u8string());
 	if (!config) {
@@ -140,7 +142,7 @@ bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	return load_graphics(config) && load_texts(config, path.parent_path());
 }
 
-optional<const view::animation &> resource_manager::tile_animation(tile_id tile) const noexcept {
+optional<const view::animation &> resource_manager::tile_animation(resources_type::tile_id tile) const noexcept {
 	auto it = m_tiles_anims.find(tile);
 	if (it == m_tiles_anims.end()) {
 		return {};
@@ -148,7 +150,7 @@ optional<const view::animation &> resource_manager::tile_animation(tile_id tile)
 	return {it->second};
 }
 
-optional<const view::shifted_animation &> resource_manager::object_animation(object_id object) const noexcept {
+optional<const view::shifted_animation &> resource_manager::object_animation(resources_type::object_id object) const noexcept {
 	auto it = m_objects_anims.find(object);
 	if (it == m_objects_anims.end()) {
 		return {};
@@ -156,7 +158,7 @@ optional<const view::shifted_animation &> resource_manager::object_animation(obj
 	return {it->second};
 }
 
-optional<const view::mob_animations &> resource_manager::mob_animations(mob_id mob) const noexcept {
+optional<const view::mob_animations &> resource_manager::mob_animations(resources_type::mob_id mob) const noexcept {
 	auto it = m_mobs_anims.find(mob);
 	if (it == m_mobs_anims.end()) {
 		return {};
@@ -256,7 +258,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 		try_load(view::facing_direction::E, mobs::dir_east);
 		try_load(view::facing_direction::W, mobs::dir_west);
 
-		m_mobs_anims.emplace(static_cast<mob_id>(*id), std::move(mob_anims));
+		m_mobs_anims.emplace(static_cast<resources_type::mob_id>(*id), std::move(mob_anims));
 	}
 
 	return success;
@@ -378,7 +380,7 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 		for (int i = 0; i < *frame_count; ++i) {
 			animation.add_frame({*texture, {*pos_x + *width * i, *pos_y, *width, *height}});
 		}
-		m_tiles_anims.emplace(static_cast<tile_id>(*id), std::move(animation));
+		m_tiles_anims.emplace(static_cast<resources_type::tile_id>(*id), std::move(animation));
 	}
 	return success;
 }
@@ -460,7 +462,7 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 			animation.add_frame({*texture, {*pos_x + *width * i, *pos_y, *width, *height}});
 		}
 		animation.set_shift(static_cast<float>(xshift.value_or(0)), static_cast<float>(yshift.value_or(0)));
-		m_objects_anims.emplace(static_cast<object_id>(*id), std::move(animation));
+		m_objects_anims.emplace(static_cast<resources_type::object_id>(*id), std::move(animation));
 	}
 	return success;
 }

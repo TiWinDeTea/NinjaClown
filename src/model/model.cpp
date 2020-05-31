@@ -1,6 +1,8 @@
+#include <spdlog/spdlog.h>
+
 #include "model/model.hpp"
 #include "state_holder.hpp"
-#include <spdlog/spdlog.h>
+#include "adapter/adapter.hpp"
 
 model::model::model(state::holder *state_holder) noexcept
     : m_state_holder{*state_holder} {

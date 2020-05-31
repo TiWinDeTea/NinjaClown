@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
 namespace view {

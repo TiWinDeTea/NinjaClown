@@ -1,17 +1,17 @@
 #include "view/map.hpp"
-#include "view/viewer.hpp"
-
 #include "utils/optional.hpp"
 #include "utils/resource_manager.hpp"
+#include "utils/resources_type.hpp"
+#include "view/viewer.hpp"
 
 void view::map::print(view::viewer &view, utils::resource_manager &resources) const noexcept {
 	static_assert(static_cast<int>(cell::iron_tile) == 0);
 	static_assert(static_cast<int>(cell::concrete_tile) == 1);
 	static_assert(static_cast<int>(cell::abyss) == 2);
 
-	std::array<utils::optional<const view::animation &>, 4> animations{resources.tile_animation(utils::resource_manager::tile_id::iron),
-	                                                                   resources.tile_animation(utils::resource_manager::tile_id::concrete),
-	                                                                   resources.tile_animation(utils::resource_manager::tile_id::chasm)};
+	std::array<utils::optional<const view::animation &>, 4> animations{resources.tile_animation(utils::resources_type::tile_id::iron),
+	                                                                   resources.tile_animation(utils::resources_type::tile_id::concrete),
+	                                                                   resources.tile_animation(utils::resources_type::tile_id::chasm)};
 
 	for (unsigned int x = 0; x < m_cells.size(); ++x) {
 		for (unsigned int y = 0; y < m_cells[x].size(); ++y) {
@@ -26,10 +26,10 @@ void view::map::highlight_tile(view::viewer &view, size_t x, size_t y, utils::re
 	utils::optional<const view::animation &> anim;
 	switch (m_cells[x][y]) {
 		case cell::iron_tile:
-			anim = resources.tile_animation(utils::resource_manager::tile_id::iron);
+			anim = resources.tile_animation(utils::resources_type::tile_id::iron);
 			break;
 		case cell::concrete_tile:
-			anim = resources.tile_animation(utils::resource_manager::tile_id::concrete);
+			anim = resources.tile_animation(utils::resources_type::tile_id::concrete);
 			break;
 		case cell::abyss:
 			break;
@@ -42,7 +42,7 @@ void view::map::highlight_tile(view::viewer &view, size_t x, size_t y, utils::re
 }
 
 void view::map::frame_tile(view::viewer &view, size_t x, size_t y, utils::resource_manager &resources) const noexcept {
-	auto animation = resources.tile_animation(utils::resource_manager::tile_id::frame);
+	auto animation = resources.tile_animation(utils::resources_type::tile_id::frame);
 	if (animation) {
 		animation->print(view, static_cast<float>(x), static_cast<float>(y));
 	}

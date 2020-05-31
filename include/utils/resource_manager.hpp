@@ -8,15 +8,24 @@
 #include <vector>
 
 #include <SFML/Graphics/Texture.hpp>
-
 #include <cpptoml.h>
 
-#include "terminal_commands.hpp"
+#include "terminal_ids.hpp"
 #include "utils/optional.hpp"
+#include "view/facing_dir.hpp"
+
 #include "view/animation.hpp"
 #include "view/mob_animations.hpp"
 
 namespace utils {
+
+namespace resources_type {
+	enum class mob_id;
+
+	enum class object_id;
+
+	enum class tile_id;
+} // namespace resources_type
 
 class resource_manager {
 	static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
@@ -28,27 +37,9 @@ class resource_manager {
 		int y_xshift;
 		int width;
 		int height;
-	} m_tiles_infos;
+	} m_tiles_infos{};
 
 public:
-	enum class mob_id {
-		player    = MOBS_PLAYERID,
-		scientist = MOBS_SCIENTISTID,
-	};
-
-	enum class object_id {
-		button      = OBJECTS_BUTTONID,
-		gate        = OBJECTS_GATEID,
-		autoshooter = OBJECTS_AUTOSHOOTERID,
-		target      = OBJECTS_TARGETID,
-	};
-
-	enum class tile_id {
-		chasm    = TILES_CHASMID,
-		iron     = TILES_IRONID,
-		concrete = TILES_CONCRETEID,
-		frame    = TILES_FRAMEID,
-	};
 
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
 
@@ -61,11 +52,11 @@ public:
 		return false;
 	}
 
-	[[nodiscard]] utils::optional<const view::animation &> tile_animation(tile_id) const noexcept;
+	[[nodiscard]] utils::optional<const view::animation &> tile_animation(resources_type::tile_id) const noexcept;
 
-	[[nodiscard]] utils::optional<const view::shifted_animation &> object_animation(object_id) const noexcept;
+	[[nodiscard]] utils::optional<const view::shifted_animation &> object_animation(resources_type::object_id) const noexcept;
 
-	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(mob_id) const noexcept;
+	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(resources_type::mob_id) const noexcept;
 
 	[[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
 
@@ -92,9 +83,9 @@ private:
 	std::unordered_map<std::string, sf::Texture *> m_textures_by_file{};
 	std::forward_list<sf::Texture> m_textures_holder{};
 
-	std::unordered_map<tile_id, view::animation> m_tiles_anims{};
-	std::unordered_map<object_id, view::shifted_animation> m_objects_anims{};
-	std::unordered_map<mob_id, view::mob_animations> m_mobs_anims{};
+	std::unordered_map<resources_type::tile_id, view::animation> m_tiles_anims{};
+	std::unordered_map<resources_type::object_id, view::shifted_animation> m_objects_anims{};
+	std::unordered_map<resources_type::mob_id, view::mob_animations> m_mobs_anims{};
 
 	std::unordered_map<command_id, std::pair<std::string, std::string>> m_commands_strings{};
 };

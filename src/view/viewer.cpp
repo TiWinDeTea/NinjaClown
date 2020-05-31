@@ -9,16 +9,15 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 #include <imterm/terminal.hpp>
-#include "adapter/adapter.hpp"
 
+#include "adapter/adapter.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
-
-#include "view/event_inspector.hpp"
+#include "utils/resource_manager.hpp"
 #include "view/dialogs.hpp"
+#include "view/event_inspector.hpp"
 #include "view/viewer.hpp"
 #include "view/viewer_display_state.hpp"
-
 
 namespace {
 namespace cst {
@@ -42,28 +41,31 @@ void view::viewer::stop() noexcept {
 	}
 }
 
+void view::viewer::wait() {
+	if (m_thread && m_thread->joinable()) {
+		m_thread->join();
+	}
+}
+
 void view::viewer::do_run() noexcept {
-	auto getterm = [this]() -> ImTerm::terminal<terminal_commands>& {
-        return state::access<view::viewer>::terminal(m_state_holder);
+	auto getterm = [this]() -> ImTerm::terminal<terminal_commands> & {
+		return state::access<view::viewer>::terminal(m_state_holder);
 	};
-	viewer_display_state dp_state{
-	  sf::RenderWindow{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"},
-	  getterm(),
-	  terminal_commands::argument_type{m_state_holder, getterm(), {}}
-	};
-    window = &dp_state.window;
+	viewer_display_state dp_state{sf::RenderWindow{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"}, getterm(),
+	                              terminal_commands::argument_type{m_state_holder, getterm(), {}}};
+	window = &dp_state.window;
 
 	dp_state.terminal.set_width(cst::window_width);
-    dp_state.terminal.set_height(cst::window_height / 2);
-    dp_state.terminal.theme() = ImTerm::themes::cherry;
-    dp_state.terminal.log_level(ImTerm::message::severity::info);
-    dp_state.terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
-    dp_state.terminal.disallow_x_resize();
-    dp_state.terminal.filter_hint() = "regex filter...";
+	dp_state.terminal.set_height(cst::window_height / 2);
+	dp_state.terminal.theme() = ImTerm::themes::cherry;
+	dp_state.terminal.log_level(ImTerm::message::severity::info);
+	dp_state.terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
+	dp_state.terminal.disallow_x_resize();
+	dp_state.terminal.filter_hint() = "regex filter...";
 
 	dp_state.window_size = {cst::window_width, cst::window_height};
 	dp_state.viewport = sf::FloatRect(cst::window_width / 4, cst::window_height / 4, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
-    dp_state.window.setView(sf::View{dp_state.viewport});
+	dp_state.window.setView(sf::View{dp_state.viewport});
 
 	dp_state.window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
 	ImGui::SFML::Init(dp_state.window);
@@ -92,10 +94,10 @@ void view::viewer::do_run() noexcept {
 		}
 
 		dp_state.window.clear();
-		m_map.acquire()->print(*this, m_state_holder.resources);
+		m_map.acquire()->print(*this, m_state_holder.resources());
 
 		if (show_debug_data && !dp_state.terminal_hovered) {
-			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
+			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
 		}
 		else {
 			m_overmap.acquire()->print_all(*this);
@@ -108,19 +110,27 @@ void view::viewer::do_run() noexcept {
 	}
 
 	if (dp_state.window.isOpen()) {
-        dp_state.window.close();
+		dp_state.window.close();
 	}
 	ImGui::SFML::Shutdown();
 }
 
 void view::viewer::reload_sprites() {
-	m_overmap.acquire()->reload_sprites(m_state_holder.resources);
+	m_overmap.acquire()->reload_sprites(m_state_holder.resources());
+}
+
+utils::synchronized<view::overmap_collection>::acquired_t view::viewer::acquire_overmap() noexcept {
+	return m_overmap.acquire();
+}
+
+utils::synchronized<view::map, utils::spinlock>::acquired_t view::viewer::acquire_map() noexcept {
+	return m_map.acquire();
 }
 
 sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {
 	auto [screen_x, screen_y] = to_screen_coords_base(x, y);
 
-	const auto &tiles = m_state_holder.resources.tiles_infos();
+	const auto &tiles = m_state_holder.resources().tiles_infos();
 	auto max_x        = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
 	auto max_y        = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
 
@@ -128,6 +138,12 @@ sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {
 	float extra_height = static_cast<float>(window->getSize().y) - max_y;
 
 	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
+}
+
+void view::viewer::set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept {
+	auto map = m_map.acquire();
+	map->set(std::move(new_map));
+	m_level_size = map->level_size();
 }
 
 // conversions necessary to account for the viewport
@@ -141,7 +157,7 @@ sf::Vector2f view::viewer::get_mouse_pos() const noexcept {
 }
 
 std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept {
-	const auto &tiles = m_state_holder.resources.tiles_infos();
+	const auto &tiles = m_state_holder.resources().tiles_infos();
 	auto xshift       = static_cast<float>(m_level_size.second * tiles.y_xshift);
 	auto screen_x     = x * static_cast<float>(tiles.xspacing) + y * static_cast<float>(-tiles.y_xshift) + xshift;
 	auto screen_y     = y * static_cast<float>(tiles.yspacing) + x * static_cast<float>(tiles.x_yshift);

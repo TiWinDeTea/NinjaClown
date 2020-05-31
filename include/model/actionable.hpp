@@ -3,7 +3,6 @@
 
 #include <cassert>
 
-#include "utils/utils.hpp"
 #include "model/grid_point.hpp"
 
 namespace adapter {

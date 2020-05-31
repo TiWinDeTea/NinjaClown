@@ -5,6 +5,8 @@
 #include <memory>
 #include <unordered_set>
 
+#include <SFML/Graphics/Rect.hpp>
+
 #include "utils/synchronized.hpp"
 
 #include "view/dialogs.hpp"
@@ -17,6 +19,11 @@
 
 namespace sf {
 class RenderWindow;
+
+template <typename>
+class Vector2;
+typedef Vector2<float> Vector2f;
+typedef Vector2<int> Vector2i;
 }
 
 namespace adapter {
@@ -40,11 +47,7 @@ public:
 
 	void stop() noexcept;
 
-	void wait() {
-		if (m_thread && m_thread->joinable()) {
-			m_thread->join();
-		}
-	}
+	void wait();
 
 	// can be called concurrently
 	void target_fps(unsigned int fps) noexcept {
@@ -71,23 +74,15 @@ public:
 
 	void reload_sprites();
 
-	auto acquire_overmap() noexcept {
-		return m_overmap.acquire();
-	}
+	utils::synchronized<overmap_collection>::acquired_t acquire_overmap() noexcept;
 
-	auto acquire_map() noexcept {
-		return m_map.acquire();
-	}
+	utils::synchronized<view::map, utils::spinlock>::acquired_t acquire_map() noexcept;
 
 	class dialog_viewer &dialog_viewer() noexcept {
 		return m_dialog_viewer;
 	}
 
-	void set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept {
-		auto map = m_map.acquire();
-		map->set(std::move(new_map));
-		m_level_size = map->level_size();
-	}
+	void set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept;
 
 	// converts world grid coords to on-screen coords
 	sf::Vector2f to_screen_coords(float x, float y) const noexcept;

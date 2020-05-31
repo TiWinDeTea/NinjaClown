@@ -28,14 +28,7 @@ class overmap_collection {
 
 public:
 
-    void reload_sprites(const utils::resource_manager& res) {
-        for (mob& mob : m_mobs) {
-            mob.reload_sprites(res);
-        }
-        for (object& object : m_objects) {
-            object.reload_sprites(res);
-        }
-    }
+    void reload_sprites(const utils::resource_manager& res) noexcept;
 
     void print_all(view::viewer &) const noexcept;
 
@@ -53,11 +46,7 @@ public:
 	void reveal(adapter::view_handle handle);
 
 
-    void clear() {
-        m_ordered_displayable.clear();
-        m_mobs.clear();
-        m_objects.clear();
-    }
+    void clear() noexcept;
 
 private:
     std::multiset<pair_type, less> m_ordered_displayable;

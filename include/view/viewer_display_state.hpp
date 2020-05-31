@@ -7,16 +7,19 @@
 
 #include <optional>
 
-#include <imterm/terminal.hpp>
-
 #include "terminal_commands.hpp"
+
+namespace ImTerm {
+template <typename>
+class terminal;
+}
 
 namespace view {
 struct viewer_display_state {
 	sf::RenderWindow window;
-    ImTerm::terminal<terminal_commands> &terminal;
-    terminal_commands::argument_type empty_arg;
-    sf::Clock delta_clock{};
+	ImTerm::terminal<terminal_commands> &terminal;
+	terminal_commands::argument_type empty_arg;
+	sf::Clock delta_clock{};
 	sf::FloatRect viewport{};
 
 	sf::Vector2i window_size{};
@@ -32,7 +35,7 @@ struct viewer_display_state {
 	bool autostep_bot{false};
 
 	// misc
-	bool resized_once{false}; // TODO useless
+	bool resized_once{false}; // TODO useless ?
 };
 } // namespace view
 

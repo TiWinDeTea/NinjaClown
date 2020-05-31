@@ -29,6 +29,8 @@ struct ffi {
 
 	static void NINJACLOWN_CALLCONV commit_decisions(void *ninja_data, ninja_api::nnj_decision_commit const *commits, size_t num_commits);
 
+	operator ninja_api::nnj_api() noexcept;
+
 private:
 	static model::model *get_model(void *ninja_data);
 	static model::world *get_world(void *ninja_data);

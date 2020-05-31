@@ -2,7 +2,6 @@
 #define NINJACLOWN_VIEW_FACING_DIR_HPP
 
 #include <array>
-#include <cassert>
 #include <optional>
 #include <string_view>
 
@@ -23,34 +22,7 @@ constexpr std::string_view to_string(facing_direction::type val) noexcept {
 }
 
 // TODO: add NE/NW/SE/SW
-constexpr type from_angle(float rad) {
-#define NCFD_PI 3.14159265359f
-	if (rad <= 0) {
-		if (rad <= -3.f * NCFD_PI / 4.f) {
-			assert(rad >= -NCFD_PI);
-			return W;
-		}
-		else if (rad <= -NCFD_PI / 4.f) {
-			return S;
-		}
-		else {
-			return E;
-		}
-	}
-	else {
-		if (rad >= 3.f * NCFD_PI / 4.f) {
-			assert(rad <= NCFD_PI);
-			return W;
-		}
-		else if (rad >= NCFD_PI / 4.f) {
-			return N;
-		}
-		else {
-			return E;
-		}
-	}
-#undef NCFD_PI
-}
+type from_angle(float rad);
 
 constexpr std::optional<facing_direction::type> from_string(std::string_view str) noexcept {
 	for (auto val : values) {

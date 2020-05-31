@@ -1,21 +1,21 @@
 #include "terminal_commands.hpp"
 
 #include <array>
-#include <charconv>
 #include <filesystem>
 
 #include <ninja_clown/api.h>
-#include <imterm/misc.hpp>
-#include <spdlog/sinks/base_sink.h>
 #include <spdlog/spdlog.h>
 
-#include "utils/visitor.hpp"
+#include "adapter/adapter.hpp"
+#include "bot/bot_api.hpp"
 #include "bot/bot_dll.hpp"
-#include "bot/bot_factory.hpp"
+#include "model/model.hpp"
 #include "model/world.hpp"
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/utils.hpp"
+#include "utils/visitor.hpp"
+#include "view/viewer.hpp"
 
 // TODO translations
 
@@ -156,7 +156,7 @@ void terminal_commands::exit(argument_type &arg) {
 void terminal_commands::help(argument_type &arg) {
 	std::vector<std::pair<std::string_view, std::string_view>> commands; // name, description
 	for (const auto &cmd : local_command_list) {
-		auto opt = arg.val.resources.text_for(cmd.cmd);
+		auto opt = arg.val.resources().text_for(cmd.cmd);
 		if (!opt) {
 			spdlog::warn("No name found for command {}", static_cast<int>(cmd.cmd));
 			continue;
@@ -192,7 +192,7 @@ void terminal_commands::help(argument_type &arg) {
 }
 
 void terminal_commands::quit(argument_type &arg) {
-	arg.val.m_view.close_requested = true;
+	arg.val.view().close_requested = true;
 }
 
 void terminal_commands::load_shared_library(argument_type &arg) {
@@ -204,7 +204,7 @@ void terminal_commands::load_shared_library(argument_type &arg) {
 	std::string shared_library_path = arg.command_line[1];
 	arg.term.add_text("loading " + shared_library_path); // todo externaliser
 
-	if (!arg.val.m_model.load_dll(shared_library_path)) {
+	if (!arg.val.model().load_dll(shared_library_path)) {
 		arg.term.add_text("error loading dll"); // todo externaliser
 	}
 }
@@ -215,31 +215,32 @@ void terminal_commands::load_map(argument_type &arg) {
 		return;
 	}
 
-	if (arg.val.m_adapter.map_is_loaded())
-		arg.val.m_model.bot_end_level();
+	if (arg.val.adapter().map_is_loaded()) {
+		arg.val.model().bot_end_level();
+	}
 
-	arg.val.m_adapter.load_map(arg.command_line[1]);
-	arg.val.m_model.bot_start_level(bot::make_api());
+	arg.val.adapter().load_map(arg.command_line[1]);
+	arg.val.model().bot_start_level(bot::ffi{});
 }
 
 void terminal_commands::update_world(argument_type &arg) {
-	arg.val.m_model.bot_think();
-	arg.val.m_adapter.m_cells_changed_since_last_update.clear();
-	arg.val.m_model.world.update(arg.val.m_adapter);
+	arg.val.model().bot_think();
+	arg.val.adapter().m_cells_changed_since_last_update.clear();
+	arg.val.model().world.update(arg.val.adapter());
 }
 
 void terminal_commands::run_model(argument_type &arg) {
-	arg.val.m_model.run();
+	arg.val.model().run();
 }
 
 void terminal_commands::stop_model(argument_type &arg) {
-	arg.val.m_model.stop();
+	arg.val.model().stop();
 }
 
 void terminal_commands::set(argument_type &arg) {
 	if (arg.command_line.size() == 3) {
-		auto it = arg.val.properties.find(arg.command_line[1]);
-		if (it == arg.val.properties.end()) {
+		auto it = arg.val.properties().find(arg.command_line[1]);
+		if (it == arg.val.properties().end()) {
 			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line[1]); // TODO externaliser
 			return;
 		}
@@ -274,8 +275,8 @@ void terminal_commands::set(argument_type &arg) {
 
 void terminal_commands::valueof(argument_type &arg) {
 	if (arg.command_line.size() == 2) {
-		auto it = arg.val.properties.find(arg.command_line.back());
-		if (it == arg.val.properties.end()) {
+		auto it = arg.val.properties().find(arg.command_line.back());
+		if (it == arg.val.properties().end()) {
 			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line.back()); // TODO externaliser
 			return;
 		}
@@ -312,13 +313,13 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		return;
 	}
 
-	if (!arg.val.resources.reload(arg.command_line.back())) {
+	if (!arg.val.resources().reload(arg.command_line.back())) {
 		arg.term.add_formatted("failed to reload resources from {}", arg.command_line.back()); // TODO externaliser
 	}
 	else {
 		arg.term.add_formatted("{}: resources successfully reloaded", arg.command_line.back()); // TODO externaliser
-		arg.val.m_view.reload_sprites();
-		arg.val.m_terminal.get_terminal_helper()->load_commands(arg.val.resources);
+		arg.val.view().reload_sprites();
+		arg.val.terminal().get_terminal_helper()->load_commands(arg.val.resources());
 	}
 }
 
@@ -334,13 +335,13 @@ void terminal_commands::fire_activator(argument_type &arg) {
 		return;
 	}
 
-	if (*val > arg.val.m_model.world.activators.size()) {
+	if (*val > arg.val.model().world.activators.size()) {
 		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
-		                       arg.val.m_model.world.activators.size()); // TODO externaliser
+		                       arg.val.model().world.activators.size()); // TODO externaliser
 		return;
 	}
 
-	arg.val.m_model.world.fire_activator(arg.val.m_adapter, *val);
+	arg.val.model().world.fire_activator(arg.val.adapter(), *val);
 }
 
 void terminal_commands::fire_actionable(argument_type &arg) {
@@ -355,12 +356,12 @@ void terminal_commands::fire_actionable(argument_type &arg) {
 		return;
 	}
 
-	if (*val > arg.val.m_model.world.actionables.size()) {
+	if (*val > arg.val.model().world.actionables.size()) {
 		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
-		                       arg.val.m_model.world.actionables.size()); // TODO externaliser
+		                       arg.val.model().world.actionables.size()); // TODO externaliser
 		return;
 	}
-	arg.val.m_model.world.fire_actionable(arg.val.m_adapter, *val);
+	arg.val.model().world.fire_actionable(arg.val.adapter(), *val);
 }
 
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg,
@@ -425,8 +426,8 @@ std::vector<std::string> terminal_commands::autocomplete_variable(argument_type 
 		return ans;
 	}
 
-	auto it = arg.val.properties.lower_bound(arg.command_line.back());
-	while (it != arg.val.properties.end() && utils::starts_with(it->first, arg.command_line.back())) {
+	auto it = arg.val.properties().lower_bound(arg.command_line.back());
+	while (it != arg.val.properties().end() && utils::starts_with(it->first, arg.command_line.back())) {
 		ans.emplace_back(it++->first);
 	}
 	return ans;

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <spdlog/spdlog.h>
 
+#include "adapter/adapter.hpp"
 #include "bot/bot_api.hpp"
 #include "model/components.hpp"
 #include "model/model.hpp"
@@ -33,6 +34,24 @@ void fill_entity_struct(const ::model::components &components, ninja_api::nnj_en
 } // namespace
 
 namespace bot {
+
+ffi::operator ninja_api::nnj_api() noexcept {
+    ninja_api::nnj_api api{};
+
+    api.log = &ffi::log;
+
+    api.map_width  = &ffi::map_width;
+    api.map_height = &ffi::map_height;
+    api.map_scan   = &ffi::map_scan;
+    api.map_update = &ffi::map_update;
+
+    api.max_entities    = &ffi::max_entities;
+    api.entities_scan   = &ffi::entities_scan;
+    api.entities_update = &ffi::entities_update;
+
+    api.commit_decisions = &ffi::commit_decisions;
+    return api;
+}
 
 void NINJACLOWN_CALLCONV ffi::log(ninja_api::nnj_log_level level, const char *text) {
 	switch (level) {
