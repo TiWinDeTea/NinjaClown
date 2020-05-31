@@ -97,12 +97,15 @@ struct nnj_attack_request {
 	size_t target_handle;
 };
 
+struct nnj_throw_request { };
+
 struct nnj_decision {
 	enum nnj_decision_kind kind;
 	union {
-		struct nnj_movement_request movement;
-		struct nnj_activate_request activate;
-		struct nnj_attack_request attack;
+		struct nnj_movement_request movement_req;
+		struct nnj_activate_request activate_req;
+		struct nnj_attack_request attack_req;
+		struct nnj_throw_request throw_req;
 	};
 };
 

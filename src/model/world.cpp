@@ -1,10 +1,12 @@
 #include <array>
 #include <cmath>
 #include <spdlog/spdlog.h>
+#include <variant>
 
 #include "adapter/adapter.hpp"
 #include "model/collision.hpp"
 #include "model/world.hpp"
+#include "utils/visitor.hpp"
 
 const float PI = 3.14159f;
 
@@ -23,72 +25,74 @@ void model::world::reset() {
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
 		components.metadata[i]   = {};
 		components.properties[i] = {};
-		components.decision[i]   = ninja_api::nnj_decision{ninja_api::DK_NONE};
+		components.decision[i]   = {};
 		components.health[i].reset();
 		components.hitbox[i].reset();
 	}
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-	ninja_api::nnj_decision &decision = components.decision[handle];
-	component::properties &properties = components.properties[handle];
-
-	switch (decision.kind) {
-		case ninja_api::DK_NONE:
-			// nothing to do here
-			break;
-		case ninja_api::DK_MOVEMENT: {
-			float rotation = std::clamp(decision.movement.rotation, -properties.rotation_speed, properties.rotation_speed);
-			if (std::abs(rotation) > 0.001) { // FIXME: eta variable
-				rotate_entity(adapter, handle, rotation);
-			}
-
-			// FIXME: check for NaN in user input
-			float dx = std::cos(components.hitbox[handle]->rad) * decision.movement.forward_diff
-			           + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.movement.lateral_diff;
-			float dy = -(std::sin(components.hitbox[handle]->rad) * decision.movement.forward_diff
-			             + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * decision.movement.lateral_diff);
-			vec2 movement{dx, dy};
-			if (movement.norm() > properties.move_speed) {
-				// cap movement vector to max speed
-				movement.unitify();
-				movement.x *= properties.move_speed;
-				movement.y *= properties.move_speed;
-			}
-			if (movement.norm() != 0) {
-				move_entity(adapter, handle, movement);
-			}
-
-			if (handle == ninja_clown_handle) {
-				float distance = components.hitbox[handle]
-				                   ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
-				                   .norm();
-				if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
-					spdlog::info("You win."); // TODO
-				}
-			}
-			break;
-		}
-		case ninja_api::DK_ACTIVATE: {
-			component::hitbox &hitbox = *components.hitbox[handle];
-			const cell &c             = grid[decision.activate.column][decision.activate.line];
-			if (c.interaction_handle) {
-				interaction &i = interactions[*c.interaction_handle];
-				if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
-					vec2 cell_center{decision.activate.column, decision.activate.line};
-					if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
-						fire_activator(adapter, i.interactable_handler);
-					}
-				}
-			}
-			break;
-		}
-		default:
-			spdlog::warn("decision kind not yet implemented");
-			break;
+	if (!components.decision[handle]) {
+		return;
 	}
 
-	components.decision[handle].kind = ninja_api::DK_NONE;
+	component::decision &decision     = *components.decision[handle];
+	component::properties &properties = components.properties[handle];
+
+	utils::visitor visitor{
+	  [&](ninja_api::nnj_movement_request &mov_req) {
+		  float rotation = std::clamp(mov_req.rotation, -properties.rotation_speed, properties.rotation_speed);
+		  if (std::abs(rotation) > 0.001) { // FIXME: eta variable
+			  rotate_entity(adapter, handle, rotation);
+		  }
+
+		  // FIXME: check for NaN in user input
+		  float dx = std::cos(components.hitbox[handle]->rad) * mov_req.forward_diff
+		             + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * mov_req.lateral_diff;
+		  float dy = -(std::sin(components.hitbox[handle]->rad) * mov_req.forward_diff
+		               + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * mov_req.lateral_diff);
+		  vec2 movement{dx, dy};
+		  if (movement.norm() > properties.move_speed) {
+			  // cap movement vector to max speed
+			  movement.unitify();
+			  movement.x *= properties.move_speed;
+			  movement.y *= properties.move_speed;
+		  }
+		  if (movement.norm() != 0) {
+			  move_entity(adapter, handle, movement);
+		  }
+
+		  if (handle == ninja_clown_handle) {
+			  float distance = components.hitbox[handle]
+			                     ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
+			                     .norm();
+			  if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
+				  spdlog::info("You win."); // TODO
+			  }
+		  }
+	  },
+	  [&](ninja_api::nnj_activate_request &activate_req) {
+		  component::hitbox &hitbox = *components.hitbox[handle];
+		  const cell &c             = grid[activate_req.column][activate_req.line];
+		  if (c.interaction_handle) {
+			  interaction &i = interactions[*c.interaction_handle];
+			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
+				  vec2 cell_center{activate_req.column, activate_req.line};
+				  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
+					  fire_activator(adapter, i.interactable_handler);
+				  }
+			  }
+		  }
+	  },
+	  [&](ninja_api::nnj_attack_request &attack_req) {
+
+	  },
+	  [&](ninja_api::nnj_throw_request &throw_req) {
+
+	  }};
+
+	std::visit(visitor, decision);
+	components.decision[handle] = {};
 }
 
 void model::world::move_entity(adapter::adapter &adapter, size_t handle, vec2 movement) {

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <ninja_clown/api.h>
 #include <optional>
+#include <variant>
 
 #include "utils/universal_constants.hpp"
 #include "vec2.hpp"
@@ -16,6 +17,9 @@ constexpr float default_move_speed     = 0.2f;
 constexpr float default_rotation_speed = 0.2f;
 constexpr float default_attack_range   = 1.0f;
 constexpr float default_activate_range = 1.0f;
+
+using decision = std::variant<ninja_api::nnj_movement_request, ninja_api::nnj_activate_request, ninja_api::nnj_attack_request,
+                              ninja_api::nnj_throw_request>;
 
 struct properties {
 	float move_speed     = default_move_speed;
@@ -97,7 +101,7 @@ namespace cst {
 struct components {
 	std::array<std::optional<component::health>, cst::max_entities> health;
 	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
-	std::array<ninja_api::nnj_decision, cst::max_entities> decision{};
+	std::array<std::optional<component::decision>, cst::max_entities> decision;
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
 };
