@@ -1,3 +1,4 @@
+#include <cmath>
 #include <spdlog/spdlog.h>
 
 #include "bot/bot_api.hpp"
@@ -131,6 +132,12 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 	return adapter->entities_changed_since_last_update().size();
 }
 
+#define SANITIZE(x)                                                                                                                        \
+	if (std::isinf((x)) || std::isnan((x))) {                                                                                              \
+		spdlog::warn("DLL sent invalid float ({}) for decision {}", (x), #x);                                                              \
+		(x) = 0.0f;                                                                                                                        \
+	}
+
 void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_decision_commit const *commits, size_t num_commits) {
 	model::world *world = get_world(ninja_data);
 	for (size_t i = 0; i < num_commits; ++i) {
@@ -143,9 +150,14 @@ void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_
 				case ninja_api::DK_NONE:
 					world->components.decision[commit.target_handle] = {};
 					break;
-				case ninja_api::DK_MOVEMENT:
-					world->components.decision[commit.target_handle] = {commit.decision.movement_req}; // NOLINT
+				case ninja_api::DK_MOVEMENT: {
+					ninja_api::nnj_movement_request req = commit.decision.movement_req; // NOLINT
+					SANITIZE(req.forward_diff)
+					SANITIZE(req.lateral_diff)
+					SANITIZE(req.rotation)
+					world->components.decision[commit.target_handle] = {req}; // NOLINT
 					break;
+				}
 				case ninja_api::DK_ACTIVATE:
 					world->components.decision[commit.target_handle] = {commit.decision.activate_req}; // NOLINT
 					break;

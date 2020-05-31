@@ -8,7 +8,7 @@
 #include "model/world.hpp"
 #include "utils/visitor.hpp"
 
-const float PI = 3.14159f;
+const float significant_rotation_eta = 0.001f;
 
 void model::world::update(adapter::adapter &adapter) {
 	for (size_t handle = cst::max_entities; handle--;) {
@@ -25,7 +25,7 @@ void model::world::reset() {
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
 		components.metadata[i]   = {};
 		components.properties[i] = {};
-		components.decision[i]   = {};
+		components.decision[i].reset();
 		components.health[i].reset();
 		components.hitbox[i].reset();
 	}
@@ -42,11 +42,10 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 	utils::visitor visitor{
 	  [&](ninja_api::nnj_movement_request &mov_req) {
 		  float rotation = std::clamp(mov_req.rotation, -properties.rotation_speed, properties.rotation_speed);
-		  if (std::abs(rotation) > 0.001) { // FIXME: eta variable
+		  if (std::abs(rotation) > significant_rotation_eta) {
 			  rotate_entity(adapter, handle, rotation);
 		  }
 
-		  // FIXME: check for NaN in user input
 		  float dx = std::cos(components.hitbox[handle]->rad) * mov_req.forward_diff
 		             + std::cos(components.hitbox[handle]->rad + uni::math::pi_2<float>) * mov_req.lateral_diff;
 		  float dy = -(std::sin(components.hitbox[handle]->rad) * mov_req.forward_diff
@@ -118,11 +117,11 @@ void model::world::rotate_entity(adapter::adapter &adapter, size_t handle, float
 	float old_rad             = hitbox.rad;
 
 	hitbox.rad += rotation_rad;
-	if (hitbox.rad >= PI) {
-		hitbox.rad -= 2 * PI;
+	if (hitbox.rad >= uni::math::pi<float>) {
+		hitbox.rad -= 2 * uni::math::pi<float>;
 	}
-	else if (hitbox.rad <= -PI) {
-		hitbox.rad += 2 * PI;
+	else if (hitbox.rad <= -uni::math::pi<float>) {
+		hitbox.rad += 2 * uni::math::pi<float>;
 	}
 
 	if (entity_check_collision(handle)) {
