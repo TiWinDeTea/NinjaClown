@@ -64,6 +64,8 @@ enum nnj_entity_kind {
 struct nnj_properties {
 	float move_speed;
 	float rotation_speed;
+	float attack_range;
+	float activate_range;
 };
 
 struct nnj_entity {
