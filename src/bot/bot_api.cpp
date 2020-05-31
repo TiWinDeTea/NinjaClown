@@ -132,8 +132,13 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_decision_commit const *commits, size_t num_commits) {
 	model::world *world = get_world(ninja_data);
 	for (size_t i = 0; i < num_commits; ++i) {
-		if (world->components.metadata[commits[i].target_handle].kind == ninja_api::EK_DLL) { // NOLINT
-			world->components.decision[commits[i].target_handle] = commits[i].decision; // NOLINT
+		if (commits[i].target_handle > model::cst::max_entities) { // NOLINT
+			spdlog::warn("bot returned invalid target handle ({}) for decision {}", commits[i].target_handle, i);
+		}
+		else {
+			if (world->components.metadata[commits[i].target_handle].kind == ninja_api::EK_DLL) { // NOLINT
+				world->components.decision[commits[i].target_handle] = commits[i].decision; // NOLINT
+			}
 		}
 	}
 }
