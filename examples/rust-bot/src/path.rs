@@ -49,17 +49,14 @@ impl PathGraph {
                     (cell.column().saturating_sub(1), cell.line().saturating_sub(1)),
                     (cell.column() + 1, cell.line().saturating_sub(1)),
                 ]
-                    .iter()
+                .iter()
                 {
-                    match (
+                    if let (Some(CellKind::Ground), Some(CellKind::Ground), Some(CellKind::Ground)) = (
                         map.cell_at(*x, *y).map(|c| c.kind()),
                         map.cell_at(*x, cell.line()).map(|c| c.kind()),
                         map.cell_at(cell.column(), *y).map(|c| c.kind()),
                     ) {
-                        (Some(CellKind::Ground), Some(CellKind::Ground), Some(CellKind::Ground)) => {
-                            successors.push((CellPos::new(*x, *y), 15));
-                        }
-                        _ => {}
+                        successors.push((CellPos::new(*x, *y), 15));
                     }
                 }
 

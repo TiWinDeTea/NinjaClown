@@ -43,7 +43,9 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_THROW,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                throw_req: nnj_throw_request { },
+                throw_req: nnj_throw_request {
+                    unused: std::ptr::null_mut(),
+                },
             },
         })
     }

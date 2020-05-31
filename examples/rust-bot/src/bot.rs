@@ -30,7 +30,9 @@ pub fn start_level(api: &mut Api) -> UserData {
     let mut enemy_handle_opt = None;
     for entity in &api.entities {
         match entity.kind() {
-            EntityKind::Harmless | EntityKind::Patrol | EntityKind::Aggressive => enemy_handle_opt = Some(entity.handle()),
+            EntityKind::Harmless | EntityKind::Patrol | EntityKind::Aggressive => {
+                enemy_handle_opt = Some(entity.handle())
+            }
             EntityKind::Dll => ninja_handle_opt = Some(entity.handle()),
             _ => {}
         }
@@ -97,7 +99,11 @@ pub fn think(api: &mut Api, data: &mut UserData) {
 
     let dist = absdiff(target.center_x(), ninja_clown.x()) + absdiff(target.center_y(), ninja_clown.y());
     let interaction = api.map.cell_at_pos(target).unwrap().interaction();
-    if dist < ninja_clown.properties().activate_range() && !data.activated && interaction != InteractionKind::NoInteraction && data.is_going_to_button {
+    if dist < ninja_clown.properties().activate_range()
+        && !data.activated
+        && interaction != InteractionKind::NoInteraction
+        && data.is_going_to_button
+    {
         api.commit_decisions(&[Decision::activate(target.column(), target.line()).commit(data.ninja_handle)]);
         data.activated = true;
     } else if dist < 0.5 {
