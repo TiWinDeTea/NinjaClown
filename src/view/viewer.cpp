@@ -9,13 +9,16 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 #include <imterm/terminal.hpp>
-
 #include "adapter/adapter.hpp"
+
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
-#include "view/dialogs.hpp"
 
+#include "view/event_inspector.hpp"
+#include "view/dialogs.hpp"
 #include "view/viewer.hpp"
+#include "view/viewer_display_state.hpp"
+
 
 namespace {
 namespace cst {
@@ -40,171 +43,72 @@ void view::viewer::stop() noexcept {
 }
 
 void view::viewer::do_run() noexcept {
-	auto &terminal = state::access<view::viewer>::terminal(m_state_holder);
+	auto getterm = [this]() -> ImTerm::terminal<terminal_commands>& {
+        return state::access<view::viewer>::terminal(m_state_holder);
+	};
+	viewer_display_state dp_state{
+	  sf::RenderWindow{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"},
+	  getterm(),
+	  terminal_commands::argument_type{m_state_holder, getterm(), {}}
+	};
+    window = &dp_state.window;
 
-	terminal.set_width(cst::window_width);
-	terminal.set_height(cst::window_height / 2);
-	terminal.theme() = ImTerm::themes::cherry;
-	terminal.log_level(ImTerm::message::severity::info);
-	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
-	terminal.disallow_x_resize();
-	terminal.filter_hint() = "regex filter...";
+	dp_state.terminal.set_width(cst::window_width);
+    dp_state.terminal.set_height(cst::window_height / 2);
+    dp_state.terminal.theme() = ImTerm::themes::cherry;
+    dp_state.terminal.log_level(ImTerm::message::severity::info);
+    dp_state.terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
+    dp_state.terminal.disallow_x_resize();
+    dp_state.terminal.filter_hint() = "regex filter...";
 
-	sf::Clock delta_clock;
-	sf::Clock music_offset_clock;
+	dp_state.window_size = {cst::window_width, cst::window_height};
+	dp_state.viewport = sf::FloatRect(cst::window_width / 4, cst::window_height / 4, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
+    dp_state.window.setView(sf::View{dp_state.viewport});
 
-	sf::RenderWindow local_window{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"};
-	m_viewport = sf::FloatRect(cst::window_width / 4, cst::window_height / 4, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
-	sf::Vector2i mouse_pos{0, 0};
-
-	window = &local_window;
-
-	m_window_size = {cst::window_width, cst::window_height};
-	local_window.setView(sf::View{m_viewport});
-
-	bool resized_once = false;
-	local_window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
-	ImGui::SFML::Init(local_window);
+	dp_state.window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
+	ImGui::SFML::Init(dp_state.window);
 
 	ImGuiIO &io    = ImGui::GetIO();
 	io.IniFilename = nullptr;
 
 	m_fps_limiter.start_now();
 
-	auto step_bot = [this, &terminal]() {
-		terminal_commands::argument_type arg{m_state_holder, terminal, {}};
-		terminal_commands::update_world(arg);
-	};
-	bool auto_step_bot   = false;
-	bool displaying_term = true;
-
-	while (local_window.isOpen() && m_running) {
+	while (dp_state.window.isOpen() && m_running && !close_requested) {
 
 		sf::Event event{};
-		while (local_window.pollEvent(event)) {
+		while (dp_state.window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
-
-			switch (event.type) {
-				case sf::Event::Closed:
-					local_window.close();
-					break;
-				case sf::Event::KeyPressed:
-					if (event.key.code == sf::Keyboard::F11) {
-						displaying_term = !displaying_term;
-					}
-					else if (event.key.code == sf::Keyboard::F5) {
-						if (!auto_step_bot) {
-							step_bot();
-						}
-					}
-					else if (event.key.code == sf::Keyboard::F4) {
-						auto_step_bot = !auto_step_bot;
-						if (auto_step_bot) {
-							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
-							terminal_commands::run_model(arg);
-						}
-						else {
-							terminal_commands::argument_type arg{m_state_holder, terminal, {}};
-							terminal_commands::stop_model(arg);
-						}
-					}
-					break;
-				case sf::Event::Resized: {
-					terminal.set_width(local_window.getSize().x);
-					if (resized_once) {
-						terminal.set_height(std::min(local_window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
-					}
-					resized_once = true;
-
-					const float XRATIO = static_cast<float>(event.size.width) / m_window_size.first;
-					const float YRATIO = static_cast<float>(event.size.height) / m_window_size.second;
-
-					m_viewport.width *= XRATIO;
-					m_viewport.height *= YRATIO;
-
-					m_window_size.first  = event.size.width;
-					m_window_size.second = event.size.height;
-					window->setView(sf::View{m_viewport});
-					break;
-				}
-				case sf::Event::MouseWheelScrolled:
-					if (displaying_term && terminal.get_size().y > event.mouseWheelScroll.y) {
-						break;
-					}
-
-					if (event.mouseWheelScroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
-						const auto MOUSE_POS = to_viewport_coord(sf::Vector2i{event.mouseWheelScroll.x, event.mouseWheelScroll.y});
-
-						const float DELTA = 1.1F;
-						float transform;
-						if (event.mouseWheelScroll.delta < 0) {
-							transform = DELTA;
-						}
-						else {
-							transform = 1 / DELTA;
-						}
-						sf::FloatRect new_viewport;
-
-						new_viewport.width      = m_viewport.width * transform;
-						const float WIDTH_RATIO = new_viewport.width / m_viewport.width;
-						new_viewport.left       = m_viewport.left + MOUSE_POS.x * (1 - WIDTH_RATIO);
-
-						new_viewport.height      = m_viewport.height * WIDTH_RATIO;
-						const float HEIGHT_RATIO = new_viewport.height / m_viewport.height;
-						new_viewport.top         = m_viewport.top + MOUSE_POS.y * (1 - HEIGHT_RATIO);
-
-						m_viewport = new_viewport;
-						local_window.setView(sf::View{m_viewport});
-					}
-					break;
-				case sf::Event::MouseMoved:
-					if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-						const float zoom_factor = window->getSize().x / m_viewport.width;
-
-						m_viewport.left += (mouse_pos.x - event.mouseMove.x) / zoom_factor;
-						m_viewport.top += (mouse_pos.y - event.mouseMove.y) / zoom_factor;
-						local_window.setView(sf::View{m_viewport});
-					}
-					mouse_pos = {event.mouseMove.x, event.mouseMove.y};
-					break;
-				case sf::Event::MouseButtonReleased:
-					if (event.mouseButton.button == sf::Mouse::Button::Left) {
-                        m_dialog_viewer.on_click(event.mouseButton.x, event.mouseButton.y);
-					}
-				default:
-					break;
-			}
+			inspect_event(*this, event, dp_state);
 		}
+		m_viewport = dp_state.viewport;
 
-		ImGui::SFML::Update(local_window, delta_clock.restart());
+		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
 
-		m_dialog_viewer.show(local_window.getSize().x, local_window.getSize().y);
+		m_dialog_viewer.show(dp_state.window.getSize().x, dp_state.window.getSize().y);
 
-		if (displaying_term) {
+		if (dp_state.displaying_term) {
 			ImGui::SetNextWindowPos({0.f, 0.f}, ImGuiCond_Always);
-			displaying_term = terminal.show();
-			if (close_requested) {
-				local_window.close();
-			}
+			dp_state.displaying_term = dp_state.terminal.show();
 		}
 
-		local_window.clear();
+		dp_state.window.clear();
 		m_map.acquire()->print(*this, m_state_holder.resources);
 
-		if (show_debug_data) {
+		if (show_debug_data && !dp_state.terminal_hovered) {
 			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources);
 		}
 		else {
 			m_overmap.acquire()->print_all(*this);
 		}
 
-		ImGui::SFML::Render(local_window);
-		local_window.display();
+		ImGui::SFML::Render(dp_state.window);
+		dp_state.window.display();
 
 		m_fps_limiter.wait();
 	}
-	if (local_window.isOpen()) {
-		local_window.close();
+
+	if (dp_state.window.isOpen()) {
+        dp_state.window.close();
 	}
 	ImGui::SFML::Shutdown();
 }
@@ -220,8 +124,8 @@ sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {
 	auto max_x        = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
 	auto max_y        = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
 
-	float extra_width  = static_cast<float>(m_window_size.first) - max_x;
-	float extra_height = static_cast<float>(m_window_size.second) - max_y;
+	float extra_width  = static_cast<float>(window->getSize().x) - max_x;
+	float extra_height = static_cast<float>(window->getSize().y) - max_y;
 
 	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
 }

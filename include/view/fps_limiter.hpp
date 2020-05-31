@@ -30,7 +30,7 @@ public:
 		++m_frame_count;
 
 		auto now                 = std::chrono::system_clock::now();
-		auto last_frame_duration = m_last_tick - now;
+		auto last_frame_duration = now - m_last_tick;
 		auto sleep_time          = m_frame_duration - last_frame_duration;
 		if (sleep_time.count() > 0) {
 			std::this_thread::sleep_for(sleep_time);

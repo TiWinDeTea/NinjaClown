@@ -11,6 +11,7 @@
 #include "view/dialogs.hpp"
 #include "view/viewer.hpp"
 
+// TODO externalize error messages
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	auto clear = [this] {
 		state::access<adapter>::model(m_state).world.reset();
