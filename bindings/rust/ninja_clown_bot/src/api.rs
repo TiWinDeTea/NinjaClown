@@ -23,7 +23,29 @@ impl Api {
         unsafe { (self.raw.log.unwrap())(nnj_log_level::from(level), s.as_ptr()) };
     }
 
-    // TODO: add trace, etc methods
+    pub fn log_trace<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Trace, s);
+    }
+
+    pub fn log_debug<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Debug, s);
+    }
+
+    pub fn log_info<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Info, s);
+    }
+
+    pub fn log_warn<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Warn, s);
+    }
+
+    pub fn log_error<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Error, s);
+    }
+
+    pub fn log_critical<S: Into<String>>(&self, s: S) {
+        self.log(LogLevel::Critical, s);
+    }
 
     pub fn map_update(&mut self) -> usize {
         unsafe {
