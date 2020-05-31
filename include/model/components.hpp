@@ -1,10 +1,10 @@
 #ifndef NINJACLOWN_COMPONENTS_HPP
 #define NINJACLOWN_COMPONENTS_HPP
 
-#include <ninja_clown/api.h>
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <ninja_clown/api.h>
 #include <optional>
 
 #include "utils/universal_constants.hpp"
@@ -14,10 +14,14 @@ namespace model::component {
 
 constexpr float default_move_speed     = 0.2f;
 constexpr float default_rotation_speed = 0.2f;
+constexpr float default_attack_range   = 1.0f;
+constexpr float default_activate_range = 1.0f;
 
 struct properties {
 	float move_speed     = default_move_speed;
 	float rotation_speed = default_rotation_speed;
+	float attack_range   = default_attack_range;
+	float activate_range = default_activate_range;
 };
 
 struct metadata {

@@ -3,11 +3,20 @@
 
 #include <ostream>
 
+#include "model/cell.hpp"
+
 namespace model {
 
 struct vec2 {
 	float x;
 	float y;
+
+	vec2(float x_, float y_) noexcept
+	    : x{x_}
+	    , y{y_} { }
+	vec2(size_t column, size_t line) noexcept
+	    : x{static_cast<float>(column) + cst::cell_width / 2}
+	    , y{static_cast<float>(line) + cst::cell_height / 2} { }
 
 	vec2 &unitify();
 	[[nodiscard]] float dot(const vec2 &other) const noexcept;

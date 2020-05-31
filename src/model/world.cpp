@@ -30,7 +30,7 @@ void model::world::reset() {
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-    ninja_api::nnj_decision &decision       = components.decision[handle];
+	ninja_api::nnj_decision &decision = components.decision[handle];
 	component::properties &properties = components.properties[handle];
 
 	switch (decision.kind) {
@@ -70,11 +70,16 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			break;
 		}
 		case ninja_api::DK_ACTIVATE: {
-			component::hitbox &hitbox = components.hitbox[handle].value();
+			component::hitbox &hitbox = *components.hitbox[handle];
 			const cell &c             = grid[decision.activate.column][decision.activate.line];
-			interaction &i            = interactions[c.interaction_handle.value()]; // FIXME: check there is an interaction handle
-			if (i.interactable == interactable_kind::BUTTON) { // TODO: change check to interaction_kind instead
-				fire_activator(adapter, i.interactable_handler); // TODO: check for distance from entity
+			if (c.interaction_handle) {
+				interaction &i = interactions[*c.interaction_handle];
+				if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
+					vec2 cell_center{decision.activate.column, decision.activate.line};
+					if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
+						fire_activator(adapter, i.interactable_handler);
+					}
+				}
 			}
 			break;
 		}
