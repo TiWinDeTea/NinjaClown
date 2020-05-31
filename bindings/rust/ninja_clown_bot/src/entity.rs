@@ -15,6 +15,16 @@ impl Properties {
     pub fn rotation_speed(&self) -> f32 {
         self.0.rotation_speed
     }
+
+    #[inline]
+    pub fn attack_range(&self) -> f32 {
+        self.0.attack_range
+    }
+
+    #[inline]
+    pub fn activate_range(&self) -> f32 {
+        self.0.activate_range
+    }
 }
 
 #[derive(Clone, Debug, Copy, PartialEq)]

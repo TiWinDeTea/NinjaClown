@@ -12,7 +12,7 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_MOVEMENT,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                movement: nnj_movement_request {
+                movement_req: nnj_movement_request {
                     rotation,
                     forward_diff,
                     lateral_diff,
@@ -25,7 +25,7 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_ATTACK,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                attack: nnj_attack_request { target_handle },
+                attack_req: nnj_attack_request { target_handle },
             },
         })
     }
@@ -34,7 +34,7 @@ impl Decision {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_ACTIVATE,
             __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
-                activate: nnj_activate_request { column, line },
+                activate_req: nnj_activate_request { column, line },
             },
         })
     }
@@ -42,7 +42,9 @@ impl Decision {
     pub fn throw() -> Self {
         Self(nnj_decision {
             kind: nnj_decision_kind::DK_THROW,
-            __bindgen_anon_1: nnj_decision__bindgen_ty_1::default(),
+            __bindgen_anon_1: nnj_decision__bindgen_ty_1 {
+                throw_req: nnj_throw_request { },
+            },
         })
     }
 
