@@ -11,11 +11,13 @@ use std::vec;
 #[derive(Debug)]
 pub struct UserData {
     ninja_handle: usize,
+    enemy_handle: usize,
     target: CellPos,
     button: CellPos,
     path: vec::IntoIter<CellPos>,
     current_target: Option<CellPos>,
     activated: bool,
+    is_going_to_button: bool,
 }
 
 pub fn init() {}
@@ -25,9 +27,12 @@ pub fn start_level(api: &mut Api) -> UserData {
     api.log_trace(api.map.to_string());
 
     let mut ninja_handle_opt = None;
+    let mut enemy_handle_opt = None;
     for entity in &api.entities {
-        if let EntityKind::Dll = entity.kind() {
-            ninja_handle_opt = Some(entity.handle());
+        match entity.kind() {
+            EntityKind::Harmless | EntityKind::Patrol | EntityKind::Aggressive => enemy_handle_opt = Some(entity.handle()),
+            EntityKind::Dll => ninja_handle_opt = Some(entity.handle()),
+            _ => {}
         }
     }
 
@@ -40,16 +45,27 @@ pub fn start_level(api: &mut Api) -> UserData {
 
     UserData {
         ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
+        enemy_handle: enemy_handle_opt.unwrap_or(usize::MAX),
         target: CellPos::new(2, 1),
         button: button_bos.expect("button not found"),
         path: Vec::new().into_iter(),
         current_target: None,
         activated: false,
+        is_going_to_button: false,
     }
 }
 
 pub fn think(api: &mut Api, data: &mut UserData) {
     let ninja_clown = api.entities.get(data.ninja_handle).expect("ninja clown not found");
+
+    if let Some(enemy) = api.entities.get(data.enemy_handle) {
+        let dist = absdiff(enemy.x(), ninja_clown.x()) + absdiff(enemy.y(), ninja_clown.y());
+        if dist < ninja_clown.properties().attack_range() {
+            api.commit_decisions(&[Decision::attack(data.enemy_handle).commit(data.ninja_handle)]);
+            api.log_info("Attack!");
+            return;
+        }
+    }
 
     // compute path graph
     if data.current_target.is_none() || api.map.changed() {
@@ -57,9 +73,11 @@ pub fn think(api: &mut Api, data: &mut UserData) {
         let graph = PathGraph::build(&api.map);
 
         let path = if let Some(path) = graph.path_to(&start, &data.target) {
+            data.is_going_to_button = false;
             api.log_info("Moving to the target!");
             path
         } else if let Some(path) = graph.path_to(&start, &data.button) {
+            data.is_going_to_button = true;
             api.log_info("Moving to the button!");
             path
         } else {
@@ -78,12 +96,12 @@ pub fn think(api: &mut Api, data: &mut UserData) {
     };
 
     let dist = absdiff(target.center_x(), ninja_clown.x()) + absdiff(target.center_y(), ninja_clown.y());
-    if dist < 0.6 {
-        let interaction = api.map.cell_at_pos(target).unwrap().interaction();
-        if !data.activated && interaction != InteractionKind::NoInteraction {
-            api.commit_decisions(&[Decision::activate(target.column(), target.line()).commit(data.ninja_handle)]);
-            data.activated = true;
-        } else if let Some(next_target) = data.path.next() {
+    let interaction = api.map.cell_at_pos(target).unwrap().interaction();
+    if dist < ninja_clown.properties().activate_range() && !data.activated && interaction != InteractionKind::NoInteraction && data.is_going_to_button {
+        api.commit_decisions(&[Decision::activate(target.column(), target.line()).commit(data.ninja_handle)]);
+        data.activated = true;
+    } else if dist < 0.5 {
+        if let Some(next_target) = data.path.next() {
             let decision = move_towards(ninja_clown, &next_target);
             api.commit_decisions(&[decision]);
             data.current_target = Some(next_target);
