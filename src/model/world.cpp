@@ -23,20 +23,25 @@ void model::world::reset() {
 	actionables.clear();
 
 	for (unsigned int i = 0; i < cst::max_entities; ++i) {
-		components.metadata[i]   = {};
-		components.properties[i] = {};
-		components.decision[i].reset();
-		components.health[i].reset();
-		components.hitbox[i].reset();
+		reset_entity(i);
 	}
 }
 
+void model::world::reset_entity(size_t handle) {
+	components.metadata[handle]   = {};
+	components.properties[handle] = {};
+	components.decision[handle].reset();
+	components.health[handle].reset();
+	components.hitbox[handle].reset();
+}
+
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
-	if (!components.decision[handle]) {
+	if (!components.decision[handle] || !components.hitbox[handle]) {
 		return;
 	}
 
 	component::decision &decision     = *components.decision[handle];
+	component::hitbox &hitbox         = *components.hitbox[handle];
 	component::properties &properties = components.properties[handle];
 
 	utils::visitor visitor{
@@ -65,14 +70,13 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			  float distance = components.hitbox[handle]
 			                     ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
 			                     .norm();
-			  if (distance < components.hitbox[handle]->half_height() && distance < components.hitbox[handle]->half_width()) {
+			  if (distance < components.hitbox[handle]->height() && distance < components.hitbox[handle]->width()) {
 				  spdlog::info("You win."); // TODO
 			  }
 		  }
 	  },
 	  [&](ninja_api::nnj_activate_request &activate_req) {
-		  component::hitbox &hitbox = *components.hitbox[handle];
-		  const cell &c             = grid[activate_req.column][activate_req.line];
+		  const cell &c = grid[activate_req.column][activate_req.line];
 		  if (c.interaction_handle) {
 			  interaction &i = interactions[*c.interaction_handle];
 			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
@@ -84,7 +88,16 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 		  }
 	  },
 	  [&](ninja_api::nnj_attack_request &attack_req) {
-
+		  if (components.health[attack_req.target_handle] && components.hitbox[attack_req.target_handle]) {
+			  component::hitbox &target_hitbox = *components.hitbox[attack_req.target_handle];
+			  if (hitbox.center.to(target_hitbox.center).norm() <= components.properties[handle].attack_range) {
+				  components.health[attack_req.target_handle]->points -= 1;
+				  if (components.health[attack_req.target_handle]->points == 0) {
+					  reset_entity(attack_req.target_handle);
+					  adapter.hide_entity(adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
+				  }
+			  }
+		  }
 	  },
 	  [&](ninja_api::nnj_throw_request &throw_req) {
 

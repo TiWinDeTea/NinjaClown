@@ -1,5 +1,5 @@
-#include <ninja_clown/api.h>
 #include <cpptoml.h>
+#include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
@@ -107,6 +107,19 @@ void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y
 	}
 	else {
 		spdlog::error("Move request for unknown entity {}", handle.handle);
+	}
+}
+
+void adapter::adapter::hide_entity(model_handle handle) noexcept {
+	auto it = m_model2view.find(handle);
+	if (it == m_model2view.end()) {
+		// todo externalize
+		spdlog::warn("Unknown handle encountered when trying to hide entity.");
+		spdlog::warn("Model handle value: {}", handle.handle);
+	}
+	else {
+		m_entities_changed_since_last_update.emplace_back(handle.handle);
+		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
 	}
 }
 

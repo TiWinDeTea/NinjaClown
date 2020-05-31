@@ -100,6 +100,7 @@ public:
 	const std::vector<model::grid_point> &cells_changed_since_last_update() noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
+	void hide_entity(model_handle entity) noexcept;
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
 	void clear_entities_changed_since_last_update() noexcept;
 	const std::vector<std::size_t> &entities_changed_since_last_update() noexcept;

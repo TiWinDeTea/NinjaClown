@@ -22,6 +22,7 @@ struct world {
 
 	void update(adapter::adapter &);
 	void reset();
+	void reset_entity(size_t handle);
 
 	grid_t grid{};
 
