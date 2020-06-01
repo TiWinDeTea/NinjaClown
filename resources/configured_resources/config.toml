@@ -2,6 +2,17 @@
     language.general="en"
     language.commands="en"
 
+    # TODO:
+    # language.log = ""  [liste déroulante] + "select lang file"
+    # font = ""          [liste déroulante] + "select font file"
+    # engine.tps = n     [champ d’entrée  ]
+    # volume = n         [curseur <---#-> ]
+    # resource_pack = "" [liste déroulante] + "select resource pack file"
+
+    # resource_pack : fichier config "graphics" comme si dessous + assets graphiques
+    #                 > proposer un pack en vue d’en haut plutôt qu’en vue isométrique
+
+
 [graphics]
     [graphics.mobs]
         list = ["player", "scientist"]

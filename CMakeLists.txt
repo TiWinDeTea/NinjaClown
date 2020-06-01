@@ -27,6 +27,7 @@ set(NINJA_CLOWN_SOURCES
         src/model/model.cpp
 
         src/utils/dll.cpp
+        src/utils/logging.cpp
         src/utils/resource_manager.cpp
 
         src/view/animation.cpp

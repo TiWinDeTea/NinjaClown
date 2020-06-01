@@ -15,8 +15,6 @@
 #include "view/object.hpp"
 #include "view/viewer.hpp"
 
-// TODO Effets sonores
-
 // TODO externalize error messages
 
 namespace {

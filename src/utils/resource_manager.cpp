@@ -1,6 +1,8 @@
 #include <cpptoml.h>
 #include <spdlog/spdlog.h>
 
+#include "utils/logging.hpp"
+
 #include "utils/resource_manager.hpp"
 #include "utils/resources_type.hpp"
 
@@ -72,16 +74,25 @@ namespace config_keys {
 		constexpr const char main_table[]    = "user";
 		constexpr const char general_lang[]  = "language.general";
 		constexpr const char commands_lang[] = "language.commands";
+		// TODO: .general = IHM & Carte + défauts pour les commandes et log
+		//       .commands
+		//       .log
 	} // namespace user
 
 	namespace lang::internal::commands {
-		constexpr const char main_name[]   = "internal.commands";
+		constexpr const char main_name[]   = "commands";
 		constexpr const char name[]        = "name";
 		constexpr const char description[] = "desc";
 	} // namespace lang::internal::commands
 
+	namespace lang::internal::log {
+		constexpr const char main_name[] = "log.entry";
+		constexpr const char id[]        = "id";
+		constexpr const char text[]      = "fmt";
+	} // namespace lang::internal::log
+
 	namespace lang::internal::variables {
-		constexpr const char main_name[] = "internal.variables";
+		constexpr const char main_name[] = "variables";
 		constexpr const char name[]      = "name";
 	} // namespace lang::internal::variables
 
@@ -132,7 +143,6 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 
 } // namespace
 
-
 bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	auto config = parse_file(path.generic_u8string());
 	if (!config) {
@@ -166,12 +176,20 @@ optional<const view::mob_animations &> resource_manager::mob_animations(resource
 	return {it->second};
 }
 
-std::optional<std::pair<std::string_view, std::string_view>> resource_manager::text_for(command_id cmd) const noexcept {
+utils::optional<std::pair<std::string_view, std::string_view>> resource_manager::text_for(command_id cmd) const noexcept {
 	auto it = m_commands_strings.find(cmd);
 	if (it == m_commands_strings.end()) {
 		return {};
 	}
 	return {it->second};
+}
+
+utils::optional<std::string_view> resource_manager::log_for(std::string_view key) const noexcept {
+	auto it = m_log_strings.find(key);
+	if (it != m_log_strings.end()) {
+		return {it->second};
+	}
+	return {};
 }
 
 bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {
@@ -480,22 +498,32 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 	auto general_lang  = lang_config->get_qualified_as<std::string>(user::general_lang);
 	auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
 
+	if (!general_lang) {
+		spdlog::error(R"({}: "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::general_lang, error_msgs::missing_key);
+		return false;
+	}
+
 	if (!commands_lang) {
-		if (!general_lang) {
-			spdlog::error(R"({}: "{}.{}" AND "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::commands_lang,
-			              user::main_table, user::general_lang, error_msgs::missing_key);
-			return false;
-		}
 		commands_lang = general_lang;
 	}
 
-	auto path               = resources_directory / lang_folder / (*commands_lang + ".toml");
-	auto commands_text_file = parse_file(path.generic_string());
+	std::filesystem::path path                    = resources_directory / lang_folder / (*general_lang + ".toml");
+	std::shared_ptr<cpptoml::table> log_text_file = parse_file(path.generic_string());
+	if (!log_text_file) {
+		spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
+		return false;
+	}
+
+	path                                               = resources_directory / lang_folder / (*commands_lang + ".toml");
+	std::shared_ptr<cpptoml::table> commands_text_file = parse_file(path.generic_string());
 	if (!commands_text_file) {
 		spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
 		return false;
 	}
-	return load_command_texts(commands_text_file);
+
+	bool success = load_logging_texts(log_text_file);
+	success      = load_command_texts(commands_text_file) && success;
+	return success;
 }
 
 bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
@@ -517,17 +545,58 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::name,
 			              error_msgs::missing_key);
 			result = false;
-			continue;
 		}
 		if (!desc) {
 			spdlog::error(R"({}: cmd lang file: "{}.{}.{}" {})", error_msgs::loading_failed, cmds::main_name, i, cmds::description,
 			              error_msgs::missing_key);
 			result = false;
-			continue;
 		}
 
 		m_commands_strings.emplace(static_cast<command_id>(i), std::pair{*name, *desc});
 	}
+	return result;
+}
+
+bool resource_manager::load_logging_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
+	namespace log_ns = config_keys::lang::internal::log;
+
+	std::shared_ptr<cpptoml::table_array> logs = lang_file->get_table_array_qualified(log_ns::main_name);
+	if (!logs) {
+		// log stuff
+		return false;
+	}
+
+	m_log_string_keys.reserve(logs->get().size());
+
+	bool result{true};
+	for (std::shared_ptr<cpptoml::table> &log : *logs) {
+		bool just_failed{false};
+
+		cpptoml::option<std::string> id = log->get_qualified_as<std::string>(log_ns::id);
+		if (!id) {
+			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, log_ns::main_name, log_ns::id,
+			             error_msgs::missing_key);
+			just_failed = true;
+		}
+
+		cpptoml::option<std::string> text = log->get_as<std::string>(log_ns::text);
+		if (!text) {
+			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, log_ns::main_name, log_ns::text,
+			             error_msgs::missing_key);
+			just_failed = true;
+		}
+
+		if (just_failed) {
+			result = false;
+		}
+		else {
+			assert(m_log_string_keys.capacity() > m_log_string_keys.size()
+			       && "m_log_strings uses pointers to the strings stored in m_log_string_keys");
+			m_log_string_keys.emplace_back(*id); // please std::move, cpptoml
+			m_log_strings.emplace(m_log_string_keys.back(), *text);
+		}
+	}
+
 	return result;
 }
 

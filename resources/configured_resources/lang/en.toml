@@ -1,50 +1,51 @@
-[internal]
-    [internal.commands.@COMMANDS_CLEARID@]
+[commands]
+    [commands.@COMMANDS_CLEARID@]
         name = "clear"
         desc = "clears the terminal screen"
-    [internal.commands.@COMMANDS_ECHOID@]
+    [commands.@COMMANDS_ECHOID@]
         name = "echo"
         desc = "prints text"
-    [internal.commands.@COMMANDS_EXITID@]
+    [commands.@COMMANDS_EXITID@]
         name = "exit"
         desc = "closes this terminal"
-    [internal.commands.@COMMANDS_HELPID@]
+    [commands.@COMMANDS_HELPID@]
         name = "help"
         desc = "show this help"
-    [internal.commands.@COMMANDS_PRINTID@]
+    [commands.@COMMANDS_PRINTID@]
         name = "print"
         desc = "prints text"
-    [internal.commands.@COMMANDS_QUITID@]
+    [commands.@COMMANDS_QUITID@]
         name = "quit"
         desc = "closes this application"
-    [internal.commands.@COMMANDS_LOAD_DLLID@]
+    [commands.@COMMANDS_LOAD_DLLID@]
         name = "load_dll"
         desc = "loads a shared library"
-    [internal.commands.@COMMANDS_LOAD_MAPID@]
+    [commands.@COMMANDS_LOAD_MAPID@]
         name = "load_map"
         desc = "loads map from file"
-    [internal.commands.@COMMANDS_UPDATE_WORLDID@]
+    [commands.@COMMANDS_UPDATE_WORLDID@]
         name = "update_world"
         desc = "update world once"
-    [internal.commands.@COMMANDS_SETID@]
+    [commands.@COMMANDS_SETID@]
         name = "set"
         desc = "sets a variable"
-    [internal.commands.@COMMANDS_VALUEOFID@]
+    [commands.@COMMANDS_VALUEOFID@]
         name = "valueof"
         desc = "prints the value of a game variable"
-    [internal.commands.@COMMANDS_RELOAD_RESOURCES@]
+    [commands.@COMMANDS_RELOAD_RESOURCES@]
         name = "reconfigure"
         desc = "reloads resources and configurations files"
-    [internal.commands.@COMMANDS_FIRE_ACTIONABLE@]
+    [commands.@COMMANDS_FIRE_ACTIONABLE@]
         name = "fire_actionable"
         desc = "sends a signal to an actionable (eg: opens/closes a door)"
-    [internal.commands.@COMMANDS_FIRE_ACTIVATOR@]
+    [commands.@COMMANDS_FIRE_ACTIVATOR@]
         name = "fire_activator"
         desc = "sends a signal to an activator (eg: presses a button)"
 
-    [internal.variables.@VARIABLES_AVERAGE_FPSID@]
+[variables]
+    [variables.@VARIABLES_AVERAGE_FPSID@]
         name = "average_fps"
-    [internal.variables.@VARIABLES_TARGET_FPSID@]
+    [variables.@VARIABLES_TARGET_FPSID@]
         name = "target_fps"
-    [internal.variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
+    [variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
         name = "display_dbg_data"

@@ -27,6 +27,9 @@ namespace resources_type {
 	enum class tile_id;
 } // namespace resources_type
 
+// TODO Effets sonores
+// TODO Choix de police d’écriture (principalement pour le support des caractères)
+
 class resource_manager {
 	static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
 
@@ -40,7 +43,6 @@ class resource_manager {
 	} m_tiles_infos{};
 
 public:
-
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
 
 	[[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
@@ -58,11 +60,14 @@ public:
 
 	[[nodiscard]] utils::optional<const view::mob_animations &> mob_animations(resources_type::mob_id) const noexcept;
 
-	[[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
+	[[nodiscard]] utils::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
+
+    [[nodiscard]] utils::optional<std::string_view> log_for(std::string_view key) const noexcept;
 
 	[[nodiscard]] const tiles_infos_t &tiles_infos() const noexcept {
 		return m_tiles_infos;
 	}
+
 
 private:
 	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config) noexcept;
@@ -77,6 +82,7 @@ private:
 
 	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept;
 	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
+	[[nodiscard]] bool load_logging_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 
 	sf::Texture *get_texture(const std::string &file) noexcept;
 
@@ -88,6 +94,8 @@ private:
 	std::unordered_map<resources_type::mob_id, view::mob_animations> m_mobs_anims{};
 
 	std::unordered_map<command_id, std::pair<std::string, std::string>> m_commands_strings{};
+	std::unordered_map<std::string_view, std::string> m_log_strings{};
+	std::vector<std::string> m_log_string_keys{};
 };
 } // namespace utils
 

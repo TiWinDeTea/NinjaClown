@@ -59,12 +59,12 @@ state::holder::holder(const std::filesystem::path &config, const std::filesystem
 
 	using view::viewer;
 
-	m_pimpl->properties.emplace("average_fps", property{&viewer::average_fps, m_pimpl->view});
+	m_pimpl->properties.emplace("average_fps", property{&viewer::average_fps, m_pimpl->view}); // TODO translations
 
 	m_pimpl->properties.emplace("target_fps",
-	                   property::proxy<unsigned int>::from_accessor<viewer>(m_pimpl->view, &viewer::target_fps, &viewer::target_fps));
+	                   property::proxy<unsigned int>::from_accessor<viewer>(m_pimpl->view, &viewer::target_fps, &viewer::target_fps)); // TODO translations
 
-	m_pimpl->properties.emplace("display_debug_data", property{&viewer::show_debug_data, m_pimpl->view});
+	m_pimpl->properties.emplace("display_debug_data", property{&viewer::show_debug_data, m_pimpl->view}); // TODO translations
 
 	m_pimpl->command_manager->load_commands(m_pimpl->resources);
 	if (is_regular_file(autorun_script)) {
