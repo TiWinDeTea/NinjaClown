@@ -48,3 +48,66 @@
         name = "fps_cible"
     [variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
         name = "afficher_indices_debogage"
+
+[log]
+    [[log.entry]]
+        id = "terminal_commands.command_missing_name"
+        fmt = "La commande {cmd_id} n’est associée à aucun nom d’appel"
+
+    [[log.entry]]
+        id = "terminal_commands.load_dll.usage"
+        fmt = "Utilisation : {arg0} <chemin vers la bibliothèque>"
+    [[log.entry]]
+        id = "terminal_commands.load_dll.loading"
+        fmt = "{dll_path} : chargement en cours"
+    [[log.entry]]
+        id = "terminal_commands.load_dll.loading_failed"
+        fmt = "Échec du chargement"
+
+    [[log.entry]]
+        id = "terminal_commands.load_map.usage"
+        fmt = "Utilisation : {arg0} <chemin vers la carte>"
+
+    [[log.entry]]
+        id = "terminal_commands.set.usage"
+        fmt = "Utilisation : {arg0} <variable> <valeur>"
+    [[log.entry]]
+        id = "terminal_commands.set.unknown_var"
+        fmt = "{var_name} : variable non reconnue"
+    [[log.entry]]
+        id = "terminal_commands.set.need_uint"
+        fmt = "{value} n’est pas un entier positif"
+    [[log.entry]]
+        id = "terminal_commands.set.is_read_only"
+        fmt = "Erreur : {var_name} est en lecture seule"
+
+    [[log.entry]]
+        id = "terminal_commands.get.usage"
+        fmt = "Utilisation : {arg0} <variable>"
+    [[log.entry]]
+        id = "terminal_commands.get.unknown_var"
+        fmt = "{var_name} : variable non reconnue"
+
+    [[log.entry]]
+        id = "terminal_commands.reload.usage"
+        fmt = "Utilisation : {arg0} <fichier de config>"
+    [[log.entry]]
+        id = "terminal_commands.reload.fail"
+        fmt = "Erreur lors du chargement du fichier {file_path}"
+    [[log.entry]]
+        id = "terminal_commands.reload.success"
+        fmt = "{file_path}: configuration chargée avec succès"
+
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.usage"
+        fmt = "Utilisation : {arg0} <id d’activateur>"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.need_uint"
+        fmt = "Erreur : l’id {value} n’est pas un entier positif"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.too_high"
+        fmt = "Erreur : l’id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
+
+    [[log.entry]]
+        id = "terminal_commands.general.help"
+        fmt = "Commandes disponibles :"

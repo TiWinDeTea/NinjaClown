@@ -49,3 +49,66 @@
         name = "target_fps"
     [variables.@VARIABLES_DISPLAY_DEBUG_DATAID@]
         name = "display_dbg_data"
+
+[log]
+    [[log.entry]]
+        id = "terminal_commands.command_missing_name"
+        fmt = "No name found for command {cmd_id}"
+
+    [[log.entry]]
+        id = "terminal_commands.load_dll.usage"
+        fmt = "Usage: {arg0} <shared library path>"
+    [[log.entry]]
+        id = "terminal_commands.load_dll.loading"
+        fmt = "loading {dll_path}"
+    [[log.entry]]
+        id = "terminal_commands.load_dll.loading_failed"
+        fmt = "error loading library"
+
+    [[log.entry]]
+        id = "terminal_commands.load_map.usage"
+        fmt = "Usage: {arg0} <map path>"
+
+    [[log.entry]]
+        id = "terminal_commands.set.usage"
+        fmt = "Usage: {arg0} <variable> <value>"
+    [[log.entry]]
+        id = "terminal_commands.set.unknown_var"
+        fmt = "Unknown variable: {var_name}"
+    [[log.entry]]
+        id = "terminal_commands.set.need_uint"
+        fmt = "{value} is not an unsigned integer."
+    [[log.entry]]
+        id = "terminal_commands.set.is_read_only"
+        fmt = "Error: {var_name} is read-only"
+
+    [[log.entry]]
+        id = "terminal_commands.get.usage"
+        fmt = "Usage: {arg0} <variable>"
+    [[log.entry]]
+        id = "terminal_commands.get.unknown_var"
+        fmt = "Unknown variable: {var_name}"
+
+    [[log.entry]]
+        id = "terminal_commands.reload.usage"
+        fmt = "usage: {arg0} <config file>"
+    [[log.entry]]
+        id = "terminal_commands.reload.fail"
+        fmt = "failed to reload resources from {file_path}"
+    [[log.entry]]
+        id = "terminal_commands.reload.success"
+        fmt = "{file_path}: resources successfully reloaded"
+
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.usage"
+        fmt = "Usage: {arg0} <activator id>"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.need_uint"
+        fmt = "Activator id should be an integer (got {value})"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.too_high"
+        fmt = "Invalid value (got {value}, max {max_value})"
+
+    [[log.entry]]
+        id = "terminal_commands.general.help"
+        fmt = "Available commands:"

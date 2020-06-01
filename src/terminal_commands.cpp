@@ -12,6 +12,7 @@
 #include "model/model.hpp"
 #include "model/world.hpp"
 #include "state_holder.hpp"
+#include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/utils.hpp"
 #include "utils/visitor.hpp"
@@ -19,7 +20,33 @@
 
 // TODO translations
 
+using namespace fmt::literals;
+
 namespace {
+std::string log_get_or_gen(const terminal_commands::argument_type &arg, std::string_view key) {
+	return utils::log::get_or_gen(arg.val.resources(), key);
+}
+
+template <typename... Args>
+void log_formatted(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
+	std::string fmt = log_get_or_gen(arg, key);
+	try {
+		arg.term.add_formatted(fmt.c_str(), std::forward<Args>(args)...);
+	} catch (const fmt::format_error& error) {
+		spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
+	}
+}
+
+template <typename... Args>
+void log_formatted_err(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
+    std::string fmt = log_get_or_gen(arg, key);
+    try {
+        arg.term.add_formatted_err(fmt.c_str(), std::forward<Args>(args)...);
+    } catch (const fmt::format_error& error) {
+        spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
+    }
+}
+
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
 }
@@ -71,8 +98,8 @@ void terminal_commands::load_commands(const utils::resource_manager &resources) 
 
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
-			std::string error = "No name found for command " + std::to_string(static_cast<int>(cmd.cmd));
-			spdlog::warn(error);
+			utils::log::warn(resources, "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
+			// continue;
 		}
 
 		auto [name, desc] = *maybe_command;
@@ -120,33 +147,23 @@ void terminal_commands::echo(argument_type &arg) {
 		arg.term.add_text("");
 		return;
 	}
-	if (arg.command_line[1][0] == '-') {
-		if (arg.command_line[1] == "--help" || arg.command_line[1] == "-help") {
-			arg.term.add_text("usage: " + arg.command_line[0] + "[text to be printed]");
-		}
-		else {
-			arg.term.add_text("Unknown argument: " + arg.command_line[1]);
-		}
+	std::string str{};
+	auto it = std::next(arg.command_line.begin(), 1);
+	while (it != arg.command_line.end() && it->empty()) {
+		++it;
 	}
-	else {
-		std::string str{};
-		auto it = std::next(arg.command_line.begin(), 1);
-		while (it != arg.command_line.end() && it->empty()) {
-			++it;
-		}
-		if (it != arg.command_line.end()) {
-			str = *it;
-			for (++it; it != arg.command_line.end(); ++it) {
-				if (it->empty()) {
-					continue;
-				}
-				str.reserve(str.size() + it->size() + 1);
-				str += ' ';
-				str += *it;
+	if (it != arg.command_line.end()) {
+		str = *it;
+		for (++it; it != arg.command_line.end(); ++it) {
+			if (it->empty()) {
+				continue;
 			}
+			str.reserve(str.size() + it->size() + 1);
+			str += ' ';
+			str += *it;
 		}
-		arg.term.add_text(str);
 	}
+	arg.term.add_text(str);
 }
 
 void terminal_commands::exit(argument_type &arg) {
@@ -158,7 +175,7 @@ void terminal_commands::help(argument_type &arg) {
 	for (const auto &cmd : local_command_list) {
 		auto opt = arg.val.resources().text_for(cmd.cmd);
 		if (!opt) {
-			spdlog::warn("No name found for command {}", static_cast<int>(cmd.cmd));
+			utils::log::warn(arg.val.resources(), "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
 			continue;
 		}
 		auto [name, desc] = *opt;
@@ -182,13 +199,11 @@ void terminal_commands::help(argument_type &arg) {
 		arg.term.add_text(str);
 	};
 
-	arg.term.add_text("Available commands:");
+	arg.term.add_text(log_get_or_gen(arg, "terminal_commands.general.help"));
 	for (const auto &cmd : commands) {
 		add_cmd(cmd.first, cmd.second);
 	}
-
 	arg.term.add_text("");
-	arg.term.add_text("Additional information might be available using \"'command' --help\""); // todo externaliser
 }
 
 void terminal_commands::quit(argument_type &arg) {
@@ -197,21 +212,21 @@ void terminal_commands::quit(argument_type &arg) {
 
 void terminal_commands::load_shared_library(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
-		arg.term.add_text("usage: " + arg.command_line[0] + " <shared_library_path>"); // todo externaliser
+		log_formatted_err(arg, "terminal_commands.load_shared_library.usage", "arg0"_a = arg.command_line[0]);
 		return;
 	}
 
-	std::string shared_library_path = arg.command_line[1];
-	arg.term.add_text("loading " + shared_library_path); // todo externaliser
+	const std::string &shared_library_path = arg.command_line[1];
+	log_formatted(arg, "terminal_commands.load_dll.loading", "dll_path"_a = shared_library_path);
 
 	if (!arg.val.model().load_dll(shared_library_path)) {
-		arg.term.add_text("error loading dll"); // todo externaliser
+		arg.term.add_text(log_get_or_gen(arg, "terminal_commands.load_dll.loading_failed"));
 	}
 }
 
 void terminal_commands::load_map(argument_type &arg) {
 	if (arg.command_line.size() < 2) {
-		arg.term.add_text("usage: " + arg.command_line[0] + " <map_path>");
+		log_formatted_err(arg, "terminal_commands.load_map.usage", "arg0"_a = arg.command_line[0]);
 		return;
 	}
 
@@ -241,7 +256,7 @@ void terminal_commands::set(argument_type &arg) {
 	if (arg.command_line.size() == 3) {
 		auto it = arg.val.properties().find(arg.command_line[1]);
 		if (it == arg.val.properties().end()) {
-			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line[1]); // TODO externaliser
+			log_formatted_err(arg, "terminal_commands.set.unknown_var", "var_name"_a = arg.command_line[1]);
 			return;
 		}
 
@@ -251,16 +266,16 @@ void terminal_commands::set(argument_type &arg) {
 				                                p.set(*value);
 			                                }
 			                                else {
-				                                arg.term.add_formatted_err("{} is not an unsigned integer.",
-				                                                           arg.command_line.back()); // TODO externaliser
+				                                log_formatted_err(arg, "terminal_commands.set.need_uint",
+				                                                  "value"_a = arg.command_line.back());
 			                                }
 		                                },
 		                                [&](state::property::proxy<std::atomic_bool> &p) {
 			                                p.set(as_bool(arg.command_line.back()));
 		                                }};
 		utils::visitor property_dispatcher{[&](const state::property::readonly_property & /* ignored*/) {
-			                                   arg.term.add_formatted_err("Error: {} is read-only",
-			                                                              arg.command_line.back()); // TODO externaliser
+			                                   log_formatted_err(arg, "terminal_commands.set.is_read_only",
+			                                                     "var_name"_a = arg.command_line[1]);
 		                                   },
 		                                   [&](state::property::settable_property p) {
 			                                   std::visit(property_visitor, p);
@@ -269,7 +284,7 @@ void terminal_commands::set(argument_type &arg) {
 		std::visit(property_dispatcher, it->second.data());
 	}
 	else {
-		arg.term.add_formatted("usage: {} <variable> <value>", arg.command_line.front()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.set.usage", "arg0"_a = arg.command_line.front());
 	}
 }
 
@@ -277,7 +292,7 @@ void terminal_commands::valueof(argument_type &arg) {
 	if (arg.command_line.size() == 2) {
 		auto it = arg.val.properties().find(arg.command_line.back());
 		if (it == arg.val.properties().end()) {
-			arg.term.add_formatted_err("Unknown variable : {}", arg.command_line.back()); // TODO externaliser
+			log_formatted_err(arg, "terminal_commands.get.unknown_var", "var_name"_a = arg.command_line[1]);
 			return;
 		}
 
@@ -303,21 +318,21 @@ void terminal_commands::valueof(argument_type &arg) {
 		std::visit(property_dispatcher, it->second.data());
 	}
 	else {
-		arg.term.add_formatted("usage: {} <variable>", arg.command_line.front()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.get.usage", "arg0"_a = arg.command_line.front());
 	}
 }
 
 void terminal_commands::reconfigure(argument_type &arg) {
 	if (arg.command_line.size() != 2) {
-		arg.term.add_formatted("usage: {} <config file>", arg.command_line.front()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.reload.usage", "arg0"_a = arg.command_line.front());
 		return;
 	}
 
 	if (!arg.val.resources().reload(arg.command_line.back())) {
-		arg.term.add_formatted("failed to reload resources from {}", arg.command_line.back()); // TODO externaliser
+		log_formatted(arg, "terminal_commands.reload.fail", "file_path"_a = arg.command_line.back());
 	}
 	else {
-		arg.term.add_formatted("{}: resources successfully reloaded", arg.command_line.back()); // TODO externaliser
+		log_formatted(arg, "terminal_commands.reload.success", "file_path"_a = arg.command_line.back());
 		arg.val.view().reload_sprites();
 		arg.val.terminal().get_terminal_helper()->load_commands(arg.val.resources());
 	}
@@ -346,19 +361,19 @@ void terminal_commands::fire_activator(argument_type &arg) {
 
 void terminal_commands::fire_actionable(argument_type &arg) {
 	if (arg.command_line.size() != 2) {
-		arg.term.add_formatted("usage: {} <actionable id>", arg.command_line.front()); // TODO externaliser
+		log_formatted(arg, "terminal_commands.fire_activator.usage", "arg0"_a = arg.command_line.front());
 		return;
 	}
 
 	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
 	if (!val) {
-		arg.term.add_formatted("activator id should be an integer (got {})", arg.command_line.back()); // TODO externaliser
+		log_formatted(arg, "terminal_commands.fire_activator.need_uint", "value"_a = arg.command_line.back());
 		return;
 	}
 
 	if (*val > arg.val.model().world.actionables.size()) {
-		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
-		                       arg.val.model().world.actionables.size()); // TODO externaliser
+		log_formatted(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
+		              "max_value"_a = arg.val.model().world.actionables.size());
 		return;
 	}
 	arg.val.model().world.fire_actionable(arg.val.adapter(), *val);
