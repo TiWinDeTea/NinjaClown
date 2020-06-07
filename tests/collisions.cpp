@@ -9,7 +9,7 @@ bool operator==(const model::vec2 &a, const model::vec2 &b) {
 }
 
 SCENARIO("OBB OBB SAT collisions") {
-	model::component::hitbox a{1.5, 1.5, 0.5, 0.5};
+	model::component::hitbox a{1.5f, 1.5f, 0.5f, 0.5f};
 
 	model::obb a_box{a};
 
@@ -17,27 +17,27 @@ SCENARIO("OBB OBB SAT collisions") {
 	model::obb rotated_a_box{a};
 
 	GIVEN("Points A") {
-		CHECK(a_box.tl == model::vec2{1, 2});
-		CHECK(a_box.tr == model::vec2{2, 2});
-		CHECK(a_box.bl == model::vec2{1, 1});
-		CHECK(a_box.br == model::vec2{2, 1});
+		CHECK(a_box.tl == model::vec2{1.f, 2.f});
+		CHECK(a_box.tr == model::vec2{2.f, 2.f});
+		CHECK(a_box.bl == model::vec2{1.f, 1.f});
+		CHECK(a_box.br == model::vec2{2.f, 1.f});
 
-		CHECK(rotated_a_box.tl == model::vec2{2, 1});
-		CHECK(rotated_a_box.tr == model::vec2{1, 1});
-		CHECK(rotated_a_box.bl == model::vec2{2, 2});
-		CHECK(rotated_a_box.br == model::vec2{1, 2});
+		CHECK(rotated_a_box.tl == model::vec2{2.f, 1.f});
+		CHECK(rotated_a_box.tr == model::vec2{1.f, 1.f});
+		CHECK(rotated_a_box.bl == model::vec2{2.f, 2.f});
+		CHECK(rotated_a_box.br == model::vec2{1.f, 2.f});
 	}
 
-	model::component::hitbox b{4, 3, 0.42, 0.42};
+	model::component::hitbox b{4.f, 3.f, 0.42f, 0.42f};
 
 	b.rad = uni::math::pi_4<float>;
 	model::obb b_box{b};
 
 	GIVEN("Points B") {
-		CHECK(b_box.tl == model::vec2{3.4, 3});
-		CHECK(b_box.tr == model::vec2{4, 3.6});
-		CHECK(b_box.bl == model::vec2{4, 2.4});
-		CHECK(b_box.br == model::vec2{4.6, 3});
+		CHECK(b_box.tl == model::vec2{3.4f, 3.f});
+		CHECK(b_box.tr == model::vec2{4.f, 3.6f});
+		CHECK(b_box.bl == model::vec2{4.f, 2.4f});
+		CHECK(b_box.br == model::vec2{4.6f, 3.f});
 	}
 
 	GIVEN("Axises") {
@@ -47,7 +47,7 @@ SCENARIO("OBB OBB SAT collisions") {
 		CHECK(b_box.tl.to(b_box.tr).atan2() == Approx(uni::math::pi_4<float>).margin(0.01));
 	}
 
-	model::component::hitbox c{0.8, 2, 0.31, 0.31};
+	model::component::hitbox c{0.8f, 2.f, 0.31f, 0.31f};
 	c.rad = uni::math::pi_4<float>;
 	model::obb c_box{c};
 
