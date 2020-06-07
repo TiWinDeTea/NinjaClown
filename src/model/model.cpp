@@ -64,7 +64,7 @@ void model::model::do_run() noexcept {
 	m_fps_limiter.start_now();
 
 	while (m_state != thread_state::stopping) {
-		bot_think();
+		bot_think(); // FIXME: segfault if we loaded dll twice (linux only?)
 
 		adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
 		adapter.clear_cells_changed_since_last_update();

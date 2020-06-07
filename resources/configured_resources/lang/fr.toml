@@ -103,7 +103,7 @@
         fmt = "Utilisation : {arg0} <id d’activateur>"
     [[log.entry]]
         id = "terminal_commands.fire_activator.need_uint"
-        fmt = "Erreur : l’id {value} n’est pas un entier positif"
+        fmt = "Erreur : l’id \"{value}\" n’est pas un entier positif"
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
         fmt = "Erreur : l’id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
@@ -111,3 +111,13 @@
     [[log.entry]]
         id = "terminal_commands.general.help"
         fmt = "Commandes disponibles :"
+
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.usage"
+        fmt = "Utilisation: {arg0} <id d'activateur>"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.need_uint"
+        fmt = "Erreur : l'id \"{value}\" n’est pas un entier positif valide"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.too_high"
+        fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"

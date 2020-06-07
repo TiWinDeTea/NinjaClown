@@ -32,19 +32,21 @@ void log_formatted(terminal_commands::argument_type &arg, std::string_view key, 
 	std::string fmt = log_get_or_gen(arg, key);
 	try {
 		arg.term.add_formatted(fmt.c_str(), std::forward<Args>(args)...);
-	} catch (const fmt::format_error& error) {
+	}
+	catch (const fmt::format_error &error) {
 		spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
 	}
 }
 
 template <typename... Args>
 void log_formatted_err(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
-    std::string fmt = log_get_or_gen(arg, key);
-    try {
-        arg.term.add_formatted_err(fmt.c_str(), std::forward<Args>(args)...);
-    } catch (const fmt::format_error& error) {
-        spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
-    }
+	std::string fmt = log_get_or_gen(arg, key);
+	try {
+		arg.term.add_formatted_err(fmt.c_str(), std::forward<Args>(args)...);
+	}
+	catch (const fmt::format_error &error) {
+		spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
+	}
 }
 
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
@@ -340,19 +342,19 @@ void terminal_commands::reconfigure(argument_type &arg) {
 
 void terminal_commands::fire_activator(argument_type &arg) {
 	if (arg.command_line.size() != 2) {
-		arg.term.add_formatted("usage: {} <activator id>", arg.command_line.front()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.fire_activator.usage", "arg0"_a = arg.command_line.front());
 		return;
 	}
 
 	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
 	if (!val) {
-		arg.term.add_formatted("activator id should be an integer (got {})", arg.command_line.back()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.fire_activator.need_uint", "value"_a = arg.command_line.back());
 		return;
 	}
 
 	if (*val > arg.val.model().world.activators.size()) {
-		arg.term.add_formatted("Invalid value (got {}, max {})", arg.command_line.back(),
-		                       arg.val.model().world.activators.size()); // TODO externaliser
+		log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
+		                  "max_value"_a = arg.val.model().world.activators.size());
 		return;
 	}
 
@@ -361,18 +363,18 @@ void terminal_commands::fire_activator(argument_type &arg) {
 
 void terminal_commands::fire_actionable(argument_type &arg) {
 	if (arg.command_line.size() != 2) {
-		log_formatted(arg, "terminal_commands.fire_activator.usage", "arg0"_a = arg.command_line.front());
+		log_formatted_err(arg, "terminal_commands.fire_activator.usage", "arg0"_a = arg.command_line.front());
 		return;
 	}
 
 	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
 	if (!val) {
-		log_formatted(arg, "terminal_commands.fire_activator.need_uint", "value"_a = arg.command_line.back());
+		log_formatted_err(arg, "terminal_commands.fire_activator.need_uint", "value"_a = arg.command_line.back());
 		return;
 	}
 
 	if (*val > arg.val.model().world.actionables.size()) {
-		log_formatted(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
+		log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
 		              "max_value"_a = arg.val.model().world.actionables.size());
 		return;
 	}

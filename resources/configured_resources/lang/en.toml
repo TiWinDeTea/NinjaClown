@@ -60,10 +60,10 @@
         fmt = "Usage: {arg0} <shared library path>"
     [[log.entry]]
         id = "terminal_commands.load_dll.loading"
-        fmt = "loading {dll_path}"
+        fmt = "Loading {dll_path}"
     [[log.entry]]
         id = "terminal_commands.load_dll.loading_failed"
-        fmt = "error loading library"
+        fmt = "Error loading library"
 
     [[log.entry]]
         id = "terminal_commands.load_map.usage"
@@ -91,10 +91,10 @@
 
     [[log.entry]]
         id = "terminal_commands.reload.usage"
-        fmt = "usage: {arg0} <config file>"
+        fmt = "Usage: {arg0} <config file>"
     [[log.entry]]
         id = "terminal_commands.reload.fail"
-        fmt = "failed to reload resources from {file_path}"
+        fmt = "Failed to reload resources from {file_path}"
     [[log.entry]]
         id = "terminal_commands.reload.success"
         fmt = "{file_path}: resources successfully reloaded"
@@ -104,11 +104,21 @@
         fmt = "Usage: {arg0} <activator id>"
     [[log.entry]]
         id = "terminal_commands.fire_activator.need_uint"
-        fmt = "Activator id should be an integer (got {value})"
+        fmt = "Activator id should be a positive integer (got \"{value}\")"
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
-        fmt = "Invalid value (got {value}, max {max_value})"
+        fmt = "Invalid value (got: {value}, max: {max_value})"
 
     [[log.entry]]
         id = "terminal_commands.general.help"
         fmt = "Available commands:"
+
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.usage"
+        fmt = "Usage: {arg0} <activator id>"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.invalid_integer"
+        fmt = "Activator id should be a positive integer (got \"{value}\")"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.invalid_value"
+        fmt = "Invalid value (got: {value}, max: {max_value})"
