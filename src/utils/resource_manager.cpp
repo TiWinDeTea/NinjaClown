@@ -14,7 +14,8 @@ std::shared_ptr<cpptoml::table> parse_file(const std::string &path) {
 	try {
 		return cpptoml::parse_file(path);
 	}
-	catch (const cpptoml::parse_exception &) {
+	catch (const cpptoml::parse_exception &e) {
+		spdlog::error("{}", e.what());
 		return {};
 	}
 }
@@ -146,7 +147,6 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	auto config = parse_file(path.generic_u8string());
 	if (!config) {
-		spdlog::error("OHNO"); // TODO
 		return false;
 	}
 	return load_graphics(config) && load_texts(config, path.parent_path());
@@ -510,14 +510,12 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 	std::filesystem::path path                    = resources_directory / lang_folder / (*general_lang + ".toml");
 	std::shared_ptr<cpptoml::table> log_text_file = parse_file(path.generic_string());
 	if (!log_text_file) {
-		spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
 		return false;
 	}
 
 	path                                               = resources_directory / lang_folder / (*commands_lang + ".toml");
 	std::shared_ptr<cpptoml::table> commands_text_file = parse_file(path.generic_string());
 	if (!commands_text_file) {
-		spdlog::error("Failed to parse file {}", path.generic_string()); // TODO externalize
 		return false;
 	}
 
