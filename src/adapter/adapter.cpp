@@ -25,7 +25,9 @@ bool tooltip_text_prefix(utils::resource_manager &res, std::string_view key, cha
 		return true;
 	}
 
-	ImGui::Text("MISSING LOCALIZATION: %s", key);
+	std::string key_string{key};
+	ImGui::Text("MISSING LOCALIZATION: %s", key_string.c_str());
+
 	return false;
 }
 
@@ -152,7 +154,7 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
 		view.acquire_overmap()->rotate_entity(m_state.resources(), it->second, view::facing_direction::from_angle(new_rad));
-		m_entities_changed_since_last_update.emplace_back(handle.handle);
+		m_entities_changed_since_last_update.emplace_back(entity.handle);
 	}
 	else {
 		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
