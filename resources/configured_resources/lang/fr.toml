@@ -42,6 +42,7 @@
         name = "activateur"
         desc = "Envoie un signal à un activateur (ex : appuyer sur un bouton)"
 
+[variables]
     [variables.@VARIABLES_AVERAGE_FPSID@]
         name = "fps_moyen"
     [variables.@VARIABLES_TARGET_FPSID@]
@@ -165,6 +166,64 @@
     [[log.entry]]
         id = "bot_dll.required_load_failed"
         fmt = "Fonction facultative {func_name} chargée depuis {file}"
+
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.unknown_mob_reference"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : le mob {mob} est utilisé avant sa déclaration"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_missing_name"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : nom manquant pour un mob (clef: {key})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_missing_hp"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : PV non spécifiés pour le mob {name} (clef: {key})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_missing_sprite"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : sprite non spécifié pour le mob {name} (clef: {key})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_missing_behaviour"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : comportement non spécifié pour le mob {name} (clef: {key})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_with_unknown_type"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : type non spécifié pour un mob (clef: {})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_type_not_recognized"
+        fmt = "(type spécifié ({type}) non reconnu)"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.mob_spawn_missing_component"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : la clef {key} est manquante (lors du chargement des information de la section 'spawn') (type de mob : {type})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_with_unknown_type"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : clef '{key}' manquante pour un acteur (type de l’acteur inconnu)"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_missing_component"
+        fmt = "Erreur lors du chargement de la carte\"{map}\" : clef '{key}' manquante pour un acteur (type de l’acteur : {type})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_duplication"
+        fmt = "Attention : l’acteur '{actor}' est dupliqué (dans la carte \"{map}\")"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_with_unrecognized_type"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : le type d’acteur '{type}' n’est pas connu (clef: {key})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_with_no_target"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' n’a pas de cible sur laquelle agir (clef : {key}) (la valeur est peut-être malformée)"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.actor_with_unknown_target"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' à pour cible \"{target}\", qui n’est pas connue"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_mob_def"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'mobs.definition' est maquante"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_mob_placings"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'mobs.spawn' manquante"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_actors"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'actors.spawn' manquante"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_map_layout"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : entrée 'map.layout' manquante"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_dialogs"
+        fmt = "Un acteur a besoin du dialogue \"{dialog_name}\", mais la section 'dialog' est vide ou manquante (lors de chargement de la carte \"{map}\")"
 
     [[log.entry]]
         id = "adapter.map_load_failure"

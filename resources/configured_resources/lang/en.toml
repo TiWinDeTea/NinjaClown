@@ -254,6 +254,7 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.bad_map_char"
         fmt = "Error while parsing map \"{map}\": unknown character '{char}' in map layout ({line}:{column})"
+
     [[log.entry]]
         id = "adapter.map_load_failure"
         fmt = "Failed to load map \"{path}\": {reason}"
