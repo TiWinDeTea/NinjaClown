@@ -7,6 +7,7 @@
 #include "model/components.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
+#include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
 #include "view/facing_dir.hpp"
@@ -15,7 +16,7 @@
 #include "view/object.hpp"
 #include "view/viewer.hpp"
 
-// TODO externalize error messages
+using fmt::literals::operator""_a;
 
 namespace {
 
@@ -121,12 +122,6 @@ usmap<mob_behaviour> globstr_to_behaviour;
 usmap<mob_sprite> globstr_to_mob_sprite;
 usmap<activator_type> globstr_to_activator_type;
 
-template <typename... Args>
-void perror(std::string_view map, std::string_view fmt, Args &&... args) {
-	spdlog::error("Error while parsing map \"{}\"", map);
-	spdlog::error(fmt, std::forward<Args>(args)...);
-}
-
 template <typename T, typename... Args>
 bool try_get_silent(const std::shared_ptr<cpptoml::table> &table, const char *key, T &value) {
 	cpptoml::option<T> maybe_value = table->get_qualified_as<T>(key);
@@ -137,10 +132,9 @@ bool try_get_silent(const std::shared_ptr<cpptoml::table> &table, const char *ke
 }
 
 template <typename T, typename... Args>
-bool try_get(std::string_view map, const std::shared_ptr<cpptoml::table> &table, const char *key, T &value, std::string_view error_fmt,
-             Args &&... error_args) {
+bool try_get(const std::shared_ptr<cpptoml::table> &table, const char *key, T &value, std::string_view fmt, Args &&... error_args) {
 	if (!try_get_silent(table, key, value)) {
-		perror(map, error_fmt, std::forward<Args>(error_args)...);
+		spdlog::error(fmt, std::forward<Args>(error_args)...);
 		return false;
 	}
 	return true;
@@ -160,12 +154,13 @@ void init_maps() {
 	}
 }
 
-[[nodiscard]] usmap<mob_definition> load_mobs_defs(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
+[[nodiscard]] usmap<mob_definition> load_mobs_defs(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables,
+                                                   std::string_view map) {
 	assert(!globstr_to_behaviour.empty()); // NOLINT
 	assert(!globstr_to_mob_sprite.empty()); // NOLINT
 
-	auto error = [&map](std::string_view fmt, auto &&... vals) {
-		perror(map, fmt, std::forward<decltype(vals)>(vals)...);
+	auto error = [&map, &res](const char *key, auto &&... vals) {
+		utils::log::error(res, std::string("adapter_map_loader_v1_0_0.") + key, std::forward<decltype(vals)>(vals)..., "map"_a = map);
 	};
 
 	usmap<mob_definition> mobs_definitions;
@@ -177,14 +172,14 @@ void init_maps() {
 				current = it->second;
 			}
 			else {
-				error("Referenced mob \"{}\" was not declared", *base);
+				error("unknown_mob_reference", "mob"_a = *base);
 				return {};
 			}
 		}
 
 		cpptoml::option<std::string> name = mob_def->get_as<std::string>(keys::name);
 		if (!name) {
-			error("Mob missing name (key: {})", keys::name);
+			error("mob_missing_name", "key"_a = keys::name);
 			return {};
 		}
 
@@ -193,7 +188,7 @@ void init_maps() {
 			current.hp = *hp;
 		}
 		else if (!base) {
-			error("Mob {} has unknown hp (key: {})", *name, keys::hp);
+			error("mob_missing_hp", "name"_a = *name, "key"_a = keys::hp);
 			return {};
 		}
 
@@ -202,7 +197,7 @@ void init_maps() {
 			current.sprite = it->second;
 		}
 		else if (!base) {
-			error("Mob {} has unknown sprite (key: {})", *name, keys::sprite);
+			error("mob_missing_sprite", "name"_a = *name, "key"_a = keys::sprite);
 			return {};
 		}
 
@@ -211,7 +206,7 @@ void init_maps() {
 			current.behaviour = it->second;
 		}
 		else if (!base) {
-			error("Mob {} has unknown behaviour (key: {})", *name, keys::behaviour);
+			error("mob_missing_behaviour", *name, keys::behaviour);
 			return {};
 		}
 
@@ -220,27 +215,24 @@ void init_maps() {
 	return mobs_definitions;
 }
 
-[[nodiscard]] std::vector<mob> load_mobs_spawns(const std::shared_ptr<cpptoml::table_array> &tables,
+[[nodiscard]] std::vector<mob> load_mobs_spawns(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables,
                                                 const usmap<mob_definition> &definitions, std::string_view map) {
-	auto error = [&map](std::string_view fmt, auto &&... vals) {
-		perror(map, fmt, std::forward<decltype(vals)>(vals)...);
-	};
-
 	std::vector<mob> loaded_mobs;
 	for (const auto &mob : *tables) {
 
 		cpptoml::option<std::string> type = mob->get_as<std::string>(keys::type);
 		auto parsed_type                  = definitions.find(type.value_or(""));
 		if (!type || parsed_type == definitions.end()) {
-			error("Encountered mob with unknown type (key: {})", keys::type);
+			utils::log::error(res, "adapter_map_loader_v1_0_0.mob_with_unknown_type", "map"_a = map, "key"_a = keys::type);
 			if (type) {
-				spdlog::error("(type: {})", *type);
+				utils::log::error(res, "adapter_map_loader_v1_0_0.mob_type_not_recognized", "type"_a = *type);
 			}
 			return {};
 		}
 
-		auto try_get = [&map, &mob, &type](const char *key, auto &value) -> bool {
-			return ::try_get(map, mob, key, value, "key {} was not specified (mob type: {})", key, *type);
+		auto try_get = [&res, &map, &mob, &type](const char *key, auto &value) -> bool {
+			return ::try_get(mob, key, value, utils::log::get_or_gen(res, "adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
+			                 "map"_a = map, "type"_a = *type, "key"_a = key);
 		};
 
 		int x_pos{};
@@ -264,11 +256,11 @@ void init_maps() {
 }
 
 [[nodiscard]] std::optional<std::vector<std::variant<activator, gate, autoshooter>>>
-load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
+load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
 	assert(!globstr_to_activator_type.empty()); // NOLINT
 
-	auto error = [&map](std::string_view fmt, auto &&... vals) {
-		perror(map, fmt, std::forward<decltype(vals)>(vals)...);
+	auto error = [&map, &res](const char *key, auto &&... vals) {
+		utils::log::error(res, std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map, std::forward<decltype(vals)>(vals)...);
 	};
 
 	std::vector<std::variant<activator, gate, autoshooter>> actors;
@@ -278,16 +270,17 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 	for (const auto &actor : *tables) {
 		auto type = actor->get_as<std::string>(keys::type);
 		if (!type) {
-			error("Encountered actor with unspecified type (key: {})", keys::type);
+			error("actor_with_unknown_type", "key"_a = keys::type);
 			return {};
 		}
 
-		auto try_get = [&map, &actor, &type](const char *key, auto &value, bool silent = false) -> bool {
+		auto try_get = [&map, &res, &actor, &type](const char *key, auto &value, bool silent = false) -> bool {
 			if (silent) {
 				return try_get_silent(actor, key, value);
 			}
 			else {
-				return ::try_get(map, actor, key, value, "key {} was not specified (actor type: {})", key, *type);
+				return ::try_get(actor, key, value, utils::log::get_or_gen(res, "adapter_map_loader_v1_0_0.actor_missing_component"),
+				                 "key"_a = key, "type"_a = *type);
 			}
 		};
 
@@ -319,8 +312,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
 			if (!insert_result.second) {
-				spdlog::warn("Actor {} is duplicated", name);
-				spdlog::warn(R"((while parsing map "{}"))", map);
+				utils::log::warn(res, "adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
 			}
 			actors.emplace_back(autoshooter{name, point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
 		}
@@ -338,8 +330,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
 			if (!insert_result.second) {
-				spdlog::warn("Actor {} is duplicated", name);
-				spdlog::warn(R"((while parsing map "{}"))", map);
+				utils::log::warn(res, "adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
 			}
 			actors.emplace_back(gate{name, point{x_pos, y_pos}, closed});
 		}
@@ -349,7 +340,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 			auto parsed_type = globstr_to_activator_type.find(*type);
 			if (parsed_type == globstr_to_activator_type.end()) {
-				error("Unknown actor type: {} (key: {})", *type, keys::type);
+				error("actor_with_unrecognized_type", "type"_a = *type, "key"_a = keys::type);
 				return {};
 			}
 			activator.type = parsed_type->second;
@@ -364,15 +355,14 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 			auto targets = actor->get_array_of<std::string>(keys::acts_on_table);
 			if (!targets) {
-				error("actor {} has no target to act on (key: {})", *type, keys::acts_on_table);
-				spdlog::error("(or value is malformed)", *type, keys::acts_on_table);
+				error("actor_with_no_target", "type"_a = *type, keys::acts_on_table);
 				return {};
 			}
 			for (const std::string &target : *targets) {
 
 				auto it = actionable_handles.find(target);
 				if (it == actionable_handles.end()) {
-					error("Unknown referenced gate {}", target);
+					error("actor_with_unknown_target", "type"_a = *type, "target"_a = target);
 					return {};
 				}
 
@@ -387,13 +377,16 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 	return actors;
 }
 
+void test(const class maclasse &tes) { }
+
 } // namespace
 
 bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &map_file, std::string_view map) noexcept {
 	init_maps();
 
-	auto error = [&map](std::string_view fmt, auto &&... vals) {
-		perror(map, fmt, std::forward<decltype(vals)>(vals)...);
+	auto error = [&map, this](const char *key, auto &&... vals) {
+		utils::log::error(m_state.resources(), std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
+		                  std::forward<decltype(vals)>(vals)...);
 	};
 
 	auto mobs_defs_toml   = map_file->get_table_array_qualified(keys::mobs_def_table);
@@ -404,39 +397,39 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 	if (!mobs_defs_toml || !mobs_spawns_toml || !actors_toml || !map_layout_toml) {
 		if (!mobs_defs_toml) {
-			error("Missing mobs definitions");
+			error("missing_mob_def");
 		}
 		if (!mobs_spawns_toml) {
-			error("Missing mobs placings");
+			error("missing_mob_placings");
 		}
 		if (!actors_toml) {
-			error("Missing actors");
+			error("missing_actors");
 		}
 		if (!map_layout_toml) {
-			error("Missing map layout");
+			error("missing_map_layout");
 		}
 		return false;
 	}
 
-	usmap<mob_definition> mobs_defs = load_mobs_defs(mobs_defs_toml, map);
+	usmap<mob_definition> mobs_defs = load_mobs_defs(m_state.resources(), mobs_defs_toml, map);
 	if (mobs_defs.empty()) {
-		error("Error while loading mobs definitions");
+		error("bad_mob_defs", "map"_a = map);
 		return false;
 	}
 
-	std::vector<mob> mobs = load_mobs_spawns(mobs_spawns_toml, mobs_defs, map);
+	std::vector<mob> mobs = load_mobs_spawns(m_state.resources(), mobs_spawns_toml, mobs_defs, map);
 	if (mobs.empty()) {
-		error("Error while loading mob spawn locations");
+		error("bad_mob_spawns", "map"_a = map);
 		return false;
 	}
 	if (mobs.size() > model::cst::max_entities) {
-		error("Too many mob spawns");
+		error("too_many_spawns", "map"_a = map);
 		return false;
 	}
 
 	std::vector<std::variant<activator, gate, autoshooter>> actors;
 	{
-		auto maybe_actors = load_actors(actors_toml, map);
+		auto maybe_actors = load_actors(m_state.resources(), actors_toml, map);
 		if (!maybe_actors) {
 			return false;
 		}
@@ -445,10 +438,14 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 	size_t map_height = map_layout_toml->size();
 	if (map_height == 0) {
-		error("The map is empty");
+		error("empty_map", "map"_a = map);
 		return false;
 	}
 	size_t map_width = map_layout_toml->begin()->size();
+	if (map_width == 0) {
+		error("empty_map", "map"_a = map);
+		return false;
+	}
 
 	view::viewer &view  = state::access<adapter>::view(m_state);
 	model::world &world = state::access<adapter>::model(m_state).world;
@@ -460,7 +457,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	for (const std::string &line : *map_layout_toml) {
 
 		if (line.size() != map_width) {
-			error("Non-coherent map dimensions (at line {})", line_idx + 1);
+			utils::log::error(m_state.resources(), "adapter_map_loader_v1_0_0.bad_map_size", "map"_a = map, "line"_a = line_idx + 1);
 			return false;
 		}
 
@@ -491,7 +488,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					break;
 				}
 				default:
-					error("Unknown caracter '{}' in map layout", line[column_idx]);
+					error("bad_map_char", "char"_a = line[column_idx], "line"_a = line_idx + 1, "column"_a = column_idx + 1);
 					return false;
 			}
 		}
@@ -589,7 +586,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  case activator_type::NONE:
 					  [[fallthrough]];
 				  default:
-					  error("Internal error");
+					  error("internal_error");
 					  break;
 			  }
 
@@ -606,31 +603,35 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 			  if (!activator.dialog.empty()) {
 				  if (!dialogs) {
-					  spdlog::warn("No dialog founds, but activator required dialog {}", activator.dialog);
+					  spdlog::warn("adapter_map_loader_v1_0_0.missing_dialogs", "dialog_name"_a = activator.dialog, "map"_a = map);
 				  }
 				  else {
 					  auto dialog = dialogs->get_table_qualified(activator.dialog);
 					  if (!dialog) {
-						  spdlog::warn("Requested dialog {} not found", activator.dialog);
+						  utils::log::warn(m_state.resources(), "adapter_map_loader_v1_0_0.missing_spec_dialog",
+						                   "dialog_name"_a = activator.dialog, "map"_a = map);
 					  }
 					  else {
 						  auto words = dialog->get_array(keys::dialog_text); // TODO translations support
 						  if (!words) {
-							  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+							  utils::log::warn(m_state.resources(), "adapter_map_loader_v1_0_0.malformed_dialog",
+							                   "dialog_name"_a = activator.dialog, "map"_a = map);
 						  }
 						  else {
 							  view::dialog dialog;
 							  for (auto word : *words) {
 								  auto word_array = word->as_array();
 								  if (!word_array) {
-									  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+									  utils::log::warn(m_state.resources(), "adapter_map_loader_v1_0_0.malformed_dialog",
+									                   "dialog_name"_a = activator.dialog, "map"_a = map);
 									  dialog.words.clear();
 									  break;
 								  }
 								  else {
 									  auto word_string_array = word_array->get_array_of<std::string>();
 									  if (!word_string_array || word_string_array->size() != 2) {
-										  spdlog::warn("Requested dialog {} malformed.", activator.dialog);
+										  utils::log::warn(m_state.resources(), "adapter_map_loader_v1_0_0.malformed_dialog",
+										                   "dialog_name"_a = activator.dialog, "map"_a = map);
 										  dialog.words.clear();
 										  break;
 									  }
@@ -696,6 +697,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	view.set_map(std::move(view_map));
 	view.dialog_viewer().set_dialogs(std::move(dialog_list));
 
-	spdlog::info("Loaded map \"{}\"", map);
+	utils::log::info(m_state.resources(), "adapter_map_loader_v1_0_0.map_loaded", "map"_a = map);
 	return true;
 }

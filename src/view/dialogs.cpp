@@ -27,9 +27,6 @@ void draw_window(const char *window_name, view::word text) {
 		ImGui::SameLine();
 		ImGui::Text("%s", text.sentence.c_str());
 	}
-	else {
-		spdlog::warn("Failed to open dialog window {}", window_name);
-	}
 }
 } // namespace
 

@@ -123,6 +123,50 @@
         fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
 
     [[log.entry]]
+        id = "state_holder.configure.config_load_failed"
+        fmt = "Échec du chargement des resources (fichier : {file})"
+
+    [[log.entry]]
+        id = "overmap_collection.unknow_entity_move"
+        fmt = "Tentative de déplacement d’une entité inconnue {{type: vue, is_mob:{is_mob}, handle:{handle}}}"
+    [[log.entry]]
+        id = "overmap_collection.moving_mob"
+        fmt = "Déplacement du mob [id vue] {handle} vers ({x} ; {y})"
+    [[log.entry]]
+        id = "overmap_collection.moving_object"
+        fmt = "Déplacement de l’objet [id vue] {handle} vers ({x} ; {y})"
+    [[log.entry]]
+        id = "overmap_collection.incompatible_rotate"
+        fmt = "Demande de rotation pour un objet incompatible [id vue] {handle}"
+
+    [[log.entry]]
+        id = "actionable.none"
+        fmt = "({x} ; {y}) : rien à activer ici"
+    [[log.entry]]
+        id = "actionable.gate.open"
+        fmt = "Ouverture de porte en ({x} ; {y})"
+    [[log.entry]]
+        id = "actionable.gate.close"
+        fmt = "Fermeture de porte en ({x} ; {y})"
+
+    [[log.entry]]
+        id = "bot_api.commit.invalid_handle"
+        fmt = "[DLL] Identifiant cible {handle} invalide pour la décision {decision}"
+    [[log.entry]]
+        id = "bot_api.commit.sanitize"
+        fmt = "[DLL] Valeur flotante {value} invalide pour le paramètre {parameter}"
+
+    [[log.entry]]
+        id = "bot_dll.required_load_failed"
+        fmt = "Le chargement de la fonction {func_name} a échoué (fichier {file})"
+    [[log.entry]]
+        id = "bot_dll.required_load_failed"
+        fmt = "Fonction facultative {func_name} non présente dans {file}"
+    [[log.entry]]
+        id = "bot_dll.required_load_failed"
+        fmt = "Fonction facultative {func_name} chargée depuis {file}"
+
+    [[log.entry]]
         id = "adapter.map_load_failure"
         fmt = "Erreur au chargement de la carte \"{path}\" : {reason}"
     [[log.entry]]

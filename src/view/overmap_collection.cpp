@@ -1,5 +1,6 @@
 #include "view/overmap_collection.hpp"
 #include "adapter/adapter.hpp"
+#include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
 #include "view/viewer.hpp"
@@ -8,7 +9,7 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <spdlog/spdlog.h>
 
-
+using fmt::literals::operator""_a;
 
 void view::overmap_collection::reload_sprites(const utils::resource_manager& res) noexcept {
     for (mob& mob : m_mobs) {
@@ -74,12 +75,13 @@ adapter::view_handle view::overmap_collection::add_mob(mob &&mb) noexcept {
 	return handle;
 }
 
-void view::overmap_collection::move_entity(adapter::view_handle handle, float newx, float newy) {
+void view::overmap_collection::move_entity(utils::resource_manager& res, adapter::view_handle handle, float newx, float newy) {
 	auto it = std::find_if(m_ordered_displayable.begin(), m_ordered_displayable.end(), [handle](const auto &entity) {
 		return entity.second == handle;
 	});
 
 	if (it == m_ordered_displayable.end()) {
+		utils::log::error(res, "overmap_collection.unknown_entity_move", "is_mob"_a = handle.is_mob, "handle"_a = handle.handle);
 		spdlog::error("Tried to move unknown view entity {{{} {}}}", handle.is_mob, handle.handle);
 		return;
 	}
@@ -87,20 +89,20 @@ void view::overmap_collection::move_entity(adapter::view_handle handle, float ne
 	m_ordered_displayable.erase(it);
 	auto target = std::next(m_mobs.begin(), handle.handle);
 	if (handle.is_mob) {
-		spdlog::trace("Moving view mob {} to ({} ; {})", handle.handle, newx, newy);
+		utils::log::trace(res, "overmap_collection.moving_mob", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
 		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 	else {
-		spdlog::trace("Moving view object {} to ({} ; {})", handle.handle, newx, newy);
+        utils::log::trace(res, "overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
 		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
 
-void view::overmap_collection::rotate_entity(adapter::view_handle handle, view::facing_direction::type new_direction) noexcept {
+void view::overmap_collection::rotate_entity(utils::resource_manager& res, adapter::view_handle handle, view::facing_direction::type new_direction) noexcept {
 	if (!handle.is_mob) {
-		spdlog::error("Rotate request for non-compatible view object {{{} {}}}", false, handle.handle);
+		utils::log::error(res, "overmap_collection.incompatible_rotate", "handle"_a=handle.handle);
 		return;
 	}
 

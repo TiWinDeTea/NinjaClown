@@ -20,7 +20,7 @@ model::model::~model() noexcept {
 }
 
 [[nodiscard]] bool model::model::load_dll(std::string dll_path) noexcept {
-	if (m_dll.load(std::move(dll_path))) {
+	if (m_dll.load(m_state_holder.resources(), std::move(dll_path))) {
 		m_dll.bot_init();
 		return true;
 	}

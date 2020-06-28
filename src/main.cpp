@@ -45,8 +45,6 @@ int actual_main([[maybe_unused]] std::vector<std::string> &args) {
 	spdlog::default_logger()->set_level(spdlog::level::trace);
 
     state::holder game{"resources/config.toml", "resources/autorun.ncs"};
-    spdlog::info("  ~ Ninja. Clown ~");
-	spdlog::info("::- Engine ready -::");
     game.run();
     game.wait();
 

@@ -125,7 +125,7 @@ void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y
 	view::viewer &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
-		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
+		view.acquire_overmap()->move_entity(m_state.resources(), it->second, new_x, new_y);
 		m_entities_changed_since_last_update.emplace_back(entity.handle);
 	}
 	else {
@@ -151,8 +151,8 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
-		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
-		m_entities_changed_since_last_update.emplace_back(entity.handle);
+		view.acquire_overmap()->rotate_entity(m_state.resources(), it->second, view::facing_direction::from_angle(new_rad));
+		m_entities_changed_since_last_update.emplace_back(handle.handle);
 	}
 	else {
 		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
@@ -270,6 +270,9 @@ void adapter::adapter::clear_cells_changed_since_last_update() noexcept {
 
 const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last_update() noexcept {
 	return m_cells_changed_since_last_update;
+}
+utils::resource_manager &adapter::adapter::resources() {
+    return m_state.resources();
 }
 
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {

@@ -60,7 +60,7 @@ public:
 
 	void wait() noexcept;
 
-	utils::resource_manager &resources();
+	[[nodiscard]] utils::resource_manager &resources();
 
 	std::map<std::string, property> &properties();
 

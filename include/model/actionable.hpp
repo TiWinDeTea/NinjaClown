@@ -9,6 +9,10 @@ namespace adapter {
 class adapter;
 }
 
+namespace utils {
+class resource_manager;
+}
+
 namespace model {
 
 struct actionable {

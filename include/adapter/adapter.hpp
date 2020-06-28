@@ -24,6 +24,10 @@ namespace cpptoml {
 class table;
 }
 
+namespace utils {
+class resource_manager;
+}
+
 namespace adapter {
 
 struct model_handle {
@@ -108,6 +112,8 @@ public:
 	void dll_log(const char *log);
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
+
+	[[nodiscard]] utils::resource_manager &resources();
 
 private:
 	friend terminal_commands;

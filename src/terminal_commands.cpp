@@ -373,7 +373,7 @@ void terminal_commands::fire_actionable(argument_type &arg) {
 
 	if (*val > arg.val.model().world.actionables.size()) {
 		log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
-		              "max_value"_a = arg.val.model().world.actionables.size());
+		                  "max_value"_a = arg.val.model().world.actionables.size());
 		return;
 	}
 	arg.val.model().world.fire_actionable(arg.val.adapter(), *val);

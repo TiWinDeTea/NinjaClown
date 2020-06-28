@@ -35,6 +35,7 @@ private:
 	static model::model *get_model(void *ninja_data);
 	static model::world *get_world(void *ninja_data);
 	static adapter::adapter *get_adapter(void *ninja_data);
+	static utils::resource_manager *get_resources(void *ninja_data);
 };
 
 } // namespace bot

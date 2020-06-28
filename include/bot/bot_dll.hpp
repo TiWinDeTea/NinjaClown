@@ -7,6 +7,10 @@
 
 #include "utils/dll.hpp"
 
+namespace utils {
+class resource_manager;
+}
+
 namespace bot {
 
 using init_fn_type        = void(NINJACLOWN_CALLCONV *)();
@@ -18,15 +22,13 @@ using destroy_fn_type     = void(NINJACLOWN_CALLCONV *)();
 struct bot_dll {
 	bot_dll() noexcept = default;
 	~bot_dll();
-	explicit bot_dll(std::string dll_path) noexcept;
-	explicit bot_dll(std::string &&dll_path) noexcept;
 
 	explicit operator bool() const;
 
 	[[nodiscard]] std::string error() const;
-	[[nodiscard]] bool load(const std::string &dll_path) noexcept;
-	[[nodiscard]] bool load(std::string &&dll_path) noexcept;
-	[[nodiscard]] bool reload() noexcept;
+	[[nodiscard]] bool load(const utils::resource_manager&, const std::string &dll_path) noexcept;
+	[[nodiscard]] bool load(const utils::resource_manager&, std::string &&dll_path) noexcept;
+	[[nodiscard]] bool reload(const utils::resource_manager&) noexcept;
 
 	void bot_init() noexcept;
 	void bot_start_level(ninja_api::nnj_api api) noexcept;
@@ -34,10 +36,10 @@ struct bot_dll {
 	void bot_end_level() noexcept;
 
 private:
-	[[nodiscard]] bool load_all_api_functions();
+	[[nodiscard]] bool load_all_api_functions(const utils::resource_manager&);
 
 	template <typename FuncPtr>
-	bool try_load_function(FuncPtr &ptr, const char *func_name, bool required);
+	bool try_load_function(const utils::resource_manager&, FuncPtr &ptr, const char *func_name, bool required);
 
 	std::optional<std::string> m_dll_path{};
 	utils::dll m_dll{};
