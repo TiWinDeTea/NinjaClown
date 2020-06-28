@@ -161,10 +161,10 @@
         id = "bot_dll.required_load_failed"
         fmt = "Le chargement de la fonction {func_name} a échoué (fichier {file})"
     [[log.entry]]
-        id = "bot_dll.required_load_failed"
+        id = "bot_dll.optional_load_failed"
         fmt = "Fonction facultative {func_name} non présente dans {file}"
     [[log.entry]]
-        id = "bot_dll.required_load_failed"
+        id = "bot_dll.optional_load_success"
         fmt = "Fonction facultative {func_name} chargée depuis {file}"
 
     [[log.entry]]

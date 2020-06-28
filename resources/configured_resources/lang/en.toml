@@ -161,10 +161,10 @@
         id = "bot_dll.required_load_failed"
         fmt = "Failed to load required function {func_name} from file {file}"
     [[log.entry]]
-        id = "bot_dll.required_load_failed"
+        id = "bot_dll.optional_load_failed"
         fmt = "Optional function {func_name} absent in {file}"
     [[log.entry]]
-        id = "bot_dll.required_load_failed"
+        id = "bot_dll.optional_load_success"
         fmt = "Optional function {func_name} present in {file}"
 
     [[log.entry]]
