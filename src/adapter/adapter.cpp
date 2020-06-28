@@ -9,11 +9,13 @@
 #include "model/model.hpp"
 #include "ninja_clown/api.h"
 #include "state_holder.hpp"
+#include "utils/logging.hpp"
 #include "utils/scope_guards.hpp"
 #include "view/dialogs.hpp"
 #include "view/viewer.hpp"
 
-// TODO externalize error messages
+using fmt::literals::operator""_a;
+
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	auto clear = [this] {
 		state::access<adapter>::model(m_state).world.reset();
@@ -38,13 +40,14 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		map_file = cpptoml::parse_file(string_path);
 	}
 	catch (const cpptoml::parse_exception &parse_exception) {
-		spdlog::error("Failed to load map \"{}\": {}", string_path, parse_exception.what());
+		utils::log::error(m_state.resources(), "adapter.map_load_failure", "path"_a = string_path, "reason"_a = parse_exception.what());
 		return false;
 	}
 
 	auto version = map_file->get_qualified_as<std::string>("file.version");
 	if (!version) {
-		spdlog::error("Failed to load map \"{}\": unknown file format (missing [file].version)", string_path);
+		utils::log::error(m_state.resources(), "adapter.map_load_failure", "path"_a = string_path,
+		                  "reason"_a = "unknown file format (missing [file].version)");
 		return false;
 	}
 
@@ -54,7 +57,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	}
 
 	if (!success) {
-		spdlog::error(R"(Unsupported version "{}" for map "{}")", *version, string_path);
+		utils::log::error(m_state.resources(), "adapter.unsupported_version", "path"_a = string_path, "version"_a = *version);
 		clear();
 	}
 	return success;
@@ -75,9 +78,8 @@ void adapter::adapter::fire_activator(model_handle handle) noexcept {
 void adapter::adapter::close_gate(model_handle gate) noexcept {
 	auto it = m_model2view.find(gate);
 	if (it == m_model2view.end()) {
-		// todo externalize
-		spdlog::warn("Unknown handle encountered when trying to close gate.");
-		spdlog::warn("Model handle value: {}", gate.handle);
+		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = gate.handle,
+		                  "operation"_a = "close gate");
 	}
 	else {
 		state::access<adapter>::view(m_state).acquire_overmap()->reveal(it->second);
@@ -87,9 +89,7 @@ void adapter::adapter::close_gate(model_handle gate) noexcept {
 void adapter::adapter::open_gate(model_handle gate) noexcept {
 	auto it = m_model2view.find(gate);
 	if (it == m_model2view.end()) {
-		// todo externalize
-		spdlog::warn("Unknown handle encountered when trying to close gate.");
-		spdlog::warn("Model handle value: {}", gate.handle);
+		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = gate.handle, "operation"_a = "open gate");
 	}
 	else {
 		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
@@ -100,41 +100,42 @@ void adapter::adapter::update_map(const model::grid_point &target, model::cell_t
 	m_cells_changed_since_last_update.emplace_back(target);
 }
 
-void adapter::adapter::move_entity(model_handle handle, float new_x, float new_y) noexcept {
+void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
+	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		view.acquire_overmap()->move_entity(it->second, new_x, new_y);
-		m_entities_changed_since_last_update.emplace_back(handle.handle);
+		m_entities_changed_since_last_update.emplace_back(entity.handle);
 	}
 	else {
-		spdlog::error("Move request for unknown entity {}", handle.handle);
+		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		                  "operation"_a = "move entity");
 	}
 }
 
-void adapter::adapter::hide_entity(model_handle handle) noexcept {
-	auto it = m_model2view.find(handle);
+void adapter::adapter::hide_entity(model_handle entity) noexcept {
+	auto it = m_model2view.find(entity);
 	if (it == m_model2view.end()) {
-		// todo externalize
-		spdlog::warn("Unknown handle encountered when trying to hide entity.");
-		spdlog::warn("Model handle value: {}", handle.handle);
+		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		                  "operation"_a = "hide entity");
 	}
 	else {
-		m_entities_changed_since_last_update.emplace_back(handle.handle);
+		m_entities_changed_since_last_update.emplace_back(entity.handle);
 		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
 	}
 }
 
-void adapter::adapter::rotate_entity(model_handle handle, float new_rad) noexcept {
+void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcept {
 	view::viewer &view = state::access<adapter>::view(m_state);
 
-	if (auto it = m_model2view.find(handle); it != m_model2view.end()) {
-		spdlog::trace("Rotating view entity {} to a target angle of {}", it->first.handle, new_rad);
+	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
+		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
 		view.acquire_overmap()->rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
-		m_entities_changed_since_last_update.emplace_back(handle.handle);
+		m_entities_changed_since_last_update.emplace_back(entity.handle);
 	}
 	else {
-		spdlog::error("Rotate request for unknown model entity {}", handle.handle);
+		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		                  "operation"_a = "rotate entity");
 	}
 }
 
@@ -152,9 +153,7 @@ void adapter::adapter::dll_log(const char *log) {
 	spdlog::info("BOT LOG: {}", log);
 }
 
-// TODO traductions
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
-
 	model::world &world = state::access<adapter>::model(m_state).world;
 
 	ImGui::BeginTooltip();
@@ -211,7 +210,8 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 						else {
 							ImGui::Text("    target: %zu", target);
-							spdlog::warn("Name not found for activator target {}", target);
+							utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = target,
+							                 "kind"_a = "activator target");
 						}
 					}
 					return list;
@@ -222,20 +222,20 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						ImGui::Text("Gate : %zu, %s", model_it->second.handle, target_name->second.c_str());
 					}
 					else {
-						spdlog::warn("Name not found for actionable {}", model_it->second.handle);
 						ImGui::Text("Gate : %zu", model_it->second.handle);
+						utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = model_it->second.handle,
+						                 "kind"_a = "actionable");
 					}
 					break;
 				}
 				case model_handle::ENTITY:
-					spdlog::warn("Non coherent entity type, logic and view might be out of sync (internal error)");
+					utils::log::warn(m_state.resources(), "adapter.non_coherent_entity", "handle"_a = model_it->second.handle);
 					break;
 			}
 		}
 	}
 	else {
-		spdlog::warn("Tried to fetch data for unknown view entity with handle {}", entity.handle);
-		spdlog::warn("logic and view might be out of sync (internal error)");
+		utils::log::warn(m_state.resources(), "adapter.unknown_view_entity", "view_handle"_a = entity.handle);
 	}
 	return {};
 }

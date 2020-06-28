@@ -18,9 +18,7 @@
 #include "utils/visitor.hpp"
 #include "view/viewer.hpp"
 
-// TODO translations
-
-using namespace fmt::literals;
+using fmt::literals::operator""_a;
 
 namespace {
 std::string log_get_or_gen(const terminal_commands::argument_type &arg, std::string_view key) {

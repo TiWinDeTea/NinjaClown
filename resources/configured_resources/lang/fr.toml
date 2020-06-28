@@ -121,3 +121,25 @@
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
         fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
+
+    [[log.entry]]
+        id = "adapter.map_load_failure"
+        fmt = "Erreur : chargement de la carte \"{path}\": {reason}"
+    [[log.entry]]
+        id = "adapter.unsupported_version"
+        fmt = "Version \"{version}\" non supportée pour la carte \"{path}\""
+    [[log.entry]]
+        id = "adapter.unknown_model_handle"
+        fmt = "Id modèle inconnue ({model_handle}) pour l'opération '{operation}'"
+    [[log.entry]]
+        id = "adapter.trace.rotate_entity"
+        fmt = "Rotation de l'entité vue {view_handle}. Nouvel angle de {angle} radians"
+    [[log.entry]]
+        id = "adapter.name_not_found"
+        fmt = "Nom introuvable pour {kind} {handle}"
+    [[log.entry]]
+        id = "adapter.non_coherent_entity"
+        fmt = "Type d'entité incohérent pour {handle}. La logique et la vue n'ont peut-être pas été synchronisés correctement (erreur interne)"
+    [[log.entry]]
+        id = "adapter.unknown_view_entity"
+        fmt = "L'entité vue {view_handle} est introuvable. La logique et la vue n'ont peut-être pas été synchronisés correctement (erreur interne)"

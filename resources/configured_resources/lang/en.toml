@@ -122,3 +122,25 @@
     [[log.entry]]
         id = "terminal_commands.fire_activator.invalid_value"
         fmt = "Invalid value (got: {value}, max: {max_value})"
+
+    [[log.entry]]
+        id = "adapter.map_load_failure"
+        fmt = "Failed to load map \"{path}\": {reason}"
+    [[log.entry]]
+        id = "adapter.unsupported_version"
+        fmt = "Unsupported version \"{version}\" for map \"{path}\""
+    [[log.entry]]
+        id = "adapter.unknown_model_handle"
+        fmt = "Unknown model handle ({model_handle}) encountered for operation '{operation}'"
+    [[log.entry]]
+        id = "adapter.trace.rotate_entity"
+        fmt = "Rotating view entity {view_handle} to a target angle of {angle} radians"
+    [[log.entry]]
+        id = "adapter.name_not_found"
+        fmt = "Name not found for {kind} {handle}"
+    [[log.entry]]
+        id = "adapter.non_coherent_entity"
+        fmt = "Non coherent entity type for id {handle}, logic and view might be out of sync (internal error)"
+    [[log.entry]]
+        id = "adapter.unknown_view_entity"
+        fmt = "Unknown view entity with id {view_handle}, logic and view might be out of sync (internal error)"
