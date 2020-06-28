@@ -144,3 +144,35 @@
     [[log.entry]]
         id = "adapter.unknown_view_entity"
         fmt = "Unknown view entity with id {view_handle}, logic and view might be out of sync (internal error)"
+
+[tooltip]
+    [[tooltip.entry]]
+        id = "adapter.objective"
+        fmt = "Your objective."
+    [[tooltip.entry]]
+        id = "adapter.hp"
+        fmt = "HP: {hp}"
+    [[tooltip.entry]]
+        id = "adapter.hitbox"
+        fmt = "Hitbox: ({top_left_x} ; {top_left_y}) to ({bottom_right_x} ; {bottom_right_y})"
+    [[tooltip.entry]]
+        id = "adapter.position"
+        fmt = "Position: ({x} ; {y})"
+    [[tooltip.entry]]
+        id = "adapter.angle"
+        fmt = "Angle: {angle}"
+    [[tooltip.entry]]
+        id = "adapter.activator"
+        fmt = "Activator: {handle}"
+    [[tooltip.entry]]
+        id = "adapter.named_target"
+        fmt = "Target: {handle}, {name}"
+    [[tooltip.entry]]
+        id = "adapter.nameless_target"
+        fmt = "Target: {handle}"
+    [[tooltip.entry]]
+        id = "adapter.named_gate"
+        fmt = "Gate: {handle}, {name}"
+    [[tooltip.entry]]
+        id = "adapter.nameless_gate"
+        fmt = "Gate: {handle}"

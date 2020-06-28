@@ -124,7 +124,7 @@
 
     [[log.entry]]
         id = "adapter.map_load_failure"
-        fmt = "Erreur : chargement de la carte \"{path}\": {reason}"
+        fmt = "Erreur au chargement de la carte \"{path}\" : {reason}"
     [[log.entry]]
         id = "adapter.unsupported_version"
         fmt = "Version \"{version}\" non supportée pour la carte \"{path}\""
@@ -143,3 +143,35 @@
     [[log.entry]]
         id = "adapter.unknown_view_entity"
         fmt = "L'entité vue {view_handle} est introuvable. La logique et la vue n'ont peut-être pas été synchronisés correctement (erreur interne)"
+
+[tooltip]
+    [[tooltip.entry]]
+        id = "adapter.objective"
+        fmt = "Ton objectif."
+    [[tooltip.entry]]
+        id = "adapter.hp"
+        fmt = "PV: {hp}"
+    [[tooltip.entry]]
+        id = "adapter.hitbox"
+        fmt = "Boîte de collision: ({top_left_x} ; {top_left_y}) to ({bottom_right_x} ; {bottom_right_y})"
+    [[tooltip.entry]]
+        id = "adapter.position"
+        fmt = "Position: ({x} ; {y})"
+    [[tooltip.entry]]
+        id = "adapter.angle"
+        fmt = "Angle: {angle}"
+    [[tooltip.entry]]
+        id = "adapter.activator"
+        fmt = "Activateur: {handle}"
+    [[tooltip.entry]]
+        id = "adapter.named_target"
+        fmt = "Cible: {handle}, {name}"
+    [[tooltip.entry]]
+        id = "adapter.nameless_target"
+        fmt = "Cible: {handle}"
+    [[tooltip.entry]]
+        id = "adapter.named_gate"
+        fmt = "Portail: {handle}, {name}"
+    [[tooltip.entry]]
+        id = "adapter.nameless_gate"
+        fmt = "Portail: {handle}"

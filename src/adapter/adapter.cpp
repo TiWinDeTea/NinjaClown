@@ -10,9 +10,30 @@
 #include "ninja_clown/api.h"
 #include "state_holder.hpp"
 #include "utils/logging.hpp"
+#include "utils/resource_manager.hpp"
 #include "utils/scope_guards.hpp"
 #include "view/dialogs.hpp"
 #include "view/viewer.hpp"
+
+namespace {
+template <typename... Args>
+bool tooltip_text_prefix(utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
+	utils::optional<std::string_view> fmt = res.tooltip_for(key);
+	if (fmt) {
+		auto formatted = fmt::format(*fmt, std::forward<Args>(args)...);
+		ImGui::Text("%s%s", prefix, formatted.c_str());
+		return true;
+	}
+
+	ImGui::Text("MISSING LOCALIZATION: %s", key);
+	return false;
+}
+
+template <typename... Args>
+bool tooltip_text(utils::resource_manager &res, std::string_view key, Args &&... args) {
+	return tooltip_text_prefix(res, key, "", std::forward<Args>(args)...);
+}
+} // namespace
 
 using fmt::literals::operator""_a;
 
@@ -164,7 +185,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	};
 
 	if (entity == m_target_handle) {
-		ImGui::Text("Your objective.");
+		tooltip_text(m_state.resources(), "adapter.objective");
 		return {};
 	}
 
@@ -174,16 +195,17 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 
 		if (entity.is_mob) {
 			if (components.health[handle]) {
-				ImGui::Text("Current HP: %u", components.health[handle]->points);
+				tooltip_text(m_state.resources(), "adapter.hp", "hp"_a = components.health[handle]->points);
 			}
 
 			if (components.hitbox[handle]) {
 				model::component::hitbox &hitbox = *components.hitbox[handle];
 				model::vec2 top_left             = hitbox.top_left();
 				model::vec2 bottom_right         = hitbox.bottom_right();
-				ImGui::Text("Hitbox: (%f ; %f) to (%f ; %f)", top_left.x, top_left.y, bottom_right.x, bottom_right.y);
-				ImGui::Text("Position: (%f ; %f)", hitbox.center.x, hitbox.center.y);
-				ImGui::Text("Current angle: %f", components.hitbox[handle]->rad);
+				tooltip_text(m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x, "top_left_y"_a = top_left.y,
+				             "bottom_right_x"_a = bottom_right.x, "bottom_right_y"_a = bottom_right.y);
+				tooltip_text(m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y);
+				tooltip_text(m_state.resources(), "adapter.angle", "angle"_a = components.hitbox[handle]->rad);
 			}
 		}
 		else {
@@ -194,7 +216,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				case model_handle::ACTIVATOR: {
 					auto targets = world.activators[it->second.handle].targets;
 					request::coords_list list;
-					ImGui::Text("Activator %zu", it->second.handle);
+					tooltip_text(m_state.resources(), "adapter.activator", "handle"_a = it->second.handle);
 					for (size_t target : targets) {
 						std::string target_name;
 						auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
@@ -206,10 +228,11 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 
 						if (!target_name.empty()) {
-							ImGui::Text("    target: %zu, %s", target, target_name.c_str());
+							tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t", "handle"_a = target,
+							                    "name"_a = target_name);
 						}
 						else {
-							ImGui::Text("    target: %zu", target);
+							tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target);
 							utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = target,
 							                 "kind"_a = "activator target");
 						}
@@ -219,10 +242,11 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 				case model_handle::ACTIONABLE: {
 					auto target_name = m_view2name.find(entity);
 					if (target_name != m_view2name.end()) {
-						ImGui::Text("Gate : %zu, %s", model_it->second.handle, target_name->second.c_str());
+						tooltip_text(m_state.resources(), "adapter.named_gate", "handle"_a = it->second.handle,
+						             "name"_a = target_name->second);
 					}
 					else {
-						ImGui::Text("Gate : %zu", model_it->second.handle);
+						tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = it->second.handle);
 						utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = model_it->second.handle,
 						                 "kind"_a = "actionable");
 					}
