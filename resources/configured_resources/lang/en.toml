@@ -229,7 +229,7 @@
         fmt = "Requested dialog \"{dialog_name}\" not found (while parsing map \"{map}\")"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.malformed_dialog"
-        fmt = "Requested dialog \"{dialog_name}\" not found (while parsing map \"{map}\")"
+        fmt = "Requested dialog \"{dialog_name}\" is malformed (while parsing map \"{map}\")"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.map_loaded"
         fmt = "map \"{map}\" loaded"

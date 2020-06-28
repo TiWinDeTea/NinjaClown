@@ -224,13 +224,43 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_dialogs"
         fmt = "Un acteur a besoin du dialogue \"{dialog_name}\", mais la section 'dialog' est vide ou manquante (lors de chargement de la carte \"{map}\")"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_spec_dialog"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : le dialogue '{dialog_name}' est introuvable"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.malformed_dialog"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : le dialogue '{dialog_name}' est malformé"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.map_loaded"
+        fmt = "carte \"{map}\" chargée"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.internal_error"
+        fmt = "Erreur interne lors du chargement de la carte \"{map}\""
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.bad_mob_defs"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : définition invalide de 'mobs.definition'"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.bad_mob_spawns"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'spawns' invalide"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.too_many_spawns"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : trop d'éléments dans la section 'spawns'"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.empty_map"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : taille de carte nulle"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.bad_map_size"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : les dimensions ne sont pas cohérentes (à la ligne {line})"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.bad_map_char"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : caractère inconnu '{char}' dans la définition de la carte ({line}:{column})"
 
     [[log.entry]]
         id = "adapter.map_load_failure"
-        fmt = "Erreur au chargement de la carte \"{path}\" : {reason}"
+        fmt = "Erreur lors du chargement de la carte \"{path}\" : {reason}"
     [[log.entry]]
         id = "adapter.unsupported_version"
-        fmt = "Version \"{version}\" non supportée pour la carte \"{path}\""
+        fmt = "Version '{version}' non supportée pour la carte \"{path}\""
     [[log.entry]]
         id = "adapter.unknown_model_handle"
         fmt = "Id modèle inconnue ({model_handle}) pour l'opération '{operation}'"
