@@ -5,13 +5,20 @@
 #include "view/mob.hpp"
 #include "view/object.hpp"
 
+
+
+view::mob::~mob() = default;
+view::object::~object() = default;
+
 void view::mob::set_mob_id(utils::resources_type::mob_id id, const utils::resource_manager &resources) {
 	m_mob_id = id;
 	reload_sprites(resources);
 }
 
 void view::mob::reload_sprites(const utils::resource_manager &resources) {
-	m_animations = &*resources.mob_animations(m_mob_id);
+	auto anim = resources.mob_animations(m_mob_id);
+	assert(anim);
+    m_animations = std::make_unique<view::mob_animations>(*anim);
 }
 
 void view::mob::set_direction(facing_direction::type dir) {
@@ -38,7 +45,7 @@ void view::object::set_id(utils::resources_type::object_id id, const utils::reso
 void view::object::reload_sprites(const utils::resource_manager &res) {
 	utils::optional<const shifted_animation &> animation = res.object_animation(m_object_id);
 	assert(animation); // NOLINT
-	m_animation = &*animation;
+	m_animation = std::make_unique<view::shifted_animation>(*animation);
 }
 
 void view::object::vprint(view::viewer &view) const {

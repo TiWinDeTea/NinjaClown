@@ -298,13 +298,13 @@
         fmt = "Activator: {handle}"
     [[tooltip.entry]]
         id = "adapter.named_target"
-        fmt = "Target: {handle}, {name}"
+        fmt = "Target: {handle}, \"{name}\""
     [[tooltip.entry]]
         id = "adapter.nameless_target"
         fmt = "Target: {handle}"
     [[tooltip.entry]]
         id = "adapter.named_gate"
-        fmt = "Gate: {handle}, {name}"
+        fmt = "Gate: {handle}, \"{name}\""
     [[tooltip.entry]]
         id = "adapter.nameless_gate"
         fmt = "Gate: {handle}"

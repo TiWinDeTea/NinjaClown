@@ -3,6 +3,8 @@
 
 #include "view/overmap_displayable.hpp"
 
+#include <memory>
+
 namespace utils {
 class resource_manager;
 }
@@ -15,6 +17,10 @@ namespace view {
 
 class object: public overmap_displayable_interface {
 public:
+	object() noexcept = default;
+	object(object&&) noexcept = default;
+    virtual ~object();
+
 	void set_pos(float x, float y) {
 		p_posx = x + m_xshift;
 		p_posy = y + m_yshift;
@@ -30,7 +36,9 @@ private:
 	bool vis_hovered(view::viewer &view) const noexcept override;
 
 	utils::resources_type::object_id m_object_id;
-	const shifted_animation *m_animation;
+
+
+    std::unique_ptr<shifted_animation> m_animation;
 	float m_xshift{0.f};
 	float m_yshift{0.f};
 };

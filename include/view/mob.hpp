@@ -5,6 +5,8 @@
 #include "view/facing_dir.hpp"
 #include "view/overmap_displayable.hpp"
 
+#include <memory>
+
 namespace utils {
 class resource_manager;
 }
@@ -16,6 +18,10 @@ class mob_animations;
 namespace view {
 class mob: public overmap_displayable_interface {
 public:
+	mob() noexcept = default;
+	mob(mob&&) noexcept = default;
+	virtual ~mob();
+
 	void set_pos(float x, float y) {
 		p_posx = x;
 		p_posy = y;
@@ -32,7 +38,7 @@ private:
 
 	bool vis_hovered(view::viewer &view) const noexcept override;
 
-	const mob_animations *m_animations;
+	std::unique_ptr<mob_animations> m_animations;
 	facing_direction::type m_dir;
 	utils::resources_type::mob_id m_mob_id;
 };

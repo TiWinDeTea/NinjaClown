@@ -5,25 +5,25 @@
 #include "utils/visitor.hpp"
 #include "view/viewer.hpp"
 
-#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <spdlog/spdlog.h>
 
 using fmt::literals::operator""_a;
 
-void view::overmap_collection::reload_sprites(const utils::resource_manager& res) noexcept {
-    for (mob& mob : m_mobs) {
-        mob.reload_sprites(res);
-    }
-    for (object& object : m_objects) {
-        object.reload_sprites(res);
-    }
+void view::overmap_collection::reload_sprites(const utils::resource_manager &res) noexcept {
+	for (mob &mob : m_mobs) {
+		mob.reload_sprites(res);
+	}
+	for (object &object : m_objects) {
+		object.reload_sprites(res);
+	}
 }
 
 void view::overmap_collection::clear() noexcept {
-    m_ordered_displayable.clear();
-    m_mobs.clear();
-    m_objects.clear();
+	m_ordered_displayable.clear();
+	m_mobs.clear();
+	m_objects.clear();
 }
 
 void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
@@ -34,28 +34,29 @@ void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
 
 void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
                                          utils::resource_manager &resources) const noexcept {
+	utils::visitor request_visitor{[&](const adapter::request::hitbox &hitbox) {
+		                               auto [screen_x, screen_y] = viewer.to_screen_coords(hitbox.x, hitbox.y);
+		                               auto [screen_width, screen_height]
+		                                 = viewer.to_screen_coords(hitbox.x + hitbox.width, hitbox.y + hitbox.height);
+		                               screen_width -= screen_x;
+		                               screen_height -= screen_y;
+
+		                               sf::RectangleShape rect{{screen_width, screen_height}};
+		                               rect.setPosition(screen_x, screen_y);
+		                               rect.setFillColor(sf::Color{128, 255, 128, 128}); // todo externalize
+
+		                               viewer.window->draw(rect);
+	                               },
+	                               [&](const adapter::request::coords_list &list) {
+		                               for (const auto &coords : list.coords) {
+			                               viewer.acquire_map()->highlight_tile(viewer, coords.x, coords.y, resources);
+		                               }
+	                               },
+	                               [](std::monostate /* ignored */) {}};
+
 	for (const auto &displayable : m_ordered_displayable) {
 		displayable.first->print(viewer);
 		if (displayable.first->is_hovered(viewer)) {
-			utils::visitor request_visitor{[&](const adapter::request::hitbox &hitbox) {
-				                               auto [screen_x, screen_y] = viewer.to_screen_coords(hitbox.x, hitbox.y);
-				                               auto [screen_width, screen_height]
-				                                 = viewer.to_screen_coords(hitbox.x + hitbox.width, hitbox.y + hitbox.height);
-				                               screen_width -= screen_x;
-				                               screen_height -= screen_y;
-
-				                               sf::RectangleShape rect{{screen_width, screen_height}};
-				                               rect.setPosition(screen_x, screen_y);
-				                               rect.setFillColor(sf::Color{128, 255, 128, 128}); // todo externalize
-
-				                               viewer.window->draw(rect);
-			                               },
-			                               [&](const adapter::request::coords_list &list) {
-				                               for (const auto &coords : list.coords) {
-					                               viewer.acquire_map()->highlight_tile(viewer, coords.x, coords.y, resources);
-				                               }
-			                               },
-			                               [](std::monostate /* ignored */) {}};
 			std::visit(request_visitor, adapter.tooltip_for(displayable.second));
 		}
 	}
@@ -75,7 +76,7 @@ adapter::view_handle view::overmap_collection::add_mob(mob &&mb) noexcept {
 	return handle;
 }
 
-void view::overmap_collection::move_entity(utils::resource_manager& res, adapter::view_handle handle, float newx, float newy) {
+void view::overmap_collection::move_entity(utils::resource_manager &res, adapter::view_handle handle, float newx, float newy) {
 	auto it = std::find_if(m_ordered_displayable.begin(), m_ordered_displayable.end(), [handle](const auto &entity) {
 		return entity.second == handle;
 	});
@@ -94,15 +95,16 @@ void view::overmap_collection::move_entity(utils::resource_manager& res, adapter
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 	else {
-        utils::log::trace(res, "overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
+		utils::log::trace(res, "overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
 		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
 
-void view::overmap_collection::rotate_entity(utils::resource_manager& res, adapter::view_handle handle, view::facing_direction::type new_direction) noexcept {
+void view::overmap_collection::rotate_entity(utils::resource_manager &res, adapter::view_handle handle,
+                                             view::facing_direction::type new_direction) noexcept {
 	if (!handle.is_mob) {
-		utils::log::error(res, "overmap_collection.incompatible_rotate", "handle"_a=handle.handle);
+		utils::log::error(res, "overmap_collection.incompatible_rotate", "handle"_a = handle.handle);
 		return;
 	}
 
@@ -112,15 +114,17 @@ void view::overmap_collection::rotate_entity(utils::resource_manager& res, adapt
 void view::overmap_collection::hide(adapter::view_handle handle) {
 	if (handle.is_mob) {
 		std::next(m_mobs.begin(), handle.handle)->hide();
-	} else {
+	}
+	else {
 		std::next(m_objects.begin(), handle.handle)->hide();
 	}
 }
 
 void view::overmap_collection::reveal(adapter::view_handle handle) {
-    if (handle.is_mob) {
-        std::next(m_mobs.begin(), handle.handle)->reveal();
-    } else {
-        std::next(m_objects.begin(), handle.handle)->reveal();
-    }
+	if (handle.is_mob) {
+		std::next(m_mobs.begin(), handle.handle)->reveal();
+	}
+	else {
+		std::next(m_objects.begin(), handle.handle)->reveal();
+	}
 }

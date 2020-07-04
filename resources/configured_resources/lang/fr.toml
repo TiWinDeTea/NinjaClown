@@ -286,7 +286,7 @@
         fmt = "PV: {hp}"
     [[tooltip.entry]]
         id = "adapter.hitbox"
-        fmt = "Boîte de collision: ({top_left_x} ; {top_left_y}) to ({bottom_right_x} ; {bottom_right_y})"
+        fmt = "Boîte de collision: ({top_left_x} ; {top_left_y}) à ({bottom_right_x} ; {bottom_right_y})"
     [[tooltip.entry]]
         id = "adapter.position"
         fmt = "Position: ({x} ; {y})"
@@ -298,13 +298,13 @@
         fmt = "Activateur: {handle}"
     [[tooltip.entry]]
         id = "adapter.named_target"
-        fmt = "Cible: {handle}, {name}"
+        fmt = "Cible: {handle}, \"{name}\""
     [[tooltip.entry]]
         id = "adapter.nameless_target"
         fmt = "Cible: {handle}"
     [[tooltip.entry]]
         id = "adapter.named_gate"
-        fmt = "Portail: {handle}, {name}"
+        fmt = "Portail: {handle}, \"{name}\""
     [[tooltip.entry]]
         id = "adapter.nameless_gate"
         fmt = "Portail: {handle}"

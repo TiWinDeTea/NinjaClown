@@ -16,9 +16,9 @@ public:
 		m_frames.emplace_back(std::move(sprite));
 	}
 
-	void print(view::viewer& viewer, float posx, float posy) const noexcept;
+	void print(view::viewer &viewer, float posx, float posy) const noexcept;
 
-	void highlight(view::viewer& viewer, float posx, float posy) const noexcept;
+	void highlight(view::viewer &viewer, float posx, float posy) const noexcept;
 
 	friend class shifted_animation;
 
@@ -31,14 +31,15 @@ public:
 	static constexpr unsigned int SINGLE_IMAGE_DURATION = animation::SINGLE_IMAGE_DURATION;
 
 	shifted_animation() noexcept(noexcept(std::vector<sf::Sprite>{})) = default;
+	shifted_animation(const shifted_animation &)                      = default;
 	shifted_animation(shifted_animation &&) noexcept                  = default;
 	explicit shifted_animation(animation &&o) noexcept
-	    : m_frames{std::move(o.m_frames)} {}
+	    : m_frames{std::move(o.m_frames)} { }
 
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
 	shifted_animation &operator=(const shifted_animation &) = default;
 
-	bool is_hovered(view::viewer& viewer) const noexcept;
+	bool is_hovered(view::viewer &viewer) const noexcept;
 
 	void add_frame(sf::Sprite &&sprite) {
 		m_frames.emplace_back(std::move(sprite));
@@ -49,7 +50,7 @@ public:
 		m_yshift = yshift;
 	}
 
-	void print(view::viewer& viewer, float posx, float posy) const noexcept;
+	void print(view::viewer &viewer, float posx, float posy) const noexcept;
 
 	bool empty() const noexcept {
 		return m_frames.empty();
