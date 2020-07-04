@@ -93,7 +93,7 @@ void view::viewer::do_run() noexcept {
 		dp_state.window.clear();
 		m_map.acquire()->print(*this, m_state_holder.resources());
 
-		if (show_debug_data && !dp_state.terminal_hovered) {
+		if (show_debug_data && !dp_state.terminal_hovered && !dp_state.showing_escape_menu) {
 			std::vector<std::vector<std::string>> printable_info
 			  = m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
 
@@ -160,11 +160,12 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	const auto &style = ImGui::GetStyle();
 
 	std::string_view missing   = "MISSING TRANSLATION";
-	std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
-	std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
-	std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
-	std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
-	std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
+    std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
+    std::string_view load_dll  = res.gui_text_for("view.in_game_menu.dll").value_or(missing);
+    std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
+    std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
+    std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
+    std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
 
 	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {
@@ -173,10 +174,11 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 		max_text_size.y = std::max(max_text_size.y, size.y);
 	};
 	update_sz(resume);
-	update_sz(restart);
-	update_sz(settings);
-	update_sz(main_menu);
-	update_sz(quit);
+    update_sz(load_dll);
+    update_sz(restart);
+    update_sz(settings);
+    update_sz(main_menu);
+    update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
@@ -185,7 +187,13 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 		if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
 			state.showing_escape_menu = false;
 		}
+		if (ImGui::Button(load_dll.data(), ImVec2{text_width, 0.f})) {
+
+		}
 		if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
+			state::access<view::viewer>::adapter(m_state_holder).load_map(m_state_holder.current_map_path());
+			state.autostep_bot = false;
+			state.showing_escape_menu = false;
 		}
 		if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
 		}

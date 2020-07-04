@@ -306,6 +306,9 @@
         id = "view.in_game_menu.resume"
         fmt = "Resume"
     [[gui.entry]]
+        id = "view.in_game_menu.dll"
+        fmt = "Load brain"
+    [[gui.entry]]
         id = "view.in_game_menu.restart"
         fmt = "Restart"
     [[gui.entry]]

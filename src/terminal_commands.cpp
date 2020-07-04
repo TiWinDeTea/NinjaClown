@@ -234,13 +234,7 @@ void terminal_commands::load_map(argument_type &arg) {
 		log_formatted_err(arg, "terminal_commands.load_map.usage", "arg0"_a = arg.command_line[0]);
 		return;
 	}
-
-	if (arg.val.adapter().map_is_loaded()) {
-		arg.val.model().bot_end_level();
-	}
-
 	arg.val.adapter().load_map(arg.command_line[1]);
-	arg.val.model().bot_start_level(bot::ffi{});
 }
 
 void terminal_commands::update_world(argument_type &arg) {

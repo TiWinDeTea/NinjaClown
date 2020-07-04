@@ -306,6 +306,9 @@
         id = "view.in_game_menu.resume"
         fmt = "Reprendre"
     [[gui.entry]]
+        id = "view.in_game_menu.dll"
+        fmt = "Infuser de l'intelligence"
+    [[gui.entry]]
         id = "view.in_game_menu.restart"
         fmt = "Recommencer"
     [[gui.entry]]

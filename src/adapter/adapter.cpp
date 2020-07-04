@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
+#include "bot/bot_api.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
 #include "model/grid_point.hpp"
@@ -34,6 +35,10 @@ template <typename... Args>
 using fmt::literals::operator""_a;
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
+	if (map_is_loaded()) {
+		state::access<adapter>::model(m_state).bot_end_level();
+	}
+
 	auto clear = [this] {
 		state::access<adapter>::model(m_state).world.reset();
 		state::access<adapter>::view(m_state).acquire_overmap()->clear();
@@ -74,6 +79,11 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	if (!success) {
 		utils::log::error(m_state.resources(), "adapter.unsupported_version", "path"_a = string_path, "version"_a = *version);
 		clear();
+		state::access<adapter>::set_current_map_path(m_state, "");
+	}
+	else {
+		state::access<adapter>::set_current_map_path(m_state, path);
+		state::access<adapter>::model(m_state).bot_start_level(bot::ffi{});
 	}
 	return success;
 }
@@ -166,7 +176,7 @@ void adapter::adapter::dll_log(const char *log) {
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	const model::world &world = state::access<adapter>::model(m_state).world;
 
-    draw_request list;
+	draw_request list;
 	request::info info_req;
 
 	if (entity == m_target_handle) {
@@ -181,20 +191,24 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 
 		if (entity.is_mob) {
 			if (components.health[mhandle.handle]) {
-				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.hp", "hp"_a = components.health[mhandle.handle]->points));
+				info_req.lines.emplace_back(
+				  tooltip_text(m_state.resources(), "adapter.hp", "hp"_a = components.health[mhandle.handle]->points));
 			}
 
 			if (components.hitbox[mhandle.handle]) {
 				const model::component::hitbox &hitbox = *components.hitbox[mhandle.handle];
 				model::vec2 top_left                   = hitbox.top_left();
 				model::vec2 bottom_right               = hitbox.bottom_right();
-				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x, "top_left_y"_a = top_left.y,
-				             "bottom_right_x"_a = bottom_right.x, "bottom_right_y"_a = bottom_right.y));
-				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
-				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.angle", "angle"_a = components.hitbox[mhandle.handle]->rad));
+				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x,
+				                                         "top_left_y"_a = top_left.y, "bottom_right_x"_a = bottom_right.x,
+				                                         "bottom_right_y"_a = bottom_right.y));
+				info_req.lines.emplace_back(
+				  tooltip_text(m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
+				info_req.lines.emplace_back(
+				  tooltip_text(m_state.resources(), "adapter.angle", "angle"_a = components.hitbox[mhandle.handle]->rad));
 			}
 			if (!info_req.lines.empty()) {
-                list.emplace_back(std::move(info_req));
+				list.emplace_back(std::move(info_req));
 				info_req.lines.clear();
 			}
 		}
@@ -214,11 +228,12 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 
 						if (!target_name.empty()) {
-							info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t", "handle"_a = target,
-							                    "name"_a = target_name));
+							info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t",
+							                                                "handle"_a = target, "name"_a = target_name));
 						}
 						else {
-							info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target));
+							info_req.lines.emplace_back(
+							  tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target));
 							utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = target,
 							                 "kind"_a = "activator target");
 						}
@@ -226,19 +241,20 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						const model::actionable::instance_data &target_data = world.actionables[target].data;
 						list.push_back(draw_request::value_type{request::coords{target_data.pos.x, target_data.pos.y}});
 					}
-                    if (!info_req.lines.empty()) {
-                        list.emplace_back(std::move(info_req));
-                    }
+					if (!info_req.lines.empty()) {
+						list.emplace_back(std::move(info_req));
+					}
 					return list;
 				}
 				case model_handle::ACTIONABLE: {
 					auto target_name = m_view2name.find(entity);
 					if (target_name != m_view2name.end()) {
 						info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.named_gate", "handle"_a = it->second.handle,
-						             "name"_a = target_name->second));
+						                                         "name"_a = target_name->second));
 					}
 					else {
-                        info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = it->second.handle));
+						info_req.lines.emplace_back(
+						  tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = it->second.handle));
 						utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = mhandle.handle,
 						                 "kind"_a = "actionable");
 					}
@@ -253,9 +269,9 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	else {
 		utils::log::warn(m_state.resources(), "adapter.unknown_view_entity", "view_handle"_a = entity.handle);
 	}
-    if (!info_req.lines.empty()) {
-        list.emplace_back(std::move(info_req));
-    }
+	if (!info_req.lines.empty()) {
+		list.emplace_back(std::move(info_req));
+	}
 	return list;
 }
 

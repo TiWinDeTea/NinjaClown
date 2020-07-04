@@ -48,6 +48,7 @@ struct pimpl {
 	adapter::adapter adapter;
 
 	std::map<std::string, property> properties{};
+	std::filesystem::path current_map_path{};
 };
 } // namespace state
 
@@ -82,11 +83,18 @@ void state::holder::run() noexcept {
 void state::holder::wait() noexcept {
 	m_pimpl->view.wait();
 }
-utils::resource_manager &state::holder::resources() {
+utils::resource_manager &state::holder::resources() noexcept {
 	return m_pimpl->resources;
 }
-std::map<std::string, state::property> &state::holder::properties() {
+std::map<std::string, state::property> &state::holder::properties() noexcept {
 	return m_pimpl->properties;
+}
+const std::filesystem::path &state::holder::current_map_path() noexcept {
+	return m_pimpl->current_map_path;
+}
+
+void state::holder::set_current_map_path(const std::filesystem::path &path) {
+	m_pimpl->current_map_path = path;
 }
 
 ImTerm::terminal<terminal_commands> &state::holder::terminal() noexcept {

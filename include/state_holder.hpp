@@ -1,6 +1,7 @@
 #ifndef NINJACLOWN_STATE_HOLDER_HPP
 #define NINJACLOWN_STATE_HOLDER_HPP
 
+#include <atomic>
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -8,7 +9,6 @@
 #include <string>
 #include <type_traits>
 #include <variant>
-#include <atomic>
 
 class terminal_commands;
 
@@ -60,11 +60,15 @@ public:
 
 	void wait() noexcept;
 
-	[[nodiscard]] utils::resource_manager &resources();
+	[[nodiscard]] utils::resource_manager &resources() noexcept;
 
-	std::map<std::string, property> &properties();
+	std::map<std::string, property> &properties() noexcept;
+
+	const std::filesystem::path &current_map_path() noexcept;
 
 private:
+    void set_current_map_path(const std::filesystem::path&);
+
 	std::unique_ptr<pimpl> m_pimpl;
 
 	ImTerm::terminal<terminal_commands> &terminal() noexcept;
@@ -166,6 +170,10 @@ class access<adapter::adapter> {
 
 	static view::viewer &view(holder &holder) noexcept {
 		return holder.view();
+	}
+
+	static void set_current_map_path(holder &holder, const std::filesystem::path &path) noexcept {
+		holder.set_current_map_path(path);
 	}
 
 	friend adapter::adapter;

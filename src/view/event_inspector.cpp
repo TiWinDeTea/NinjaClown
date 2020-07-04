@@ -74,10 +74,16 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 				case sf::Keyboard::Escape:
 					if (!state.displaying_term) {
 						if (!state.showing_escape_menu) {
+							if (state.autostep_bot) {
+								terminal_commands::stop_model(state.empty_arg);
+							}
 							ImGui::OpenPopup("##in game menu popup");
 							state.showing_escape_menu = true;
 						}
 						else {
+							if (state.autostep_bot) {
+								terminal_commands::run_model(state.empty_arg);
+							}
 							state.showing_escape_menu = false;
 						}
 					} else {
