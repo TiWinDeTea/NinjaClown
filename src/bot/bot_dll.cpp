@@ -98,15 +98,15 @@ bool bot::bot_dll::try_load_function(const utils::resource_manager& res, FuncPtr
 	ptr = m_dll.get_address<FuncPtr>(func_name);
 	if (ptr == nullptr) {
 		if (required) {
-			utils::log::error(res, "bot_dll.required_load_failed", "function_name"_a = func_name, "file"_a = *m_dll_path);
+			utils::log::error(res, "bot_dll.required_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		else {
-            utils::log::info(res, "bot_dll.optional_load_failed", "function_name"_a = func_name, "file"_a = *m_dll_path);
+            utils::log::info(res, "bot_dll.optional_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		return false;
 	} else {
 		if (!required) {
-            utils::log::info(res, "bot_dll.optional_load_success", "function_name"_a = func_name, "file"_a = *m_dll_path);
+            utils::log::info(res, "bot_dll.optional_load_success", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 	}
 	return true;
