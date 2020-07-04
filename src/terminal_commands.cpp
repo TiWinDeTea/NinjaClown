@@ -219,8 +219,13 @@ void terminal_commands::load_shared_library(argument_type &arg) {
 	const std::string &shared_library_path = arg.command_line[1];
 	log_formatted(arg, "terminal_commands.load_dll.loading", "dll_path"_a = shared_library_path);
 
-	if (!arg.val.model().load_dll(shared_library_path)) {
-		arg.term.add_text(log_get_or_gen(arg, "terminal_commands.load_dll.loading_failed"));
+	if (arg.val.model().is_running()) {
+		arg.val.model().async_load_dll(shared_library_path);
+	}
+	else {
+		if (!arg.val.model().load_dll(shared_library_path)) {
+			arg.term.add_text(log_get_or_gen(arg, "terminal_commands.load_dll.loading_failed"));
+		}
 	}
 }
 

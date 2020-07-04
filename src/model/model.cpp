@@ -28,6 +28,12 @@ model::model::~model() noexcept {
 	return false;
 }
 
+void model::model::async_load_dll(std::string dll_path) noexcept {
+	std::scoped_lock sl{m_async_load_dll};
+	m_tmp_dll_path = {dll_path};
+	m_dll_await_load.store(true);
+}
+
 void model::model::bot_start_level(ninja_api::nnj_api api) noexcept {
 	api.ninja_descriptor = &m_state_holder;
 	m_dll.bot_start_level(api);
@@ -54,6 +60,10 @@ void model::model::stop() noexcept {
 	}
 }
 
+bool model::model::is_running() noexcept {
+	return m_state.load() == thread_state::running;
+}
+
 void model::model::do_run() noexcept {
 	{
 		std::unique_lock ul{m_wait_mutex};
@@ -64,7 +74,16 @@ void model::model::do_run() noexcept {
 	m_fps_limiter.start_now();
 
 	while (m_state != thread_state::stopping) {
-		bot_think(); // FIXME: segfault if we loaded dll twice (linux only?)
+		if (m_dll_await_load.load()) {
+			std::scoped_lock sl{m_async_load_dll};
+			if (m_dll.load(m_state_holder.resources(), std::move(*m_tmp_dll_path))) {
+				m_dll.bot_init();
+			}
+			m_tmp_dll_path = {};
+			m_dll_await_load.store(false);
+		}
+
+		bot_think();
 
 		adapter::adapter &adapter = state::access<model>::adapter(m_state_holder);
 		adapter.clear_cells_changed_since_last_update();

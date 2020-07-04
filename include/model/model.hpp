@@ -27,11 +27,13 @@ public:
 	~model() noexcept;
 
 	[[nodiscard]] bool load_dll(std::string dll_path) noexcept;
+	void async_load_dll(std::string dll_path) noexcept;
 	void bot_start_level(ninja_api::nnj_api api) noexcept;
 	void bot_end_level() noexcept;
 	void bot_think() noexcept;
 	void run();
 	void stop() noexcept;
+	bool is_running() noexcept;
 
 	::model::world world{};
 
@@ -41,6 +43,9 @@ private:
 	state::holder &m_state_holder;
 
 	bot::bot_dll m_dll{};
+	std::optional<std::string> m_tmp_dll_path{};
+	std::atomic<bool> m_dll_await_load{};
+	std::mutex m_async_load_dll{};
 
 	std::optional<std::thread> m_thread{};
 	std::atomic<thread_state> m_state{thread_state::waiting};

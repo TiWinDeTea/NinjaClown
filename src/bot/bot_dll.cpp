@@ -19,17 +19,17 @@ std::string bot::bot_dll::error() const {
 	return m_dll.error();
 }
 
-bool bot::bot_dll::load(const utils::resource_manager& res, const std::string &dll_path) noexcept {
+bool bot::bot_dll::load(const utils::resource_manager &res, const std::string &dll_path) noexcept {
 	m_dll_path = {dll_path};
 	return reload(res);
 }
 
-bool bot::bot_dll::load(const utils::resource_manager& res, std::string &&dll_path) noexcept {
+bool bot::bot_dll::load(const utils::resource_manager &res, std::string &&dll_path) noexcept {
 	m_dll_path = {std::move(dll_path)};
 	return reload(res);
 }
 
-bool bot::bot_dll::reload(const utils::resource_manager& res) noexcept {
+bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
 	m_good = false;
 
 	if (!m_dll_path) {
@@ -78,7 +78,7 @@ void bot::bot_dll::bot_end_level() noexcept {
 	}
 }
 
-bool bot::bot_dll::load_all_api_functions(const utils::resource_manager& res) {
+bool bot::bot_dll::load_all_api_functions(const utils::resource_manager &res) {
 	bool good;
 
 	good = try_load_function(res, m_start_level_fn, "bot_start_level", true);
@@ -92,20 +92,21 @@ bool bot::bot_dll::load_all_api_functions(const utils::resource_manager& res) {
 }
 
 template <typename FuncPtr>
-bool bot::bot_dll::try_load_function(const utils::resource_manager& res, FuncPtr &ptr, const char *func_name, bool required) {
+bool bot::bot_dll::try_load_function(const utils::resource_manager &res, FuncPtr &ptr, const char *func_name, bool required) {
 	ptr = m_dll.get_address<FuncPtr>(func_name);
 	if (ptr == nullptr) {
 		if (required) {
 			utils::log::error(res, "bot_dll.required_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		else {
-            utils::log::info(res, "bot_dll.optional_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
+			utils::log::info(res, "bot_dll.optional_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		return false;
-	} else {
-		if (!required) {
-            utils::log::info(res, "bot_dll.optional_load_success", "func_name"_a = func_name, "file"_a = *m_dll_path);
-		}
 	}
+
+	if (!required) {
+		utils::log::info(res, "bot_dll.optional_load_success", "func_name"_a = func_name, "file"_a = *m_dll_path);
+	}
+
 	return true;
 }
