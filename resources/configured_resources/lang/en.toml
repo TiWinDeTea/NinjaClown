@@ -308,3 +308,21 @@
     [[tooltip.entry]]
         id = "adapter.nameless_gate"
         fmt = "Gate: {handle}"
+
+
+[gui]
+    [[gui.entry]]
+        id = "view.in_game_menu.resume"
+        fmt = "Resume"
+    [[gui.entry]]
+        id = "view.in_game_menu.restart"
+        fmt = "Restart"
+    [[gui.entry]]
+        id = "view.in_game_menu.settings"
+        fmt = "Settings"
+    [[gui.entry]]
+        id = "view.in_game_menu.main_menu"
+        fmt = "Main menu"
+    [[gui.entry]]
+        id = "view.in_game_menu.quit"
+        fmt = "Quit"

@@ -74,7 +74,8 @@ namespace config_keys {
 	namespace user {
 		constexpr const char main_table[]    = "user";
 		constexpr const char general_lang[]  = "language.general";
-		constexpr const char commands_lang[] = "language.commands";
+        constexpr const char commands_lang[] = "language.commands";
+        constexpr const char gui_lang[] = "language.gui";
 		// TODO: .general = IHM & Carte + défauts pour les commandes et log
 		//       .commands
 		//       .log
@@ -92,11 +93,17 @@ namespace config_keys {
 		constexpr const char text[]      = "fmt";
 	} // namespace lang::internal::log
 
-	namespace lang::internal::tooltip {
-		constexpr const char main_name[] = "tooltip.entry";
-		constexpr const char id[]        = "id";
-		constexpr const char text[]      = "fmt";
-	} // namespace lang::internal::tooltip
+    namespace lang::internal::tooltip {
+        constexpr const char main_name[] = "tooltip.entry";
+        constexpr const char id[]        = "id";
+        constexpr const char text[]      = "fmt";
+    } // namespace lang::internal::tooltip
+
+    namespace lang::internal::gui {
+        constexpr const char main_name[] = "gui.entry";
+        constexpr const char id[]        = "id";
+        constexpr const char text[]      = "fmt";
+    } // namespace lang::internal::tooltip
 
 	namespace lang::internal::variables {
 		constexpr const char main_name[] = "variables";
@@ -201,6 +208,14 @@ utils::optional<std::string_view> resource_manager::log_for(std::string_view key
 utils::optional<std::string_view> resource_manager::tooltip_for(std::string_view key) const noexcept {
 	auto it = m_tooltip_strings.find(key);
 	if (it != m_tooltip_strings.end()) {
+		return {it->second};
+	}
+	return {};
+}
+
+utils::optional<std::string_view> resource_manager::gui_text_for(std::string_view key) const noexcept {
+	auto it = m_gui_strings.find(key);
+	if (it != m_gui_strings.end()) {
 		return {it->second};
 	}
 	return {};
@@ -510,7 +525,8 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 	}
 
 	auto general_lang  = lang_config->get_qualified_as<std::string>(user::general_lang);
-	auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
+    auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
+    auto gui_lang = lang_config->get_qualified_as<std::string>(user::gui_lang);
 
 	if (!general_lang) {
 		spdlog::error(R"({}: "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::general_lang, error_msgs::missing_key);
@@ -527,15 +543,23 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 		return false;
 	}
 
-	path                                               = resources_directory / lang_folder / (*commands_lang + ".toml");
-	std::shared_ptr<cpptoml::table> commands_text_file = parse_file(path.generic_string());
-	if (!commands_text_file) {
-		return false;
-	}
+    path                                               = resources_directory / lang_folder / (*commands_lang + ".toml");
+    std::shared_ptr<cpptoml::table> commands_text_file = parse_file(path.generic_string());
+    if (!commands_text_file) {
+        return false;
+    }
 
-	bool success = load_logging_texts(log_text_file);
+    path                                               = resources_directory / lang_folder / (*gui_lang + ".toml");
+    std::shared_ptr<cpptoml::table> gui_text_file = parse_file(path.generic_string());
+    if (!gui_text_file) {
+        return false;
+    }
+
+
+    bool success = load_logging_texts(log_text_file);
 	success      = load_tooltip_texts(log_text_file) && success;
 	success      = load_command_texts(commands_text_file) && success;
+	success      = load_gui_texts(gui_text_file) && success;
 	return success;
 }
 
@@ -574,85 +598,22 @@ bool resource_manager::load_logging_texts(const std::shared_ptr<cpptoml::table> 
 	namespace log_ns = config_keys::lang::internal::log;
 
 	std::shared_ptr<cpptoml::table_array> logs = lang_file->get_table_array_qualified(log_ns::main_name);
-	if (!logs) {
-		// log stuff
-		return false;
-	}
-
-	m_log_string_keys.reserve(logs->get().size());
-
-	bool result{true};
-	for (std::shared_ptr<cpptoml::table> &log : *logs) {
-		bool just_failed{false};
-
-		cpptoml::option<std::string> id = log->get_qualified_as<std::string>(log_ns::id);
-		if (!id) {
-			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, log_ns::main_name, log_ns::id,
-			             error_msgs::missing_key);
-			just_failed = true;
-		}
-
-		cpptoml::option<std::string> text = log->get_as<std::string>(log_ns::text);
-		if (!text) {
-			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, log_ns::main_name, log_ns::text,
-			             error_msgs::missing_key);
-			just_failed = true;
-		}
-
-		if (just_failed) {
-			result = false;
-		}
-		else {
-			assert(m_log_string_keys.capacity() > m_log_string_keys.size()
-			       && "m_log_strings uses pointers to the strings stored in m_log_string_keys");
-			m_log_string_keys.emplace_back(*id); // please std::move, cpptoml
-			m_log_strings.emplace(m_log_string_keys.back(), *text);
-		}
-	}
-
-	return result;
+	return generic_load_keyed_texts(logs, log_ns::id, log_ns::text, m_log_strings, m_log_string_keys);
 }
 
 bool resource_manager::load_tooltip_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
 	namespace tooltip_ns = config_keys::lang::internal::tooltip;
 
 	std::shared_ptr<cpptoml::table_array> tooltips = lang_file->get_table_array_qualified(tooltip_ns::main_name);
-	if (!tooltips) {
-		return false;
-	}
+	return generic_load_keyed_texts(tooltips, tooltip_ns::id, tooltip_ns::text, m_tooltip_strings, m_tooltip_string_keys);
+}
 
-	m_tooltip_string_keys.reserve(tooltips->get().size());
 
-	bool result{true};
-	for (std::shared_ptr<cpptoml::table> &tooltip : *tooltips) {
-		bool just_failed{false};
+bool resource_manager::load_gui_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
+    namespace gui_ns = config_keys::lang::internal::gui;
 
-		cpptoml::option<std::string> id = tooltip->get_qualified_as<std::string>(tooltip_ns::id);
-		if (!id) {
-			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, tooltip_ns::main_name, tooltip_ns::id,
-			             error_msgs::missing_key);
-			just_failed = true;
-		}
-
-		cpptoml::option<std::string> text = tooltip->get_as<std::string>(tooltip_ns::text);
-		if (!text) {
-			spdlog::warn("{}: log lang file ({}): {} {}", error_msgs::loading_failed, tooltip_ns::main_name, tooltip_ns::text,
-			             error_msgs::missing_key);
-			just_failed = true;
-		}
-
-		if (just_failed) {
-			result = false;
-		}
-		else {
-			assert(m_tooltip_string_keys.capacity() > m_tooltip_strings.size()
-			       && "m_tooltip_strings uses pointers to the strings stored in m_tooltip_string_keys");
-			m_tooltip_string_keys.emplace_back(*id); // please std::move, cpptoml
-			m_tooltip_strings.emplace(m_tooltip_string_keys.back(), *text);
-		}
-	}
-
-	return result;
+    std::shared_ptr<cpptoml::table_array> gui_strings = lang_file->get_table_array_qualified(gui_ns::main_name);
+    return generic_load_keyed_texts(gui_strings, gui_ns::id, gui_ns::text, m_gui_strings, m_gui_string_keys);
 }
 
 sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
@@ -671,4 +632,44 @@ sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
 
 	m_textures_by_file.emplace(file, texture);
 	return texture;
+}
+
+bool resource_manager::generic_load_keyed_texts(const std::shared_ptr<cpptoml::table_array> &table_array, const char *id_key,
+                                                const char *text_key, std::unordered_map<std::string_view, std::string> &strings_out,
+                                                std::vector<std::string> &keys_out) noexcept {
+	if (table_array == nullptr) {
+		return false;
+	}
+
+	assert(keys_out.empty());
+	assert(strings_out.empty());
+
+	bool result{true};
+	keys_out.reserve(table_array->get().size());
+	for (std::shared_ptr<cpptoml::table> &value : *table_array) {
+		bool just_failed{false};
+
+		cpptoml::option<std::string> id = value->get_qualified_as<std::string>(id_key);
+		if (!id) {
+			spdlog::warn("{}: {}: {}", error_msgs::loading_failed, error_msgs::missing_key, id_key);
+			just_failed = true;
+		}
+
+		cpptoml::option<std::string> text = value->get_as<std::string>(text_key);
+		if (!text) {
+			spdlog::warn("{}: {}: {}", error_msgs::loading_failed, error_msgs::missing_key, text_key);
+			just_failed = true;
+		}
+
+		if (just_failed) {
+			result = false;
+		}
+		else {
+			assert(keys_out.capacity() >= strings_out.size() && "translation strings uses pointers to the strings stored in keys_out");
+			keys_out.emplace_back(*id); // please std::move, cpptoml
+			strings_out.emplace(keys_out.back(), *text);
+		}
+	}
+
+	return result;
 }

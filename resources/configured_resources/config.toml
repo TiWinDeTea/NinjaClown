@@ -1,6 +1,7 @@
 [user]
     language.general="en"
     language.commands="en"
+    language.gui="fr"
 
     # TODO:
     # language.log = ""  [liste déroulante] + "select lang file"

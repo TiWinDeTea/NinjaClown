@@ -66,6 +66,8 @@ public:
 
 	[[nodiscard]] utils::optional<std::string_view> tooltip_for(std::string_view key) const noexcept;
 
+	[[nodiscard]] utils::optional<std::string_view> gui_text_for(std::string_view key) const noexcept;
+
 	[[nodiscard]] const tiles_infos_t &tiles_infos() const noexcept {
 		return m_tiles_infos;
 	}
@@ -85,6 +87,11 @@ private:
 	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 	[[nodiscard]] bool load_logging_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 	[[nodiscard]] bool load_tooltip_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
+	[[nodiscard]] bool load_gui_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
+
+	[[nodiscard]] static bool generic_load_keyed_texts(const std::shared_ptr<cpptoml::table_array> &table_array, const char *id_key,
+	                                                   const char *text_key, std::unordered_map<std::string_view, std::string> &strings_out,
+	                                                   std::vector<std::string> &keys_out) noexcept;
 
 	sf::Texture *get_texture(const std::string &file) noexcept;
 
@@ -96,10 +103,13 @@ private:
 	std::unordered_map<resources_type::mob_id, view::mob_animations> m_mobs_anims{};
 
 	std::unordered_map<command_id, std::pair<std::string, std::string>> m_commands_strings{};
+
 	std::unordered_map<std::string_view, std::string> m_log_strings{};
 	std::vector<std::string> m_log_string_keys{};
 	std::unordered_map<std::string_view, std::string> m_tooltip_strings{};
 	std::vector<std::string> m_tooltip_string_keys{};
+	std::unordered_map<std::string_view, std::string> m_gui_strings{};
+	std::vector<std::string> m_gui_string_keys{};
 };
 } // namespace utils
 

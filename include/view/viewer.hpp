@@ -101,6 +101,8 @@ private:
 
 	void do_run() noexcept;
 
+	void show_menu_window(struct viewer_display_state&) noexcept;
+
 	// converts sfml events coords to viewport coords
 	sf::Vector2f to_viewport_coord(const sf::Vector2f &coords) const noexcept;
 	sf::Vector2f to_viewport_coord(const sf::Vector2i &coords) const noexcept;

@@ -17,22 +17,29 @@ const sf::Event::SizeEvent &size(const sf::Event &event) {
 }
 
 const sf::Event::MouseWheelScrollEvent &mouse_wheel_scroll(const sf::Event &event) {
-    assert(event.type == sf::Event::MouseWheelScrolled); // NOLINT
-    return event.mouseWheelScroll;
+	assert(event.type == sf::Event::MouseWheelScrolled); // NOLINT
+	return event.mouseWheelScroll;
 }
 
 const sf::Event::MouseMoveEvent &mouse_move(const sf::Event &event) {
-    assert(event.type == sf::Event::MouseMoved); // NOLINT
-    return event.mouseMove;
+	assert(event.type == sf::Event::MouseMoved); // NOLINT
+	return event.mouseMove;
 }
 
 const sf::Event::MouseButtonEvent &mouse_button(const sf::Event &event) {
-    assert(event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::MouseButtonReleased); // NOLINT
-    return event.mouseButton;
+	assert(event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::MouseButtonReleased); // NOLINT
+	return event.mouseButton;
 }
 } // namespace
 
 void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_state &state) {
+#define NEEDS_NOPOPUP                                                                                                                      \
+	do {                                                                                                                                   \
+		if (state.showing_escape_menu) {                                                                                                   \
+			return;                                                                                                                        \
+		}                                                                                                                                  \
+	} while (false)
+
 	switch (event.type) {
 		case sf::Event::Closed:
 			state.window.close();
@@ -40,6 +47,7 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 		case sf::Event::KeyPressed:
 			switch (key(event).code) {
 				case sf::Keyboard::F11:
+					NEEDS_NOPOPUP;
 					if (state.displaying_term) {
 						state.displaying_term  = false;
 						state.terminal_hovered = false;
@@ -49,16 +57,31 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 					}
 					break;
 				case sf::Keyboard::F5:
+					NEEDS_NOPOPUP;
 					if (!state.autostep_bot) {
 						terminal_commands::update_world(state.empty_arg);
 					}
 					break;
 				case sf::Keyboard::F4:
+					NEEDS_NOPOPUP;
 					if (std::exchange(state.autostep_bot, !state.autostep_bot)) {
 						terminal_commands::stop_model(state.empty_arg);
 					}
 					else {
 						terminal_commands::run_model(state.empty_arg);
+					}
+					break;
+				case sf::Keyboard::Escape:
+					if (!state.displaying_term) {
+						if (!state.showing_escape_menu) {
+							ImGui::OpenPopup("##in game menu popup");
+							state.showing_escape_menu = true;
+						}
+						else {
+							state.showing_escape_menu = false;
+						}
+					} else {
+						state.displaying_term = false;
 					}
 					break;
 				default:
@@ -87,6 +110,7 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 			break;
 		}
 		case sf::Event::MouseWheelScrolled:
+			NEEDS_NOPOPUP;
 			if (state.terminal_hovered) {
 				return;
 			}
@@ -119,21 +143,24 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 				}
 			}
 			break;
-		case sf::Event::MouseMoved: {
-			sf::Event::MouseMoveEvent move = mouse_move(event);
-			if (state.left_click_pos) {
-				const float zoom_factor = state.window.getSize().x / state.viewport.width;
+		case sf::Event::MouseMoved:
+			NEEDS_NOPOPUP;
+			{
+				sf::Event::MouseMoveEvent move = mouse_move(event);
+				if (state.left_click_pos) {
+					const float zoom_factor = state.window.getSize().x / state.viewport.width;
 
-				state.viewport.left += static_cast<float>(state.mouse_pos.x - move.x) / zoom_factor;
-				state.viewport.top += static_cast<float>(state.mouse_pos.y - move.y) / zoom_factor;
-				state.window.setView(sf::View{state.viewport});
+					state.viewport.left += static_cast<float>(state.mouse_pos.x - move.x) / zoom_factor;
+					state.viewport.top += static_cast<float>(state.mouse_pos.y - move.y) / zoom_factor;
+					state.window.setView(sf::View{state.viewport});
+				}
+				state.terminal_hovered = state.displaying_term && state.terminal.get_size().y > static_cast<float>(move.y);
+				state.mouse_pos        = {move.x, move.y};
+				break;
 			}
-			state.terminal_hovered = state.displaying_term && state.terminal.get_size().y > static_cast<float>(move.y);
-			state.mouse_pos        = {move.x, move.y};
-			break;
-		}
 		case sf::Event::MouseButtonReleased:
-			switch (sf::Event::MouseButtonEvent button = mouse_button(event) ; button.button) {
+			NEEDS_NOPOPUP;
+			switch (sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
 				case sf::Mouse::Button::Left:
 					if (!state.terminal_hovered) {
 						viewer.m_dialog_viewer.on_click(button.x, button.y);
@@ -148,7 +175,8 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 			}
 			break;
 		case sf::Event::MouseButtonPressed:
-            switch (sf::Event::MouseButtonEvent button = mouse_button(event) ; button.button) {
+			NEEDS_NOPOPUP;
+			switch (sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
 				case sf::Mouse::Button::Left:
 					if (!state.terminal_hovered) {
 						state.left_click_pos = {button.x, button.y};

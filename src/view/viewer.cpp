@@ -77,14 +77,14 @@ void view::viewer::do_run() noexcept {
 
 	while (dp_state.window.isOpen() && m_running && !close_requested) {
 
+		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
+
 		sf::Event event{};
 		while (dp_state.window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
 			inspect_event(*this, event, dp_state);
 		}
 		m_viewport = dp_state.viewport;
-
-		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
 
 		m_dialog_viewer.show(dp_state.window.getSize().x, dp_state.window.getSize().y);
 
@@ -103,6 +103,8 @@ void view::viewer::do_run() noexcept {
 			m_overmap.acquire()->print_all(*this);
 		}
 
+        show_menu_window(dp_state);
+
 		ImGui::SFML::Render(dp_state.window);
 		dp_state.window.display();
 
@@ -113,6 +115,54 @@ void view::viewer::do_run() noexcept {
 		dp_state.window.close();
 	}
 	ImGui::SFML::Shutdown();
+}
+
+void view::viewer::show_menu_window(viewer_display_state& state) noexcept {
+	if (!state.showing_escape_menu) {
+		return;
+	}
+
+    const auto& res = m_state_holder.resources();
+    const auto& style = ImGui::GetStyle();
+
+	std::string_view missing = "MISSING TRANSLATION";
+	std::string_view resume = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
+	std::string_view restart = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
+	std::string_view settings = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
+	std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
+	std::string_view quit = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
+
+    ImVec2 max_text_size{0.f, 0.f};
+	auto update_sz = [&max_text_size](std::string_view str) {
+		auto size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+		max_text_size.x = std::max(max_text_size.x, size.x);
+		max_text_size.y = std::max(max_text_size.y, size.y);
+	};
+	update_sz(resume);
+	update_sz(restart);
+	update_sz(settings);
+	update_sz(main_menu);
+	update_sz(quit);
+
+
+	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
+    ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
+    if (ImGui::BeginPopupModal("##in game menu popup", nullptr,
+                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+        if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
+            state.showing_escape_menu = false;
+        }
+        if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
+        }
+        if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
+        }
+        if (ImGui::Button(main_menu.data(), ImVec2{text_width, 0.f})) {
+        }
+        if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
+            state.window.close();
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void view::viewer::reload_sprites() {
