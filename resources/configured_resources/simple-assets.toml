@@ -64,30 +64,30 @@
 
         [graphics.mobs.scientist.downwards]
             frame-count = 1
-            pos.x = 240
+            pos.x = 165
             pos.y = 0
             shift.x = 0
             shift.y = 0
-            width = 30
-            height = 30
+            width = 15
+            height = 15
 
         [graphics.mobs.scientist.upwards]
             frame-count = 1
-            pos.x = 180
-            pos.y = 0
+            pos.x = 150
+            pos.y = 15
             shift.x = 0
             shift.y = 0
-            width = 30
-            height = 30
+            width = 15
+            height = 15
 
         [graphics.mobs.scientist.rightwards]
             frame-count = 1
-            pos.x = 210
-            pos.y = 0
+            pos.x = 165
+            pos.y = 15
             shift.x = 0
             shift.y = 0
-            width = 30
-            height = 30
+            width = 15
+            height = 15
 
         [graphics.mobs.scientist.leftwards]
             frame-count = 1
@@ -95,8 +95,9 @@
             pos.y = 0
             shift.x = 0
             shift.y = 0
-            width = 30
-            height = 30
+            width = 15
+            height = 15
+
 
     [graphics.tiles]
         list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
@@ -133,9 +134,9 @@
         [graphics.tiles.tile-frame]
             id = @TILES_FRAMEID@
             file = "resources/simple-assets.png"
-            frame-count = 2
-            pos.x = 0
-            pos.y = 60
+            frame-count = 1
+            pos.x = 60
+            pos.y = 0
 
     [graphics.objects]
         list = ["button", "gate", "target"]
