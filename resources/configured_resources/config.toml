@@ -1,7 +1,7 @@
 [user]
-    language.general="en"
-    language.commands="en"
-    language.gui="fr"
+    language.general = "en"
+    language.commands = "en"
+    language.gui = "fr"
 
     # TODO:
     # language.log = ""  [liste déroulante] + "select lang file"
@@ -10,8 +10,7 @@
     # volume = n         [curseur <---#-> ]
     # resource_pack = "" [liste déroulante] + "select resource pack file"
 
-    # resource_pack : fichier config "graphics" comme si dessous + assets graphiques
-    #                 > proposer un pack en vue d’en haut plutôt qu’en vue isométrique
+    # resource_pack : fichier config "graphics" comme si dessous
 
 
 [graphics]

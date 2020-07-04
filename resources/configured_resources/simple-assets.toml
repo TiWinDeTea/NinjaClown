@@ -1,0 +1,173 @@
+[user]
+    language.general="en"
+    language.commands="en"
+    language.gui="fr"
+
+    # TODO:
+    # language.log = ""  [liste déroulante] + "select lang file"
+    # font = ""          [liste déroulante] + "select font file"
+    # engine.tps = n     [champ d’entrée  ]
+    # volume = n         [curseur <---#-> ]
+    # resource_pack = "" [liste déroulante] + "select resource pack file"
+
+    # resource_pack : fichier config "graphics" comme si dessous + assets graphiques
+    #                 > proposer un pack en vue d’en haut plutôt qu’en vue isométrique
+
+
+[graphics]
+    [graphics.mobs]
+        list = ["player", "scientist"]
+
+        [graphics.mobs.player]
+            id = @MOBS_PLAYERID@
+            file = "resources/simple-assets.png"
+
+        [graphics.mobs.player.downwards]
+            frame-count = 1
+            pos.x = 165
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 15
+            height = 15
+
+        [graphics.mobs.player.upwards]
+            frame-count = 1
+            pos.x = 150
+            pos.y = 15
+            shift.x = 0
+            shift.y = 0
+            width = 15
+            height = 15
+
+        [graphics.mobs.player.rightwards]
+            frame-count = 1
+            pos.x = 165
+            pos.y = 15
+            shift.x = 0
+            shift.y = 0
+            width = 15
+            height = 15
+
+        [graphics.mobs.player.leftwards]
+            frame-count = 1
+            pos.x = 150
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 15
+            height = 15
+
+        [graphics.mobs.scientist]
+            id = @MOBS_SCIENTISTID@
+            file = "resources/simple-assets.png"
+
+        [graphics.mobs.scientist.downwards]
+            frame-count = 1
+            pos.x = 240
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 30
+            height = 30
+
+        [graphics.mobs.scientist.upwards]
+            frame-count = 1
+            pos.x = 180
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 30
+            height = 30
+
+        [graphics.mobs.scientist.rightwards]
+            frame-count = 1
+            pos.x = 210
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 30
+            height = 30
+
+        [graphics.mobs.scientist.leftwards]
+            frame-count = 1
+            pos.x = 150
+            pos.y = 0
+            shift.x = 0
+            shift.y = 0
+            width = 30
+            height = 30
+
+    [graphics.tiles]
+        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
+        spacing.x = 30
+        x-yshift = 0
+
+        spacing.y = 30
+        y-xshift = 0
+
+        width = 30
+        height = 30
+
+        [graphics.tiles.chasm]
+            id = @TILES_CHASMID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 30
+            pos.y = 0
+
+        [graphics.tiles.iron-tile]
+            id = @TILES_IRONID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 0
+            pos.y = 0
+
+        [graphics.tiles.concrete-tile]
+            id = @TILES_CONCRETEID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 0
+            pos.y = 0
+
+        [graphics.tiles.tile-frame]
+            id = @TILES_FRAMEID@
+            file = "resources/simple-assets.png"
+            frame-count = 2
+            pos.x = 0
+            pos.y = 60
+
+    [graphics.objects]
+        list = ["button", "gate", "target"]
+
+        [graphics.objects.button]
+            id = @OBJECTS_BUTTONID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 60
+            pos.y = 0
+            width = 30
+            height = 30
+            shift.y = 0
+            shift.x = 0
+
+        [graphics.objects.gate]
+            id = @OBJECTS_GATEID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 90
+            pos.y = 0
+            width = 30
+            height = 30
+            shift.y = 0
+            shift.x = 0
+
+        [graphics.objects.target]
+            id = @OBJECTS_TARGETID@
+            file = "resources/simple-assets.png"
+            frame-count = 1
+            pos.x = 120
+            pos.y = 0
+            width = 30
+            height = 30
+            shift.x = 0
