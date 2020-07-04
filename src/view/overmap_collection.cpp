@@ -32,8 +32,10 @@ void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
 	}
 }
 
-void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
-                                         utils::resource_manager &resources) const noexcept {
+std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
+                                                                          utils::resource_manager &resources) const noexcept {
+
+	std::vector<std::string> local_info;
 	utils::visitor request_visitor{[&](const adapter::request::hitbox &hitbox) {
 		                               auto [screen_x, screen_y] = viewer.to_screen_coords(hitbox.x, hitbox.y);
 		                               auto [screen_width, screen_height]
@@ -47,19 +49,28 @@ void view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter 
 
 		                               viewer.window->draw(rect);
 	                               },
-	                               [&](const adapter::request::coords_list &list) {
-		                               for (const auto &coords : list.coords) {
-			                               viewer.acquire_map()->highlight_tile(viewer, coords.x, coords.y, resources);
-		                               }
+	                               [&](const adapter::request::coords &coord) {
+		                               viewer.acquire_map()->highlight_tile(viewer, coord.x, coord.y, resources);
 	                               },
-	                               [](std::monostate /* ignored */) {}};
+	                               [&](const adapter::request::info &info) {
+		                               std::move(info.lines.begin(), info.lines.end(), std::back_inserter(local_info));
+	                               }};
 
+    std::vector<std::vector<std::string>> ret;
 	for (const auto &displayable : m_ordered_displayable) {
 		displayable.first->print(viewer);
 		if (displayable.first->is_hovered(viewer)) {
-			std::visit(request_visitor, adapter.tooltip_for(displayable.second));
+            local_info.clear();
+			adapter::draw_request requests = adapter.tooltip_for(displayable.second);
+			for (const adapter::draw_request::value_type &request : requests) {
+				std::visit(request_visitor, request);
+			}
+			if (!local_info.empty()) {
+				ret.emplace_back(std::move(local_info));
+			}
 		}
 	}
+	return ret;
 }
 
 adapter::view_handle view::overmap_collection::add_object(object &&obj) noexcept {

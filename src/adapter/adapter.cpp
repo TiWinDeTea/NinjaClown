@@ -17,22 +17,17 @@
 
 namespace {
 template <typename... Args>
-bool tooltip_text_prefix(utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
+[[nodiscard]] std::string tooltip_text_prefix(utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
+	using std::string_literals::operator""s;
 	utils::optional<std::string_view> fmt = res.tooltip_for(key);
 	if (fmt) {
-		auto formatted = fmt::format(*fmt, std::forward<Args>(args)...);
-		ImGui::Text("%s%s", prefix, formatted.c_str());
-		return true;
+		return prefix + fmt::format(*fmt, std::forward<Args>(args)...);
 	}
-
-	std::string key_string{key};
-	ImGui::Text("MISSING LOCALIZATION: %s", key_string.c_str());
-
-	return false;
+	return "MISSING LOCALIZATION: "s + std::string{key};
 }
 
 template <typename... Args>
-bool tooltip_text(utils::resource_manager &res, std::string_view key, Args &&... args) {
+[[nodiscard]] std::string tooltip_text(utils::resource_manager &res, std::string_view key, Args &&... args) {
 	return tooltip_text_prefix(res, key, "", std::forward<Args>(args)...);
 }
 } // namespace
@@ -177,48 +172,45 @@ void adapter::adapter::dll_log(const char *log) {
 }
 
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
-	model::world &world = state::access<adapter>::model(m_state).world;
+	const model::world &world = state::access<adapter>::model(m_state).world;
 
-	ImGui::BeginTooltip();
-	ImGui::Separator();
-	ON_SCOPE_EXIT {
-		ImGui::Separator();
-		ImGui::EndTooltip();
-	};
+    draw_request list;
+	request::info info_req;
 
 	if (entity == m_target_handle) {
-		tooltip_text(m_state.resources(), "adapter.objective");
+		info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.objective"));
+		list.emplace_back(std::move(info_req));
 		return {};
 	}
 
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {
-		auto &components = world.components;
-		auto handle      = it->second.handle;
+		const auto &components     = world.components;
+		const model_handle mhandle = it->second;
 
 		if (entity.is_mob) {
-			if (components.health[handle]) {
-				tooltip_text(m_state.resources(), "adapter.hp", "hp"_a = components.health[handle]->points);
+			if (components.health[mhandle.handle]) {
+				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.hp", "hp"_a = components.health[mhandle.handle]->points));
 			}
 
-			if (components.hitbox[handle]) {
-				model::component::hitbox &hitbox = *components.hitbox[handle];
-				model::vec2 top_left             = hitbox.top_left();
-				model::vec2 bottom_right         = hitbox.bottom_right();
-				tooltip_text(m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x, "top_left_y"_a = top_left.y,
-				             "bottom_right_x"_a = bottom_right.x, "bottom_right_y"_a = bottom_right.y);
-				tooltip_text(m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y);
-				tooltip_text(m_state.resources(), "adapter.angle", "angle"_a = components.hitbox[handle]->rad);
+			if (components.hitbox[mhandle.handle]) {
+				const model::component::hitbox &hitbox = *components.hitbox[mhandle.handle];
+				model::vec2 top_left                   = hitbox.top_left();
+				model::vec2 bottom_right               = hitbox.bottom_right();
+				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x, "top_left_y"_a = top_left.y,
+				             "bottom_right_x"_a = bottom_right.x, "bottom_right_y"_a = bottom_right.y));
+				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
+				info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.angle", "angle"_a = components.hitbox[mhandle.handle]->rad));
+			}
+			if (!info_req.lines.empty()) {
+                list.emplace_back(std::move(info_req));
+				info_req.lines.clear();
 			}
 		}
 		else {
-			auto model_it = m_view2model.find(entity);
-			assert(it != m_view2model.end()); // NOLINT
-
-			switch (model_it->second.type) {
+			switch (mhandle.type) {
 				case model_handle::ACTIVATOR: {
 					auto targets = world.activators[it->second.handle].targets;
-					request::coords_list list;
-					tooltip_text(m_state.resources(), "adapter.activator", "handle"_a = it->second.handle);
+					info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.activator", "handle"_a = it->second.handle));
 					for (size_t target : targets) {
 						std::string target_name;
 						auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
@@ -230,32 +222,38 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 						}
 
 						if (!target_name.empty()) {
-							tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t", "handle"_a = target,
-							                    "name"_a = target_name);
+							info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t", "handle"_a = target,
+							                    "name"_a = target_name));
 						}
 						else {
-							tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target);
+							info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target));
 							utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = target,
 							                 "kind"_a = "activator target");
 						}
+
+						const model::actionable::instance_data &target_data = world.actionables[target].data;
+						list.push_back(draw_request::value_type{request::coords{target_data.pos.x, target_data.pos.y}});
 					}
+                    if (!info_req.lines.empty()) {
+                        list.emplace_back(std::move(info_req));
+                    }
 					return list;
 				}
 				case model_handle::ACTIONABLE: {
 					auto target_name = m_view2name.find(entity);
 					if (target_name != m_view2name.end()) {
-						tooltip_text(m_state.resources(), "adapter.named_gate", "handle"_a = it->second.handle,
-						             "name"_a = target_name->second);
+						info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.named_gate", "handle"_a = it->second.handle,
+						             "name"_a = target_name->second));
 					}
 					else {
-						tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = it->second.handle);
-						utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = model_it->second.handle,
+                        info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = it->second.handle));
+						utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = mhandle.handle,
 						                 "kind"_a = "actionable");
 					}
 					break;
 				}
 				case model_handle::ENTITY:
-					utils::log::warn(m_state.resources(), "adapter.non_coherent_entity", "handle"_a = model_it->second.handle);
+					utils::log::warn(m_state.resources(), "adapter.non_coherent_entity", "handle"_a = mhandle.handle);
 					break;
 			}
 		}
@@ -263,7 +261,10 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	else {
 		utils::log::warn(m_state.resources(), "adapter.unknown_view_entity", "view_handle"_a = entity.handle);
 	}
-	return {};
+    if (!info_req.lines.empty()) {
+        list.emplace_back(std::move(info_req));
+    }
+	return list;
 }
 
 void adapter::adapter::clear_cells_changed_since_last_update() noexcept {
@@ -274,7 +275,7 @@ const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last
 	return m_cells_changed_since_last_update;
 }
 utils::resource_manager &adapter::adapter::resources() {
-    return m_state.resources();
+	return m_state.resources();
 }
 
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {

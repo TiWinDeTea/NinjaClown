@@ -251,6 +251,7 @@ void terminal_commands::update_world(argument_type &arg) {
 
 void terminal_commands::run_model(argument_type &arg) {
 	arg.val.model().run();
+	arg.val.view();
 }
 
 void terminal_commands::stop_model(argument_type &arg) {

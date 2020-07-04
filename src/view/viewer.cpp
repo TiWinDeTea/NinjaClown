@@ -97,13 +97,50 @@ void view::viewer::do_run() noexcept {
 		m_map.acquire()->print(*this, m_state_holder.resources());
 
 		if (show_debug_data && !dp_state.terminal_hovered) {
-			m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
+			std::vector<std::vector<std::string>> printable_info
+			  = m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
+
+			sf::Vector2f mouse_pos = get_mouse_pos();
+			printable_info.emplace_back().emplace_back(
+			  fmt::format("{} - {}", static_cast<int>(mouse_pos.x), static_cast<int>(mouse_pos.y)));
+
+			auto &style = ImGui::GetStyle();
+			float x_text_size{0.f};
+			float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
+			for (const std::vector<std::string> &info : printable_info) {
+				for (const std::string &str : info) {
+					ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+					y_text_size += text_size.y;
+                    y_text_size += style.ItemInnerSpacing.y;
+					x_text_size = std::max(x_text_size, text_size.x);
+				}
+				y_text_size += style.ItemInnerSpacing.y;
+			}
+			x_text_size += style.WindowPadding.x * 2;
+
+			float prev = std::exchange(style.WindowRounding, 0.f);
+			ImVec2 pos = {0, dp_state.window_size.y - y_text_size};
+			ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
+			if (ImGui::Begin("##corner info window", nullptr,
+			                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+			                   | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+				for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
+					for (const std::string &str : *it) {
+						ImGui::Text("%s", str.c_str());
+					}
+					ImGui::Separator();
+				}
+				ImGui::Text("%s", printable_info.back().back().c_str());
+			}
+			ImGui::End();
+			style.WindowRounding = prev;
 		}
 		else {
 			m_overmap.acquire()->print_all(*this);
 		}
 
-        show_menu_window(dp_state);
+		show_menu_window(dp_state);
 
 		ImGui::SFML::Render(dp_state.window);
 		dp_state.window.display();
@@ -117,24 +154,24 @@ void view::viewer::do_run() noexcept {
 	ImGui::SFML::Shutdown();
 }
 
-void view::viewer::show_menu_window(viewer_display_state& state) noexcept {
+void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	if (!state.showing_escape_menu) {
 		return;
 	}
 
-    const auto& res = m_state_holder.resources();
-    const auto& style = ImGui::GetStyle();
+	const auto &res   = m_state_holder.resources();
+	const auto &style = ImGui::GetStyle();
 
-	std::string_view missing = "MISSING TRANSLATION";
-	std::string_view resume = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
-	std::string_view restart = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
-	std::string_view settings = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
+	std::string_view missing   = "MISSING TRANSLATION";
+	std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
+	std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
+	std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
 	std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
-	std::string_view quit = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
+	std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
 
-    ImVec2 max_text_size{0.f, 0.f};
+	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {
-		auto size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+		auto size       = ImGui::CalcTextSize(str.data(), str.data() + str.size());
 		max_text_size.x = std::max(max_text_size.x, size.x);
 		max_text_size.y = std::max(max_text_size.y, size.y);
 	};
@@ -144,25 +181,24 @@ void view::viewer::show_menu_window(viewer_display_state& state) noexcept {
 	update_sz(main_menu);
 	update_sz(quit);
 
-
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
-    ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
-    if (ImGui::BeginPopupModal("##in game menu popup", nullptr,
-                               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
-        if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
-            state.showing_escape_menu = false;
-        }
-        if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
-        }
-        if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
-        }
-        if (ImGui::Button(main_menu.data(), ImVec2{text_width, 0.f})) {
-        }
-        if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
-            state.window.close();
-        }
-        ImGui::EndPopup();
-    }
+	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
+	if (ImGui::BeginPopupModal("##in game menu popup", nullptr,
+	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+		if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
+			state.showing_escape_menu = false;
+		}
+		if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
+		}
+		if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
+		}
+		if (ImGui::Button(main_menu.data(), ImVec2{text_width, 0.f})) {
+		}
+		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
+			state.window.close();
+		}
+		ImGui::EndPopup();
+	}
 }
 
 void view::viewer::reload_sprites() {

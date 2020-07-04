@@ -74,16 +74,17 @@ namespace request {
 	struct coords {
 		utils::ssize_t x, y;
 	};
-	struct coords_list {
-		std::vector<struct coords> coords;
-	};
 
 	struct hitbox {
 		float x, y;
 		float width, height;
 	};
+
+	struct info {
+		std::vector<std::string> lines;
+	};
 } // namespace request
-using draw_request = std::variant<std::monostate, request::coords_list, request::hitbox>;
+using draw_request = std::vector<std::variant<request::coords, request::hitbox, request::info>>;
 
 class adapter {
 public:
