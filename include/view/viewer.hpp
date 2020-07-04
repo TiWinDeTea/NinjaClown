@@ -9,7 +9,6 @@
 
 #include "utils/synchronized.hpp"
 
-#include "view/dialogs.hpp"
 #include "view/event_inspector.hpp"
 #include "view/fps_limiter.hpp"
 #include "view/map.hpp"
@@ -78,10 +77,6 @@ public:
 
 	utils::synchronized<view::map, utils::spinlock>::acquired_t acquire_map() noexcept;
 
-	class dialog_viewer &dialog_viewer() noexcept {
-		return m_dialog_viewer;
-	}
-
 	void set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept;
 
 	// converts world grid coords to on-screen coords
@@ -120,7 +115,6 @@ private:
 
 	fps_limiter m_fps_limiter{};
 
-	class dialog_viewer m_dialog_viewer { };
 	friend void view::inspect_event(viewer &viewer, const sf::Event &event, struct viewer_display_state &state);
 };
 } // namespace view

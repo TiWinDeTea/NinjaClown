@@ -222,15 +222,6 @@
         id = "adapter_map_loader_v1_0_0.missing_map_layout"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : entrée 'map.layout' manquante"
     [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_dialogs"
-        fmt = "Un acteur a besoin du dialogue \"{dialog_name}\", mais la section 'dialog' est vide ou manquante (lors de chargement de la carte \"{map}\")"
-    [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_spec_dialog"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : le dialogue '{dialog_name}' est introuvable"
-    [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.malformed_dialog"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : le dialogue '{dialog_name}' est malformé"
-    [[log.entry]]
         id = "adapter_map_loader_v1_0_0.map_loaded"
         fmt = "carte \"{map}\" chargée"
     [[log.entry]]

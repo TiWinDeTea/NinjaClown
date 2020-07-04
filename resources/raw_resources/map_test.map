@@ -76,17 +76,9 @@
 
 	[[actors.spawn]]
 		type = "button"
-		dialog = "nani"
 		pos.x = 6
 		pos.y = 1
 		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7"]
-
-[dialogs]
-    [dialogs.nani]
-        text = [
-            ["Jean-Kévin", "Ne serait-ce pas là l'antre de Xar-Sarott ?"],
-            ["Jean-Kévin", "Je peux maintenant y aller !"]
-        ]
 
 [map]
 	layout = [

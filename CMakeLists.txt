@@ -31,7 +31,6 @@ set(NINJA_CLOWN_SOURCES
         src/utils/resource_manager.cpp
 
         src/view/animation.cpp
-        src/view/dialogs.cpp
         src/view/event_inspector.cpp
         src/view/facing_dir.cpp
         src/view/fps_limiter.cpp

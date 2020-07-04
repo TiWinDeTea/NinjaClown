@@ -12,7 +12,6 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/scope_guards.hpp"
-#include "view/dialogs.hpp"
 #include "view/viewer.hpp"
 
 namespace {
@@ -39,11 +38,9 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		state::access<adapter>::model(m_state).world.reset();
 		state::access<adapter>::view(m_state).acquire_overmap()->clear();
 		state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
-		state::access<adapter>::view(m_state).dialog_viewer().clear(); // TODO: mutex pour ici ?
 		m_target_handle.reset();
 
 		m_target_handle.reset();
-		m_model2dialog.clear();
 		m_model2view.clear();
 		m_view2model.clear();
 		m_view2name.clear();
@@ -87,10 +84,7 @@ bool adapter::adapter::map_is_loaded() noexcept {
 }
 
 void adapter::adapter::fire_activator(model_handle handle) noexcept {
-	auto it = m_model2dialog.find(handle);
-	if (it != m_model2dialog.end()) {
-		state::access<adapter>::view(m_state).dialog_viewer().select_dialog(it->second);
-	}
+	// Empty for now
 }
 
 void adapter::adapter::close_gate(model_handle gate) noexcept {
@@ -166,8 +160,6 @@ const std::vector<std::size_t> &adapter::adapter::entities_changed_since_last_up
 }
 
 void adapter::adapter::dll_log(const char *log) {
-	view::dialog_viewer &dialog = state::access<adapter>::view(m_state).dialog_viewer();
-	dialog.dll_word(log, std::chrono::milliseconds{2500}); // TODO : externalize/parameterify
 	spdlog::info("BOT LOG: {}", log);
 }
 

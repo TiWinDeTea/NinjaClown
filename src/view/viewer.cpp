@@ -14,7 +14,6 @@
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/dialogs.hpp"
 #include "view/event_inspector.hpp"
 #include "view/viewer.hpp"
 #include "view/viewer_display_state.hpp"
@@ -85,8 +84,6 @@ void view::viewer::do_run() noexcept {
 			inspect_event(*this, event, dp_state);
 		}
 		m_viewport = dp_state.viewport;
-
-		m_dialog_viewer.show(dp_state.window.getSize().x, dp_state.window.getSize().y);
 
 		if (dp_state.displaying_term) {
 			ImGui::SetNextWindowPos({0.f, 0.f}, ImGuiCond_Always);

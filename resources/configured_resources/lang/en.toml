@@ -222,15 +222,6 @@
         id = "adapter_map_loader_v1_0_0.missing_map_layout"
         fmt = "Error while parsing map \"{map}\": missing map layout"
     [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_dialogs"
-        fmt = "No dialog founds, but activator required dialog \"{dialog_name}\" (while parsing map \"{map}\")"
-    [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_spec_dialog"
-        fmt = "Requested dialog \"{dialog_name}\" not found (while parsing map \"{map}\")"
-    [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.malformed_dialog"
-        fmt = "Requested dialog \"{dialog_name}\" is malformed (while parsing map \"{map}\")"
-    [[log.entry]]
         id = "adapter_map_loader_v1_0_0.map_loaded"
         fmt = "map \"{map}\" loaded"
     [[log.entry]]

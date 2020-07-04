@@ -128,8 +128,6 @@ private:
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
 
-	std::unordered_map<model_handle, unsigned int, model_hhash> m_model2dialog{};
-
 	std::vector<model::grid_point> m_cells_changed_since_last_update{};
 	std::vector<std::size_t> m_entities_changed_since_last_update{};
 };

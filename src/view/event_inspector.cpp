@@ -162,9 +162,6 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 			NEEDS_NOPOPUP;
 			switch (sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
 				case sf::Mouse::Button::Left:
-					if (!state.terminal_hovered) {
-						viewer.m_dialog_viewer.on_click(button.x, button.y);
-					}
 					state.left_click_pos.reset();
 					break;
 				case sf::Mouse::Button::Right:
