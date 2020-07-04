@@ -62,11 +62,9 @@ void bot::bot_dll::bot_init() noexcept {
 }
 
 void bot::bot_dll::bot_start_level(ninja_api::nnj_api api) noexcept {
+	m_cached_bot_api = {api};
 	if (m_start_level_fn) {
 		m_start_level_fn(api);
-	}
-	else {
-		m_cached_bot_api = {api};
 	}
 }
 
