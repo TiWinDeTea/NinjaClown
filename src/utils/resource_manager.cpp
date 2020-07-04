@@ -53,10 +53,15 @@ namespace config_keys {
 	namespace mobs {
 		constexpr const char anims[] = "mobs";
 
-		constexpr const char dir_north[] = "upwards";
-		constexpr const char dir_south[] = "downwards";
-		constexpr const char dir_east[]  = "rightwards";
-		constexpr const char dir_west[]  = "leftwards";
+        constexpr const char dir_north[] = "upwards";
+        constexpr const char dir_south[] = "downwards";
+        constexpr const char dir_east[]  = "rightwards";
+        constexpr const char dir_west[]  = "leftwards";
+
+        constexpr const char dir_north_west[] = "upleftwards";
+        constexpr const char dir_south_west[] = "downleftwards";
+        constexpr const char dir_north_east[] = "uprightwards";
+        constexpr const char dir_south_east[] = "downrightwards";
 	} // namespace mobs
 
 	namespace tiles {
@@ -288,15 +293,24 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 		}
 
 		view::mob_animations mob_anims;
-		auto try_load = [&](view::facing_direction::type dir, const char *dir_str) {
+		auto try_load = [&](view::facing_direction::type dir, const char *dir_str, const char* or_else_dir_str = nullptr) {
 			auto anim_config = current_mob->get_table(dir_str);
 			if (anim_config) {
 				success = load_mob_anim(anim_config, mob, dir, mob_anims, *texture) && success;
 			}
-			else {
-				spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
-				              mobs::anims, mob, dir_str, error_msgs::missing_table);
-				success = false;
+			else if (or_else_dir_str != nullptr) {
+                anim_config = current_mob->get_table(or_else_dir_str);
+                if (anim_config) {
+                    success = load_mob_anim(anim_config, mob, dir, mob_anims, *texture) && success;
+                } else {
+                    spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
+                                  mobs::anims, mob, dir_str, error_msgs::missing_table);
+                    success = false;
+				}
+			} else {
+                spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
+                              mobs::anims, mob, dir_str, error_msgs::missing_table);
+                success = false;
 			}
 		};
 
@@ -304,6 +318,10 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 		try_load(view::facing_direction::S, mobs::dir_south);
 		try_load(view::facing_direction::E, mobs::dir_east);
 		try_load(view::facing_direction::W, mobs::dir_west);
+        try_load(view::facing_direction::NW, mobs::dir_north_west, mobs::dir_north);
+		try_load(view::facing_direction::SW, mobs::dir_south_west, mobs::dir_west);
+		try_load(view::facing_direction::NE, mobs::dir_north_east, mobs::dir_east);
+		try_load(view::facing_direction::SE, mobs::dir_south_east, mobs::dir_south);
 
 		m_mobs_anims.emplace(static_cast<resources_type::mob_id>(*id), std::move(mob_anims));
 	}

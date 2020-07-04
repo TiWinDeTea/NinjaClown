@@ -24,39 +24,76 @@
 
         [graphics.mobs.player.downwards]
             frame-count = 1
-            pos.x = 165
-            pos.y = 0
-            shift.x = 0
+            pos.x = 192
+            pos.y = 16
+            shift.x = -8
             shift.y = 0
-            width = 15
-            height = 15
+            width = 16
+            height = 16
 
         [graphics.mobs.player.upwards]
             frame-count = 1
-            pos.x = 150
-            pos.y = 15
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            pos.x = 208
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
         [graphics.mobs.player.rightwards]
             frame-count = 1
-            pos.x = 165
-            pos.y = 15
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            pos.x = 208
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
         [graphics.mobs.player.leftwards]
             frame-count = 1
-            pos.x = 150
+            pos.x = 192
             pos.y = 0
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.player.uprightwards]
+            frame-count = 1
+            pos.x = 240
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.player.upleftwards]
+            frame-count = 1
+            pos.x = 224
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.player.downrightwards]
+            frame-count = 1
+            pos.x = 240
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.player.downleftwards]
+            frame-count = 1
+            pos.x = 224
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
 
         [graphics.mobs.scientist]
             id = @MOBS_SCIENTISTID@
@@ -64,57 +101,93 @@
 
         [graphics.mobs.scientist.downwards]
             frame-count = 1
-            pos.x = 165
-            pos.y = 0
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            pos.x = 192
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
         [graphics.mobs.scientist.upwards]
             frame-count = 1
-            pos.x = 150
-            pos.y = 15
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            pos.x = 208
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
         [graphics.mobs.scientist.rightwards]
             frame-count = 1
-            pos.x = 165
-            pos.y = 15
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            pos.x = 208
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
         [graphics.mobs.scientist.leftwards]
             frame-count = 1
-            pos.x = 150
+            pos.x = 192
             pos.y = 0
-            shift.x = 0
-            shift.y = 0
-            width = 15
-            height = 15
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.scientist.uprightwards]
+            frame-count = 1
+            pos.x = 240
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.scientist.upleftwards]
+            frame-count = 1
+            pos.x = 224
+            pos.y = 0
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.scientist.downrightwards]
+            frame-count = 1
+            pos.x = 240
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
+
+        [graphics.mobs.scientist.downleftwards]
+            frame-count = 1
+            pos.x = 224
+            pos.y = 16
+            shift.x = -8
+            shift.y = -8
+            width = 16
+            height = 16
 
 
     [graphics.tiles]
         list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
-        spacing.x = 30
+        spacing.x = 32
         x-yshift = 0
 
-        spacing.y = 30
+        spacing.y = 32
         y-xshift = 0
 
-        width = 30
-        height = 30
+        width = 32
+        height = 32
 
         [graphics.tiles.chasm]
             id = @TILES_CHASMID@
             file = "resources/simple-assets.png"
             frame-count = 1
-            pos.x = 30
+            pos.x = 32
             pos.y = 0
 
         [graphics.tiles.iron-tile]
@@ -135,7 +208,7 @@
             id = @TILES_FRAMEID@
             file = "resources/simple-assets.png"
             frame-count = 1
-            pos.x = 60
+            pos.x = 160
             pos.y = 0
 
     [graphics.objects]
@@ -145,30 +218,30 @@
             id = @OBJECTS_BUTTONID@
             file = "resources/simple-assets.png"
             frame-count = 1
-            pos.x = 60
-            pos.y = 0
+            pos.x = 65
+            pos.y = 1
             width = 30
             height = 30
-            shift.y = 0
-            shift.x = 0
+            shift.y = 1
+            shift.x = 1
 
         [graphics.objects.gate]
             id = @OBJECTS_GATEID@
             file = "resources/simple-assets.png"
             frame-count = 1
-            pos.x = 90
-            pos.y = 0
+            pos.x = 97
+            pos.y = 1
             width = 30
             height = 30
-            shift.y = 0
-            shift.x = 0
+            shift.y = 1
+            shift.x = 1
 
         [graphics.objects.target]
             id = @OBJECTS_TARGETID@
             file = "resources/simple-assets.png"
             frame-count = 1
-            pos.x = 120
+            pos.x = 128
             pos.y = 0
-            width = 30
-            height = 30
+            width = 32
+            height = 32
             shift.x = 0

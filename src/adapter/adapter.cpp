@@ -180,7 +180,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	if (entity == m_target_handle) {
 		info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.objective"));
 		list.emplace_back(std::move(info_req));
-		return {};
+		return list;
 	}
 
 	if (auto it = m_view2model.find(entity); it != m_view2model.end()) {

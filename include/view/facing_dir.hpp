@@ -21,7 +21,6 @@ constexpr std::string_view to_string(facing_direction::type val) noexcept {
 	return direction_map[val];
 }
 
-// TODO: add NE/NW/SE/SW
 type from_angle(float rad);
 
 constexpr std::optional<facing_direction::type> from_string(std::string_view str) noexcept {
