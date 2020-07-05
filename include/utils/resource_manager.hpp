@@ -42,6 +42,13 @@ class resource_manager {
 		int height;
 	} m_tiles_infos{};
 
+	struct lang_info {
+		std::string name;
+		std::string variant;
+		std::string shorthand;
+		std::filesystem::path file;
+	};
+
 public:
 	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
 
@@ -75,13 +82,11 @@ public:
 private:
 	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config) noexcept;
 
-	[[nodiscard]] bool load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config) noexcept;
+	[[nodiscard]] bool load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config, const std::string &graph_file) noexcept;
+	[[nodiscard]] bool load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config, const std::string &graph_file) noexcept;
+	[[nodiscard]] bool load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config, const std::string &graph_file) noexcept;
 	[[nodiscard]] bool load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_anim_config, std::string_view mob_name,
 	                                 view::facing_direction::type dir, view::mob_animations &anims, sf::Texture &) noexcept;
-
-	[[nodiscard]] bool load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config) noexcept;
-
-	[[nodiscard]] bool load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config) noexcept;
 
 	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept;
 	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
@@ -94,6 +99,11 @@ private:
 	                                                   std::vector<std::string> &keys_out) noexcept;
 
 	sf::Texture *get_texture(const std::string &file) noexcept;
+
+	lang_info m_user_general_lang{};
+	lang_info m_user_commands_lang{};
+	lang_info m_user_gui_lang{};
+	lang_info m_user_log_lang{};
 
 	std::unordered_map<std::string, sf::Texture *> m_textures_by_file{};
 	std::forward_list<sf::Texture> m_textures_holder{};

@@ -1,0 +1,155 @@
+[meta]
+    name.dflt_lang = "en"
+    name.en = "programmer - isometric"
+    name.fr = "programmeur - isométrique"
+
+[graphics]
+    file = "assets.png"
+
+    [graphics.mobs]
+        list = ["player", "scientist"]
+
+        [graphics.mobs.player]
+            id = @MOBS_PLAYERID@
+
+        [graphics.mobs.player.downwards]
+            frame-count = 1
+            pos.x = 0
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 42
+            height = 56
+
+        [graphics.mobs.player.upwards]
+            frame-count = 1
+            pos.x = 73
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 41
+            height = 56
+
+        [graphics.mobs.player.rightwards]
+            frame-count = 1
+            pos.x = 116
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 29
+            height = 56
+
+        [graphics.mobs.player.leftwards]
+            frame-count = 1
+            pos.x = 43
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 29
+            height = 56
+
+        [graphics.mobs.scientist]
+            id = @MOBS_SCIENTISTID@
+
+        [graphics.mobs.scientist.downwards]
+            frame-count = 1
+            pos.x = 0
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 42
+            height = 56
+
+        [graphics.mobs.scientist.upwards]
+            frame-count = 1
+            pos.x = 73
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 41
+            height = 56
+
+        [graphics.mobs.scientist.rightwards]
+            frame-count = 1
+            pos.x = 116
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 29
+            height = 56
+
+        [graphics.mobs.scientist.leftwards]
+            frame-count = 1
+            pos.x = 43
+            pos.y = 64
+            shift.x = 9
+            shift.y = -50
+            width = 29
+            height = 56
+
+    [graphics.tiles]
+        list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]
+        spacing.x = 51
+        x-yshift = 0
+
+        spacing.y = 31
+        y-xshift = -31
+
+        width = 81
+        height = 31
+
+        [graphics.tiles.chasm]
+            id = @TILES_CHASMID@
+            frame-count = 1
+            pos.x = 164
+            pos.y = 0
+
+        [graphics.tiles.iron-tile]
+            id = @TILES_IRONID@
+            frame-count = 1
+            pos.x = 0
+            pos.y = 0
+
+        [graphics.tiles.concrete-tile]
+            id = @TILES_CONCRETEID@
+            frame-count = 1
+            pos.x = 82
+            pos.y = 0
+
+        [graphics.tiles.tile-frame]
+            id = @TILES_FRAMEID@
+            frame-count = 2
+            pos.x = 0
+            pos.y = 32
+
+    [graphics.objects]
+        list = ["button", "gate", "target"]
+
+        [graphics.objects.button]
+            id = @OBJECTS_BUTTONID@
+            frame-count = 1
+            pos.x = 162
+            pos.y = 32
+            width = 17
+            height = 24
+            shift.y = -4
+            shift.x = 33
+
+        [graphics.objects.gate]
+            id = @OBJECTS_GATEID@
+            frame-count = 5
+            pos.x = 246
+            pos.y = 0
+            width = 82
+            height = 51
+            shift.y = -20
+            shift.x = 0
+
+        [graphics.objects.target]
+            id = @OBJECTS_TARGETID@
+            frame-count = 8
+            pos.x = 0
+            pos.y = 121
+            width = 81
+            height = 31
+            shift.x = 0

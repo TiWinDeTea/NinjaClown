@@ -1,6 +1,12 @@
+[meta]
+    language = "Français"
+    variant = "France"
+    shorthand = "fr-FR"
+    maps_to = "fr"
+
 [commands]
     [commands.@COMMANDS_CLEARID@]
-        name = "éponge"
+        name = "effacer"
         desc = "nettoie l'écran"
     [commands.@COMMANDS_ECHOID@]
         name = "echo"
@@ -12,34 +18,34 @@
         name = "aide"
         desc = "affiche cette aide"
     [commands.@COMMANDS_PRINTID@]
-        name = "impression"
+        name = "impr"
         desc = "affiche du texte à l'écran"
     [commands.@COMMANDS_QUITID@]
         name = "quitter"
         desc = "ferme l’application"
     [commands.@COMMANDS_LOAD_DLLID@]
-        name = "charge_dll"
+        name = "charge_lib"
         desc = "charge une bilbiothèque pour gérer le roBot"
     [commands.@COMMANDS_LOAD_MAPID@]
         name = "charge_carte"
         desc = "charge une carte depuis un fichier"
     [commands.@COMMANDS_UPDATE_WORLDID@]
-        name = "maj_monde"
+        name = "tick"
         desc = "avance le monde d’un tick dans le temps"
     [commands.@COMMANDS_SETID@]
-        name = "maj"
+        name = "majv"
         desc = "met à jour la valeur d’une variable"
     [commands.@COMMANDS_VALUEOFID@]
-        name = "val"
+        name = "valv"
         desc = "affiche la valeur d'une variable"
     [commands.@COMMANDS_RELOAD_RESOURCES@]
-        name = "reconfigurer"
+        name = "config"
         desc = "recharge les fichiers de resources et de configuration"
     [commands.@COMMANDS_FIRE_ACTIONABLE@]
         name = "actionner"
         desc = "Envoie un signal à un actionnable (ex : ouvrir/fermer une porte)"
     [commands.@COMMANDS_FIRE_ACTIVATOR@]
-        name = "activateur"
+        name = "activer"
         desc = "Envoie un signal à un activateur (ex : appuyer sur un bouton)"
 
 [variables]

@@ -1,3 +1,9 @@
+[meta]
+    language = "English"
+    variant = "Great britain"
+    shorthand = "en-GB"
+    maps_to = "en"
+
 [commands]
     [commands.@COMMANDS_CLEARID@]
         name = "clear"

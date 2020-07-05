@@ -1,26 +1,16 @@
-[user]
-    language.general="en"
-    language.commands="en"
-    language.gui="fr"
-
-    # TODO:
-    # language.log = ""  [liste déroulante] + "select lang file"
-    # font = ""          [liste déroulante] + "select font file"
-    # engine.tps = n     [champ d’entrée  ]
-    # volume = n         [curseur <---#-> ]
-    # resource_pack = "" [liste déroulante] + "select resource pack file"
-
-    # resource_pack : fichier config "graphics" comme si dessous + assets graphiques
-    #                 > proposer un pack en vue d’en haut plutôt qu’en vue isométrique
-
+[meta]
+    name.dflt_lang = "en"
+    name.en = "programmer - simple 2D"
+    name.fr = "programmeur - 2D simple"
 
 [graphics]
+    file = "resources/simple-assets.png"
+
     [graphics.mobs]
         list = ["player", "scientist"]
 
         [graphics.mobs.player]
             id = @MOBS_PLAYERID@
-            file = "resources/simple-assets.png"
 
         [graphics.mobs.player.downwards]
             frame-count = 1
@@ -97,7 +87,6 @@
 
         [graphics.mobs.scientist]
             id = @MOBS_SCIENTISTID@
-            file = "resources/simple-assets.png"
 
         [graphics.mobs.scientist.downwards]
             frame-count = 1
@@ -185,28 +174,24 @@
 
         [graphics.tiles.chasm]
             id = @TILES_CHASMID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 32
             pos.y = 0
 
         [graphics.tiles.iron-tile]
             id = @TILES_IRONID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 0
             pos.y = 0
 
         [graphics.tiles.concrete-tile]
             id = @TILES_CONCRETEID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 0
             pos.y = 0
 
         [graphics.tiles.tile-frame]
             id = @TILES_FRAMEID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 160
             pos.y = 0
@@ -216,7 +201,6 @@
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 65
             pos.y = 1
@@ -227,7 +211,6 @@
 
         [graphics.objects.gate]
             id = @OBJECTS_GATEID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 97
             pos.y = 1
@@ -238,7 +221,6 @@
 
         [graphics.objects.target]
             id = @OBJECTS_TARGETID@
-            file = "resources/simple-assets.png"
             frame-count = 1
             pos.x = 128
             pos.y = 0

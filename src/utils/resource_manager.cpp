@@ -1,6 +1,8 @@
 #include <cpptoml.h>
 #include <spdlog/spdlog.h>
 
+#include <iterator>
+
 #include "utils/logging.hpp"
 
 #include "utils/resource_manager.hpp"
@@ -15,7 +17,7 @@ std::shared_ptr<cpptoml::table> parse_file(const std::string &path) {
 		return cpptoml::parse_file(path);
 	}
 	catch (const cpptoml::parse_exception &e) {
-		spdlog::error("{}", e.what());
+		spdlog::error("{} (file: {})", e.what(), path);
 		return {};
 	}
 }
@@ -35,10 +37,20 @@ namespace error_msgs {
 } // namespace error_msgs
 
 namespace config_keys {
-	constexpr const char graphics[] = "graphics";
-	constexpr const char id[]       = "id";
-	constexpr const char file[]     = "file";
-	constexpr const char list[]     = "list";
+	constexpr const char graphics_resource_file[] = "user.resource_pack";
+	constexpr const char graphics[]               = "graphics";
+	constexpr const char graphics_main_file[]     = "file";
+	constexpr const char id[]                     = "id";
+	constexpr const char file[]                   = "file";
+	constexpr const char list[]                   = "list";
+
+	namespace meta {
+		constexpr const char language[]             = "meta.language";
+		constexpr const char variant[]              = "meta.variant";
+		constexpr const char shorthand[]            = "meta.shorthand";
+		constexpr const char respack_name_beg[]     = "meta.name.";
+		constexpr const char respack_default_lang[] = "dflt_lang";
+	} // namespace meta
 
 	namespace sprites {
 		constexpr const char frame_count[] = "frame-count";
@@ -53,15 +65,15 @@ namespace config_keys {
 	namespace mobs {
 		constexpr const char anims[] = "mobs";
 
-        constexpr const char dir_north[] = "upwards";
-        constexpr const char dir_south[] = "downwards";
-        constexpr const char dir_east[]  = "rightwards";
-        constexpr const char dir_west[]  = "leftwards";
+		constexpr const char dir_north[] = "upwards";
+		constexpr const char dir_south[] = "downwards";
+		constexpr const char dir_east[]  = "rightwards";
+		constexpr const char dir_west[]  = "leftwards";
 
-        constexpr const char dir_north_west[] = "upleftwards";
-        constexpr const char dir_south_west[] = "downleftwards";
-        constexpr const char dir_north_east[] = "uprightwards";
-        constexpr const char dir_south_east[] = "downrightwards";
+		constexpr const char dir_north_west[] = "upleftwards";
+		constexpr const char dir_south_west[] = "downleftwards";
+		constexpr const char dir_north_east[] = "uprightwards";
+		constexpr const char dir_south_east[] = "downrightwards";
 	} // namespace mobs
 
 	namespace tiles {
@@ -79,11 +91,9 @@ namespace config_keys {
 	namespace user {
 		constexpr const char main_table[]    = "user";
 		constexpr const char general_lang[]  = "language.general";
-        constexpr const char commands_lang[] = "language.commands";
-        constexpr const char gui_lang[] = "language.gui";
-		// TODO: .general = IHM & Carte + défauts pour les commandes et log
-		//       .commands
-		//       .log
+		constexpr const char commands_lang[] = "language.commands";
+		constexpr const char gui_lang[]      = "language.gui";
+		constexpr const char log_lang[]      = "language.log";
 	} // namespace user
 
 	namespace lang::internal::commands {
@@ -98,17 +108,17 @@ namespace config_keys {
 		constexpr const char text[]      = "fmt";
 	} // namespace lang::internal::log
 
-    namespace lang::internal::tooltip {
-        constexpr const char main_name[] = "tooltip.entry";
-        constexpr const char id[]        = "id";
-        constexpr const char text[]      = "fmt";
-    } // namespace lang::internal::tooltip
+	namespace lang::internal::tooltip {
+		constexpr const char main_name[] = "tooltip.entry";
+		constexpr const char id[]        = "id";
+		constexpr const char text[]      = "fmt";
+	} // namespace lang::internal::tooltip
 
-    namespace lang::internal::gui {
-        constexpr const char main_name[] = "gui.entry";
-        constexpr const char id[]        = "id";
-        constexpr const char text[]      = "fmt";
-    } // namespace lang::internal::tooltip
+	namespace lang::internal::gui {
+		constexpr const char main_name[] = "gui.entry";
+		constexpr const char id[]        = "id";
+		constexpr const char text[]      = "fmt";
+	} // namespace lang::internal::gui
 
 	namespace lang::internal::variables {
 		constexpr const char main_name[] = "variables";
@@ -167,7 +177,18 @@ bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
 	if (!config) {
 		return false;
 	}
-	return load_graphics(config) && load_texts(config, path.parent_path());
+
+	auto resource_pack = config->get_qualified_as<std::string>(config_keys::graphics_resource_file);
+	if (!resource_pack) {
+		spdlog::error("No resource pack specified in config file");
+		return false;
+	}
+
+	auto graphics = parse_file(*resource_pack);
+	if (!graphics) {
+		return false;
+	}
+	return load_graphics(graphics) && load_texts(config, path.parent_path());
 }
 
 optional<const view::animation &> resource_manager::tile_animation(resources_type::tile_id tile) const noexcept {
@@ -233,6 +254,14 @@ bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noe
 		return false;
 	}
 
+	std::string graphics_file;
+	if (auto f = config->get_as<std::string>(config_keys::graphics_main_file); f) {
+		graphics_file = *f;
+	}
+	else {
+		graphics_file = DEFAULT_ASSET_FILE;
+	}
+
 	auto mobs_config    = config->get_table(config_keys::mobs::anims);
 	auto tiles_config   = config->get_table(config_keys::tiles::anims);
 	auto objects_config = config->get_table(config_keys::objects::anims);
@@ -253,13 +282,13 @@ bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noe
 		return false;
 	}
 
-	bool success = load_tiles_anims(tiles_config);
-	success      = load_mobs_anims(mobs_config) && success;
-	success      = load_objects_anims(objects_config) && success;
+	bool success = load_tiles_anims(tiles_config, graphics_file);
+	success      = load_mobs_anims(mobs_config, graphics_file) && success;
+	success      = load_objects_anims(objects_config, graphics_file) && success;
 	return success;
 }
 
-bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config) noexcept {
+bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mobs_config, const std::string &graph_file) noexcept {
 	namespace mobs = config_keys::mobs;
 
 	cpptoml::option<std::vector<std::string>> mob_list = mobs_config->get_array_of<std::string>(config_keys::list);
@@ -286,31 +315,33 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_mob->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_mob->get_qualified_as<std::string>(config_keys::file).value_or(graph_file));
 		if (texture == nullptr) {
 			success = false;
 			continue;
 		}
 
 		view::mob_animations mob_anims;
-		auto try_load = [&](view::facing_direction::type dir, const char *dir_str, const char* or_else_dir_str = nullptr) {
+		auto try_load = [&](view::facing_direction::type dir, const char *dir_str, const char *or_else_dir_str = nullptr) {
 			auto anim_config = current_mob->get_table(dir_str);
 			if (anim_config) {
 				success = load_mob_anim(anim_config, mob, dir, mob_anims, *texture) && success;
 			}
 			else if (or_else_dir_str != nullptr) {
-                anim_config = current_mob->get_table(or_else_dir_str);
-                if (anim_config) {
-                    success = load_mob_anim(anim_config, mob, dir, mob_anims, *texture) && success;
-                } else {
-                    spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
-                                  mobs::anims, mob, dir_str, error_msgs::missing_table);
-                    success = false;
+				anim_config = current_mob->get_table(or_else_dir_str);
+				if (anim_config) {
+					success = load_mob_anim(anim_config, mob, dir, mob_anims, *texture) && success;
 				}
-			} else {
-                spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
-                              mobs::anims, mob, dir_str, error_msgs::missing_table);
-                success = false;
+				else {
+					spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
+					              mobs::anims, mob, dir_str, error_msgs::missing_table);
+					success = false;
+				}
+			}
+			else {
+				spdlog::error("{}: \"{}.{}.{}.{}\" {}", error_msgs::loading_failed, error_msgs::loading_failed, config_keys::graphics,
+				              mobs::anims, mob, dir_str, error_msgs::missing_table);
+				success = false;
 			}
 		};
 
@@ -318,7 +349,7 @@ bool resource_manager::load_mobs_anims(const std::shared_ptr<cpptoml::table> &mo
 		try_load(view::facing_direction::S, mobs::dir_south);
 		try_load(view::facing_direction::E, mobs::dir_east);
 		try_load(view::facing_direction::W, mobs::dir_west);
-        try_load(view::facing_direction::NW, mobs::dir_north_west, mobs::dir_north);
+		try_load(view::facing_direction::NW, mobs::dir_north_west, mobs::dir_north);
 		try_load(view::facing_direction::SW, mobs::dir_south_west, mobs::dir_west);
 		try_load(view::facing_direction::NE, mobs::dir_north_east, mobs::dir_east);
 		try_load(view::facing_direction::SE, mobs::dir_south_east, mobs::dir_south);
@@ -345,7 +376,7 @@ bool resource_manager::load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_
 	return true;
 }
 
-bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config) noexcept {
+bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config, const std::string &graph_file) noexcept {
 	namespace tiles = config_keys::tiles;
 	namespace spr   = config_keys::sprites;
 
@@ -435,7 +466,7 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_tile->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_tile->get_qualified_as<std::string>(config_keys::file).value_or(graph_file));
 		if (texture == nullptr) {
 			success = false;
 			continue;
@@ -450,7 +481,7 @@ bool resource_manager::load_tiles_anims(const std::shared_ptr<cpptoml::table> &t
 	return success;
 }
 
-bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config) noexcept {
+bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config, const std::string &graph_file) noexcept {
 	namespace objects = config_keys::objects;
 	namespace spr     = config_keys::sprites;
 
@@ -513,7 +544,7 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 			continue;
 		}
 
-		sf::Texture *texture = get_texture(current_object->get_qualified_as<std::string>(config_keys::file).value_or(DEFAULT_ASSET_FILE));
+		sf::Texture *texture = get_texture(current_object->get_qualified_as<std::string>(config_keys::file).value_or(graph_file));
 		if (texture == nullptr) {
 			success = false;
 			continue;
@@ -543,38 +574,40 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 	}
 
 	auto general_lang  = lang_config->get_qualified_as<std::string>(user::general_lang);
-    auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
-    auto gui_lang = lang_config->get_qualified_as<std::string>(user::gui_lang);
+	auto commands_lang = lang_config->get_qualified_as<std::string>(user::commands_lang);
+	auto gui_lang      = lang_config->get_qualified_as<std::string>(user::gui_lang);
+	auto log_lang      = lang_config->get_qualified_as<std::string>(user::log_lang);
 
 	if (!general_lang) {
 		spdlog::error(R"({}: "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::general_lang, error_msgs::missing_key);
 		return false;
 	}
+	m_user_general_lang.file = resources_directory / lang_folder / *general_lang;
 
-	if (!commands_lang) {
-		commands_lang = general_lang;
-	}
+	auto parse = [&general_lang, &resources_directory](cpptoml::option<std::string> &to_parse, lang_info &related_info) {
+		if (!to_parse) {
+			to_parse = general_lang;
+		}
+		related_info.file = resources_directory / lang_folder / *to_parse;
+		return parse_file(related_info.file);
+	};
 
-	std::filesystem::path path                    = resources_directory / lang_folder / (*general_lang + ".toml");
-	std::shared_ptr<cpptoml::table> log_text_file = parse_file(path.generic_string());
+	std::shared_ptr<cpptoml::table> log_text_file = parse(log_lang, m_user_general_lang);
 	if (!log_text_file) {
 		return false;
 	}
 
-    path                                               = resources_directory / lang_folder / (*commands_lang + ".toml");
-    std::shared_ptr<cpptoml::table> commands_text_file = parse_file(path.generic_string());
-    if (!commands_text_file) {
-        return false;
-    }
+	std::shared_ptr<cpptoml::table> commands_text_file = parse(commands_lang, m_user_commands_lang);
+	if (!commands_text_file) {
+		return false;
+	}
 
-    path                                               = resources_directory / lang_folder / (*gui_lang + ".toml");
-    std::shared_ptr<cpptoml::table> gui_text_file = parse_file(path.generic_string());
-    if (!gui_text_file) {
-        return false;
-    }
+	std::shared_ptr<cpptoml::table> gui_text_file = parse(gui_lang, m_user_gui_lang);
+	if (!gui_text_file) {
+		return false;
+	}
 
-
-    bool success = load_logging_texts(log_text_file);
+	bool success = load_logging_texts(log_text_file);
 	success      = load_tooltip_texts(log_text_file) && success;
 	success      = load_command_texts(commands_text_file) && success;
 	success      = load_gui_texts(gui_text_file) && success;
@@ -583,6 +616,17 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 
 bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
 	namespace cmds = config_keys::lang::internal::commands;
+
+	auto try_read = [&lang_file](const char *key) -> std::string {
+		if (auto val = lang_file->get_qualified_as<std::string>(key)) {
+			return *val;
+		}
+		return "?????";
+	};
+
+	m_user_commands_lang.name      = try_read(config_keys::meta::language);
+	m_user_commands_lang.variant   = try_read(config_keys::meta::variant);
+	m_user_commands_lang.shorthand = try_read(config_keys::meta::shorthand);
 
 	bool result = true;
 	for (int i = 0; i < static_cast<int>(command_id::OUTOFRANGE); ++i) {
@@ -615,6 +659,17 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 bool resource_manager::load_logging_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
 	namespace log_ns = config_keys::lang::internal::log;
 
+	auto try_read = [&lang_file](const char *key) -> std::string {
+		if (auto val = lang_file->get_qualified_as<std::string>(key)) {
+			return *val;
+		}
+		return "?????";
+	};
+
+	m_user_log_lang.name      = try_read(config_keys::meta::language);
+	m_user_log_lang.variant   = try_read(config_keys::meta::variant);
+	m_user_log_lang.shorthand = try_read(config_keys::meta::shorthand);
+
 	std::shared_ptr<cpptoml::table_array> logs = lang_file->get_table_array_qualified(log_ns::main_name);
 	return generic_load_keyed_texts(logs, log_ns::id, log_ns::text, m_log_strings, m_log_string_keys);
 }
@@ -626,12 +681,22 @@ bool resource_manager::load_tooltip_texts(const std::shared_ptr<cpptoml::table> 
 	return generic_load_keyed_texts(tooltips, tooltip_ns::id, tooltip_ns::text, m_tooltip_strings, m_tooltip_string_keys);
 }
 
+bool resource_manager::load_gui_texts(const std::shared_ptr<cpptoml::table> &gui_file) noexcept {
+	namespace gui_ns = config_keys::lang::internal::gui;
 
-bool resource_manager::load_gui_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept {
-    namespace gui_ns = config_keys::lang::internal::gui;
+	auto try_read = [&gui_file](const char *key) -> std::string {
+		if (auto val = gui_file->get_qualified_as<std::string>(key)) {
+			return *val;
+		}
+		return "?????";
+	};
 
-    std::shared_ptr<cpptoml::table_array> gui_strings = lang_file->get_table_array_qualified(gui_ns::main_name);
-    return generic_load_keyed_texts(gui_strings, gui_ns::id, gui_ns::text, m_gui_strings, m_gui_string_keys);
+	m_user_gui_lang.name      = try_read(config_keys::meta::language);
+	m_user_gui_lang.variant   = try_read(config_keys::meta::variant);
+	m_user_gui_lang.shorthand = try_read(config_keys::meta::shorthand);
+
+	std::shared_ptr<cpptoml::table_array> gui_strings = gui_file->get_table_array_qualified(gui_ns::main_name);
+	return generic_load_keyed_texts(gui_strings, gui_ns::id, gui_ns::text, m_gui_strings, m_gui_string_keys);
 }
 
 sf::Texture *resource_manager::get_texture(const std::string &file) noexcept {
