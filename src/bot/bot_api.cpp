@@ -171,7 +171,7 @@ void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_
 	for (size_t i = 0; i < num_commits; ++i) {
 		ninja_api::nnj_decision_commit const &commit = commits[i]; // NOLINT
 		if (commit.target_handle > model::cst::max_entities) {
-			utils::log::warn(*get_resources(ninja_data), "bot_api.commit.invalid_hanle", "handle"_a = commit.target_handle,
+			utils::log::warn(*get_resources(ninja_data), "bot_api.commit.invalid_handle", "handle"_a = commit.target_handle,
 			                 "decision"_a = i);
 		}
 		else if (world->components.metadata[commit.target_handle].kind == ninja_api::EK_DLL) {
