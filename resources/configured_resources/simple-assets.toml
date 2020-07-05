@@ -27,7 +27,7 @@
             pos.x = 192
             pos.y = 16
             shift.x = -8
-            shift.y = 0
+            shift.y = -8
             width = 16
             height = 16
 

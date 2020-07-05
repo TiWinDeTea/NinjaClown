@@ -18,12 +18,11 @@
 namespace {
 template <typename... Args>
 [[nodiscard]] std::string tooltip_text_prefix(utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
-	using std::string_literals::operator""s;
 	utils::optional<std::string_view> fmt = res.tooltip_for(key);
 	if (fmt) {
 		return prefix + fmt::format(*fmt, std::forward<Args>(args)...);
 	}
-	return "MISSING LOCALIZATION: "s + std::string{key};
+	return "MISSING LOCALIZATION: " + std::string{key};
 }
 
 template <typename... Args>

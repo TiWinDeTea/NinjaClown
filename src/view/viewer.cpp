@@ -74,14 +74,13 @@ void view::viewer::do_run() noexcept {
 	m_fps_limiter.start_now();
 
 	while (dp_state.window.isOpen() && m_running && !close_requested) {
-
-		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
-
 		sf::Event event{};
 		while (dp_state.window.pollEvent(event)) {
 			ImGui::SFML::ProcessEvent(event);
 			inspect_event(*this, event, dp_state);
 		}
+
+		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
 		m_viewport = dp_state.viewport;
 
 		if (dp_state.displaying_term) {
@@ -96,10 +95,10 @@ void view::viewer::do_run() noexcept {
 			std::vector<std::vector<std::string>> printable_info
 			  = m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
 
-			const auto& tiles_infos = m_state_holder.resources().tiles_infos();
-			sf::Vector2f mouse_pos = get_mouse_pos();
-            mouse_pos.y /= tiles_infos.yspacing;
-            mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * tiles_infos.y_xshift) / tiles_infos.xspacing;
+			const auto &tiles_infos = m_state_holder.resources().tiles_infos();
+			sf::Vector2f mouse_pos  = get_mouse_pos();
+			mouse_pos.y /= tiles_infos.yspacing;
+			mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * tiles_infos.y_xshift) / tiles_infos.xspacing;
 
 			if (mouse_pos.x >= 0 && mouse_pos.y >= 0 && mouse_pos.x < m_level_size.first && mouse_pos.y < m_level_size.second) {
 				sf::Vector2i win_mouse_pos = sf::Mouse::getPosition(dp_state.window);
@@ -108,39 +107,40 @@ void view::viewer::do_run() noexcept {
 					printable_info.emplace_back().emplace_back("x : " + std::to_string(static_cast<int>(mouse_pos.x)));
 					printable_info.back().emplace_back("y : " + std::to_string(static_cast<int>(mouse_pos.y)));
 
-                    auto &style = ImGui::GetStyle();
-                    float x_text_size{0.f};
-                    float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
-                    for (const std::vector<std::string> &info : printable_info) {
-                        for (const std::string &str : info) {
-                            ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
-                            y_text_size += text_size.y;
-                            y_text_size += style.ItemInnerSpacing.y;
-                            x_text_size = std::max(x_text_size, text_size.x);
-                        }
-                        y_text_size += style.ItemInnerSpacing.y;
-                    }
-                    x_text_size += style.WindowPadding.x * 2;
+					auto &style = ImGui::GetStyle();
+					float x_text_size{0.f};
+					float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
+					for (const std::vector<std::string> &info : printable_info) {
+						for (const std::string &str : info) {
+							ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+							y_text_size += text_size.y;
+							y_text_size += style.ItemInnerSpacing.y;
+							x_text_size = std::max(x_text_size, text_size.x);
+						}
+						y_text_size += style.ItemInnerSpacing.y;
+					}
+					x_text_size += style.WindowPadding.x * 2;
 
-                    float prev = std::exchange(style.WindowRounding, 0.f);
-                    ImVec2 pos = {0, dp_state.window_size.y - y_text_size};
-                    ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
-                    ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
-                    if (ImGui::Begin("##corner info window", nullptr,
-                                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
-                                     | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
-                        for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
-                            for (const std::string &str : *it) {
-                                ImGui::Text("%s", str.c_str());
-                            }
-                            ImGui::Separator();
-                        }
-						for (const std::string& str : printable_info.back()) {
+					float prev = std::exchange(style.WindowRounding, 0.f);
+					ImVec2 pos = {0, dp_state.window_size.y - y_text_size};
+					ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
+					ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
+					if (ImGui::Begin("##corner info window", nullptr,
+					                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+					                   | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse
+					                   | ImGuiWindowFlags_NoScrollbar)) {
+						for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
+							for (const std::string &str : *it) {
+								ImGui::Text("%s", str.c_str());
+							}
+							ImGui::Separator();
+						}
+						for (const std::string &str : printable_info.back()) {
 							ImGui::Text("%s", str.c_str());
 						}
-                    }
-                    ImGui::End();
-                    style.WindowRounding = prev;
+					}
+					ImGui::End();
+					style.WindowRounding = prev;
 				}
 			}
 		}
@@ -163,8 +163,22 @@ void view::viewer::do_run() noexcept {
 }
 
 void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
+	constexpr const char *menu_window_name = "##in game menu popup";
+
 	if (!state.showing_escape_menu) {
+		if (state.escape_menu_currently_open) {
+			state.escape_menu_currently_open = false;
+			if (ImGui::BeginPopupModal(menu_window_name)) {
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+			}
+		}
 		return;
+	}
+
+	if (!state.escape_menu_currently_open) {
+		ImGui::OpenPopup(menu_window_name);
+		state.escape_menu_currently_open = true;
 	}
 
 	const auto &res   = m_state_holder.resources();
@@ -193,7 +207,7 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
-	if (ImGui::BeginPopupModal("##in game menu popup", nullptr,
+	if (ImGui::BeginPopupModal(menu_window_name, nullptr,
 	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
 		if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
 			state.showing_escape_menu = false;
@@ -246,12 +260,8 @@ void view::viewer::set_map(std::vector<std::vector<map::cell>> &&new_map) noexce
 
 // conversions necessary to account for the viewport
 sf::Vector2f view::viewer::get_mouse_pos() const noexcept {
-	const auto &WINDOW_SZ = window->getSize();
-	const float YRATIO    = m_viewport.height / WINDOW_SZ.y;
-	const float XRATIO    = m_viewport.width / WINDOW_SZ.x;
-
-	const sf::Vector2i MOUSE_POS = sf::Mouse::getPosition(*window);
-	return {MOUSE_POS.x * XRATIO + m_viewport.left, MOUSE_POS.y * YRATIO + m_viewport.top};
+	assert(window);
+	return to_viewport_coord(sf::Mouse::getPosition(*window));
 }
 
 sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2f &coords) const noexcept {
@@ -259,7 +269,7 @@ sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2f &coords) const n
 	const float VP_WIN_XRATIO = m_viewport.width / WINDOW_SZ.x;
 	const float VP_WIN_YRATIO = m_viewport.height / WINDOW_SZ.y;
 
-	return {VP_WIN_XRATIO * coords.x, VP_WIN_YRATIO * coords.y};
+	return {VP_WIN_XRATIO * coords.x + m_viewport.left, VP_WIN_YRATIO * coords.y + m_viewport.top};
 }
 
 sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2i &coords) const noexcept {

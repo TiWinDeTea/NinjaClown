@@ -37,6 +37,7 @@ struct viewer_display_state {
 	// misc
 	bool resized_once{false}; // TODO useless ?
 	bool showing_escape_menu{false};
+	bool escape_menu_currently_open{false};
 };
 } // namespace view
 

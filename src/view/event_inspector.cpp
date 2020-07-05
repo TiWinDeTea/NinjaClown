@@ -32,13 +32,14 @@ const sf::Event::MouseButtonEvent &mouse_button(const sf::Event &event) {
 }
 } // namespace
 
-void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_state &state) {
+void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event, viewer_display_state &state) {
 #define NEEDS_NOPOPUP                                                                                                                      \
 	do {                                                                                                                                   \
 		if (state.showing_escape_menu) {                                                                                                   \
 			return;                                                                                                                        \
 		}                                                                                                                                  \
 	} while (false)
+// ENDS NEEDS_NOPOPUP
 
 	switch (event.type) {
 		case sf::Event::Closed:
@@ -77,7 +78,6 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 							if (state.autostep_bot) {
 								terminal_commands::stop_model(state.empty_arg);
 							}
-							ImGui::OpenPopup("##in game menu popup");
 							state.showing_escape_menu = true;
 						}
 						else {
@@ -86,7 +86,8 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 							}
 							state.showing_escape_menu = false;
 						}
-					} else {
+					}
+					else {
 						state.displaying_term = false;
 					}
 					break;
@@ -103,11 +104,11 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 
 			{
 				sf::Event::SizeEvent sz = size(event);
-				const float XRATIO      = static_cast<float>(sz.width) / state.window_size.x;
-				const float YRATIO      = static_cast<float>(sz.height) / state.window_size.y;
+				const float x_ratio     = static_cast<float>(sz.width) / state.window_size.x;
+				const float y_ratio     = static_cast<float>(sz.height) / state.window_size.y;
 
-				state.viewport.width *= XRATIO;
-				state.viewport.height *= YRATIO;
+				state.viewport.width *= x_ratio;
+				state.viewport.height *= y_ratio;
 
 				state.window_size.x = sz.width;
 				state.window_size.y = sz.height;
@@ -123,26 +124,26 @@ void view::inspect_event(viewer &viewer, const sf::Event &event, viewer_display_
 			{
 				sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
 				if (wheel_scroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
-					const auto MOUSE_POS = viewer.to_viewport_coord(sf::Vector2i{wheel_scroll.x, wheel_scroll.y});
 
-					const float DELTA = 1.1F;
-					float transform;
+					const float delta = 1.1f;
+					float transform{};
 					if (wheel_scroll.delta < 0) {
-						transform = DELTA;
+						transform = delta;
 					}
 					else {
-						transform = 1 / DELTA;
+						transform = 1 / delta;
 					}
 
+					const float vp2win_ratio_x = state.viewport.width / state.window_size.x;
+					const float vp2win_ratio_y = state.viewport.height / state.window_size.y;
+					const auto wheel_x         = static_cast<float>(wheel_scroll.x);
+					const auto wheel_y         = static_cast<float>(wheel_scroll.y);
+
 					sf::FloatRect new_viewport;
-
-					new_viewport.width      = state.viewport.width * transform;
-					const float WIDTH_RATIO = new_viewport.width / state.viewport.width;
-					new_viewport.left       = state.viewport.left + MOUSE_POS.x * (1 - WIDTH_RATIO);
-
-					new_viewport.height      = state.viewport.height * WIDTH_RATIO;
-					const float HEIGHT_RATIO = new_viewport.height / state.viewport.height;
-					new_viewport.top         = state.viewport.top + MOUSE_POS.y * (1 - HEIGHT_RATIO);
+					new_viewport.width  = state.viewport.width * transform;
+					new_viewport.height = state.viewport.height * transform;
+					new_viewport.left   = state.viewport.left + wheel_x * (1 - transform) * vp2win_ratio_x;
+					new_viewport.top    = state.viewport.top + wheel_y * (1 - transform) * vp2win_ratio_y;
 
 					state.viewport = new_viewport;
 					state.window.setView(sf::View{state.viewport});
