@@ -101,7 +101,7 @@
         x-yshift = 0
 
         spacing.y = 31
-        y-xshift = 31
+        y-xshift = -31
 
         width = 81
         height = 31

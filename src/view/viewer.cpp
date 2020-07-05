@@ -1,4 +1,3 @@
-#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Clock.hpp>
@@ -63,7 +62,7 @@ void view::viewer::do_run() noexcept {
 	dp_state.terminal.filter_hint() = "regex filter...";
 
 	dp_state.window_size = {cst::window_width, cst::window_height};
-	dp_state.viewport = sf::FloatRect(cst::window_width / 4, cst::window_height / 4, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
+	dp_state.viewport    = sf::FloatRect(0, 0, 3 * cst::window_width / 4, 3 * cst::window_height / 4);
 	dp_state.window.setView(sf::View{dp_state.viewport});
 
 	dp_state.window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
@@ -97,41 +96,53 @@ void view::viewer::do_run() noexcept {
 			std::vector<std::vector<std::string>> printable_info
 			  = m_overmap.acquire()->print_all(*this, state::access<view::viewer>::adapter(m_state_holder), m_state_holder.resources());
 
+			const auto& tiles_infos = m_state_holder.resources().tiles_infos();
 			sf::Vector2f mouse_pos = get_mouse_pos();
-			printable_info.emplace_back().emplace_back(
-			  fmt::format("{} - {}", static_cast<int>(mouse_pos.x), static_cast<int>(mouse_pos.y)));
+            mouse_pos.y /= tiles_infos.yspacing;
+            mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * tiles_infos.y_xshift) / tiles_infos.xspacing;
 
-			auto &style = ImGui::GetStyle();
-			float x_text_size{0.f};
-			float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
-			for (const std::vector<std::string> &info : printable_info) {
-				for (const std::string &str : info) {
-					ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
-					y_text_size += text_size.y;
-                    y_text_size += style.ItemInnerSpacing.y;
-					x_text_size = std::max(x_text_size, text_size.x);
-				}
-				y_text_size += style.ItemInnerSpacing.y;
-			}
-			x_text_size += style.WindowPadding.x * 2;
+			if (mouse_pos.x >= 0 && mouse_pos.y >= 0 && mouse_pos.x < m_level_size.first && mouse_pos.y < m_level_size.second) {
+				sf::Vector2i win_mouse_pos = sf::Mouse::getPosition(dp_state.window);
+				if (win_mouse_pos.x > 0 && win_mouse_pos.y > 0 && win_mouse_pos.x < dp_state.window_size.x
+				    && win_mouse_pos.y < dp_state.window_size.y) {
+					printable_info.emplace_back().emplace_back("x : " + std::to_string(static_cast<int>(mouse_pos.x)));
+					printable_info.back().emplace_back("y : " + std::to_string(static_cast<int>(mouse_pos.y)));
 
-			float prev = std::exchange(style.WindowRounding, 0.f);
-			ImVec2 pos = {0, dp_state.window_size.y - y_text_size};
-			ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
-			ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
-			if (ImGui::Begin("##corner info window", nullptr,
-			                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
-			                   | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
-				for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
-					for (const std::string &str : *it) {
-						ImGui::Text("%s", str.c_str());
-					}
-					ImGui::Separator();
+                    auto &style = ImGui::GetStyle();
+                    float x_text_size{0.f};
+                    float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
+                    for (const std::vector<std::string> &info : printable_info) {
+                        for (const std::string &str : info) {
+                            ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+                            y_text_size += text_size.y;
+                            y_text_size += style.ItemInnerSpacing.y;
+                            x_text_size = std::max(x_text_size, text_size.x);
+                        }
+                        y_text_size += style.ItemInnerSpacing.y;
+                    }
+                    x_text_size += style.WindowPadding.x * 2;
+
+                    float prev = std::exchange(style.WindowRounding, 0.f);
+                    ImVec2 pos = {0, dp_state.window_size.y - y_text_size};
+                    ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
+                    ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
+                    if (ImGui::Begin("##corner info window", nullptr,
+                                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+                                     | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+                        for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
+                            for (const std::string &str : *it) {
+                                ImGui::Text("%s", str.c_str());
+                            }
+                            ImGui::Separator();
+                        }
+						for (const std::string& str : printable_info.back()) {
+							ImGui::Text("%s", str.c_str());
+						}
+                    }
+                    ImGui::End();
+                    style.WindowRounding = prev;
 				}
-				ImGui::Text("%s", printable_info.back().back().c_str());
 			}
-			ImGui::End();
-			style.WindowRounding = prev;
 		}
 		else {
 			m_overmap.acquire()->print_all(*this);
@@ -160,12 +171,12 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	const auto &style = ImGui::GetStyle();
 
 	std::string_view missing   = "MISSING TRANSLATION";
-    std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
-    std::string_view load_dll  = res.gui_text_for("view.in_game_menu.dll").value_or(missing);
-    std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
-    std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
-    std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
-    std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
+	std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
+	std::string_view load_dll  = res.gui_text_for("view.in_game_menu.dll").value_or(missing);
+	std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
+	std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
+	std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
+	std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
 
 	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {
@@ -174,11 +185,11 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 		max_text_size.y = std::max(max_text_size.y, size.y);
 	};
 	update_sz(resume);
-    update_sz(load_dll);
-    update_sz(restart);
-    update_sz(settings);
-    update_sz(main_menu);
-    update_sz(quit);
+	update_sz(load_dll);
+	update_sz(restart);
+	update_sz(settings);
+	update_sz(main_menu);
+	update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
@@ -188,11 +199,10 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 			state.showing_escape_menu = false;
 		}
 		if (ImGui::Button(load_dll.data(), ImVec2{text_width, 0.f})) {
-
 		}
 		if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
 			state::access<view::viewer>::adapter(m_state_holder).load_map(m_state_holder.current_map_path());
-			state.autostep_bot = false;
+			state.autostep_bot        = false;
 			state.showing_escape_menu = false;
 		}
 		if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
@@ -219,16 +229,13 @@ utils::synchronized<view::map, utils::spinlock>::acquired_t view::viewer::acquir
 }
 
 sf::Vector2f view::viewer::to_screen_coords(float x, float y) const noexcept {
-	auto [screen_x, screen_y] = to_screen_coords_base(x, y);
-
 	const auto &tiles = m_state_holder.resources().tiles_infos();
-	auto max_x        = to_screen_coords_base(static_cast<float>(m_level_size.first + 1), 0).first;
-	auto max_y        = to_screen_coords_base(0, static_cast<float>(m_level_size.second + 1)).second;
+	sf::Vector2f screen;
 
-	float extra_width  = static_cast<float>(window->getSize().x) - max_x;
-	float extra_height = static_cast<float>(window->getSize().y) - max_y;
+	screen.x = x * tiles.xspacing + y * tiles.y_xshift;
+	screen.y = x * tiles.x_yshift + y * tiles.yspacing;
 
-	return {screen_x + extra_width / 2.f, screen_y + extra_height / 2.f};
+	return screen;
 }
 
 void view::viewer::set_map(std::vector<std::vector<map::cell>> &&new_map) noexcept {
@@ -245,15 +252,6 @@ sf::Vector2f view::viewer::get_mouse_pos() const noexcept {
 
 	const sf::Vector2i MOUSE_POS = sf::Mouse::getPosition(*window);
 	return {MOUSE_POS.x * XRATIO + m_viewport.left, MOUSE_POS.y * YRATIO + m_viewport.top};
-}
-
-std::pair<float, float> view::viewer::to_screen_coords_base(float x, float y) const noexcept {
-	const auto &tiles = m_state_holder.resources().tiles_infos();
-	auto xshift       = static_cast<float>(m_level_size.second * tiles.y_xshift);
-	auto screen_x     = x * static_cast<float>(tiles.xspacing) + y * static_cast<float>(-tiles.y_xshift) + xshift;
-	auto screen_y     = y * static_cast<float>(tiles.yspacing) + x * static_cast<float>(tiles.x_yshift);
-
-	return {screen_x, screen_y};
 }
 
 sf::Vector2f view::viewer::to_viewport_coord(const sf::Vector2f &coords) const noexcept {

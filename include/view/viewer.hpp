@@ -82,6 +82,7 @@ public:
 	// converts world grid coords to on-screen coords
 	sf::Vector2f to_screen_coords(float x, float y) const noexcept;
 
+	// coords within the viewport
 	sf::Vector2f get_mouse_pos() const noexcept;
 
 	const std::chrono::system_clock::time_point starting_time{std::chrono::system_clock::now()};
@@ -92,7 +93,6 @@ public:
 	sf::RenderWindow *window;
 
 private:
-	std::pair<float, float> to_screen_coords_base(float x, float y) const noexcept;
 
 	void do_run() noexcept;
 
