@@ -10,6 +10,7 @@
 #include "utils/synchronized.hpp"
 
 #include "view/event_inspector.hpp"
+#include "view/file_explorer.hpp"
 #include "view/fps_limiter.hpp"
 #include "view/map.hpp"
 #include "view/mob.hpp"
@@ -114,6 +115,8 @@ private:
 	sf::FloatRect m_viewport{};
 
 	fps_limiter m_fps_limiter{};
+
+    file_explorer m_file_explorer{};
 
 	friend void view::inspect_event(viewer &viewer, const sf::Event &event, struct viewer_display_state &state);
 };

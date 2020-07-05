@@ -332,3 +332,9 @@
     [[gui.entry]]
         id = "view.in_game_menu.quit"
         fmt = "Quitter"
+    [[gui.entry]]
+        id = "file_explorer.ok_button"
+        fmt = "OK"
+    [[gui.entry]]
+        id = "file_explorer.cancel_button"
+        fmt = "Annuler"

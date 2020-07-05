@@ -29,10 +29,12 @@ set(NINJA_CLOWN_SOURCES
         src/utils/dll.cpp
         src/utils/logging.cpp
         src/utils/resource_manager.cpp
+        src/utils/system.cpp
 
         src/view/animation.cpp
         src/view/event_inspector.cpp
         src/view/facing_dir.cpp
+        src/view/file_explorer.cpp
         src/view/fps_limiter.cpp
         src/view/map.cpp
         src/view/mob_object.cpp

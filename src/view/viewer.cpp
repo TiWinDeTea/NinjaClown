@@ -14,6 +14,7 @@
 #include "terminal_commands.hpp"
 #include "utils/resource_manager.hpp"
 #include "view/event_inspector.hpp"
+#include "view/file_explorer.hpp"
 #include "view/viewer.hpp"
 #include "view/viewer_display_state.hpp"
 
@@ -169,6 +170,8 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 		if (state.escape_menu_currently_open) {
 			state.escape_menu_currently_open = false;
 			if (ImGui::BeginPopupModal(menu_window_name)) {
+                m_file_explorer.close();
+                m_file_explorer.give_control(m_state_holder.resources());
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 			}
@@ -213,6 +216,7 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 			state.showing_escape_menu = false;
 		}
 		if (ImGui::Button(load_dll.data(), ImVec2{text_width, 0.f})) {
+			m_file_explorer.open(with_extensions{".dll", ".so"});
 		}
 		if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
 			state::access<view::viewer>::adapter(m_state_holder).load_map(m_state_holder.current_map_path());
@@ -225,6 +229,14 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 		}
 		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
 			state.window.close();
+		}
+
+		m_file_explorer.give_control(m_state_holder.resources());
+		if (m_file_explorer.path_ready()) {
+            auto arg_copy = state.empty_arg;
+			arg_copy.command_line.emplace_back("");
+			arg_copy.command_line.emplace_back(m_file_explorer.selected_path().generic_string());
+			terminal_commands::load_shared_library(arg_copy);
 		}
 		ImGui::EndPopup();
 	}

@@ -32,7 +32,7 @@ bool bot::bot_dll::load(const utils::resource_manager &res, std::string &&dll_pa
 bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
 	m_good = false;
 
-	if (!m_dll_path) {
+	if (!m_dll_path) { // TODO translate
 		spdlog::error("Attempted to reload bot dll without any path");
 		return false;
 	}
