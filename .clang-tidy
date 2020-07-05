@@ -1,4 +1,4 @@
-Checks: '*,-abseil-*,-boost-*,-darwin-*,-fuchsia-*,-google-objc-*,-google-uild-using-namespace,-google-upgrade-googletest-case,-mpi-*,-objc-*,-openmp-*,-cert-err58-cpp,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-modernize-use-trailing-return-type,-modernize-use-transparent-functors,-readability-uppercase-literal-suffix,-cppcoreguidelines-pro-bounds-constant-array-index,-cert-dcl21-cpp,-misc-non-private-member-variables-in-classes,-google-runtime-references'
+Checks: '*,-abseil-*,-boost-*,-darwin-*,-fuchsia-*,-google-objc-*,-google-uild-using-namespace,-google-upgrade-googletest-case,-mpi-*,-objc-*,-openmp-*,-cert-err58-cpp,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-modernize-use-trailing-return-type,-modernize-use-transparent-functors,-readability-uppercase-literal-suffix,-cppcoreguidelines-pro-bounds-constant-array-index,-cert-dcl21-cpp,-misc-non-private-member-variables-in-classes,-google-runtime-references,-hicpp-uppercase-literal-suffix'
 CheckOptions:
   - key:   bugprone-assert-side-effect.CheckFunctionCalls
     value: 'true'
@@ -67,7 +67,7 @@ CheckOptions:
   - key:   readability-identifier-naming.ClassMethodCase
     value: 'lower_case'
   - key:   readability-identifier-naming.ConstantCase
-    value: 'UPPER_CASE'
+    value: 'aNy_CaSe'
   - key:   readability-identifier-naming.ConstantMemberCase
     value: 'lower_case'
   - key:   readability-identifier-naming.ConstantParameterCase
@@ -89,15 +89,15 @@ CheckOptions:
   - key:   readability-identifier-naming.GlobalConstantCase
     value: 'UPPER_CASE'
   - key:   readability-identifier-naming.GlobalConstantPointerCase
-    value: 'UPPER_C'
+    value: 'aNy_CaSe'
   - key:   readability-identifier-naming.GlobalFunctionCase
     value: 'lower_case'
   - key:   readability-identifier-naming.GlobalPointerCase
-    value: 'lower_case'
+    value: 'aNy_CaSe'
   - key:   readability-identifier-naming.GlobalPointerPrefix
     value: 'glob'
   - key:   readability-identifier-naming.GlobalVariableCase
-    value: 'lower_case'
+    value: 'aNy_CaSe'
   - key:   readability-identifier-naming.GlobalVariablePrefix
     value: 'glob'
   - key:   readability-identifier-naming.LocalPointerCase
