@@ -31,6 +31,10 @@ void think() {
 	nnj_map_update();
 	nnj_entities_update();
 
+	if (ENTITIES[ninja_clown_handle].state == ES_BUSY) {
+		return;
+	}
+
 	struct nnj_decision_commit commit;
 	commit.target_handle = ninja_clown_handle;
 	commit.decision      = nnj_build_decision_none();
