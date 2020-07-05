@@ -42,6 +42,8 @@ enum class mob_sprite {
 
 struct mob_definition {
 	unsigned int hp;
+	model::tick_t attack_delay;
+	model::tick_t throw_delay;
 	mob_behaviour behaviour;
 	mob_sprite sprite;
 };
@@ -61,8 +63,9 @@ enum class activator_type {
 
 struct activator {
 	point pos;
-	unsigned int delay;
-	unsigned int refire_after;
+	model::tick_t delay;
+	model::tick_t refire_after;
+	model::tick_t activation_difficulty;
 	activator_type type;
 	std::vector<size_t> target_tiles;
 };
@@ -81,25 +84,28 @@ struct autoshooter {
 };
 
 namespace keys {
-	constexpr const char *inherits           = "inherits";
-	constexpr const char *name               = "name";
-	constexpr const char *hp                 = "hp";
-	constexpr const char *sprite             = "sprite";
-	constexpr const char *behaviour          = "behaviour";
-	constexpr const char *type               = "type";
-	constexpr const char *x_pos              = "pos.x";
-	constexpr const char *y_pos              = "pos.y";
-	constexpr const char *facing             = "facing";
-	constexpr const char *firing_rate        = "firing_rate";
-	constexpr const char *closed             = "closed";
-	constexpr const char *refire_after       = "refire_after";
-	constexpr const char *duration           = "duration";
-	constexpr const char *delay              = "delay";
-	constexpr const char *acts_on_table      = "acts_on";
-	constexpr const char *mobs_def_table     = "mobs.definition";
-	constexpr const char *mobs_spawn_table   = "mobs.spawn";
-	constexpr const char *actors_spawn_table = "actors.spawn";
-	constexpr const char *map_layout         = "map.layout";
+	constexpr const char *inherits              = "inherits";
+	constexpr const char *name                  = "name";
+	constexpr const char *hp                    = "hp";
+	constexpr const char *attack_delay          = "attack_delay";
+	constexpr const char *throw_delay           = "throw_delay";
+	constexpr const char *sprite                = "sprite";
+	constexpr const char *behaviour             = "behaviour";
+	constexpr const char *type                  = "type";
+	constexpr const char *x_pos                 = "pos.x";
+	constexpr const char *y_pos                 = "pos.y";
+	constexpr const char *facing                = "facing";
+	constexpr const char *firing_rate           = "firing_rate";
+	constexpr const char *closed                = "closed";
+	constexpr const char *refire_after          = "refire_after";
+	constexpr const char *activation_difficulty = "activation_difficulty";
+	constexpr const char *duration              = "duration";
+	constexpr const char *delay                 = "delay";
+	constexpr const char *acts_on_table         = "acts_on";
+	constexpr const char *mobs_def_table        = "mobs.definition";
+	constexpr const char *mobs_spawn_table      = "mobs.spawn";
+	constexpr const char *actors_spawn_table    = "actors.spawn";
+	constexpr const char *map_layout            = "map.layout";
 } // namespace keys
 
 namespace values {
@@ -187,6 +193,12 @@ void init_maps() {
 			error("mob_missing_hp", "name"_a = *name, "key"_a = keys::hp);
 			return {};
 		}
+
+		current.throw_delay = model::component::default_throw_delay;
+		try_get_silent(mob_def, keys::throw_delay, current.throw_delay);
+
+		current.attack_delay = model::component::default_attack_delay;
+		try_get_silent(mob_def, keys::attack_delay, current.attack_delay);
 
 		cpptoml::option<std::string> sprite = mob_def->get_as<std::string>(keys::sprite);
 		if (auto it = globstr_to_mob_sprite.find(sprite.value_or("")); it != globstr_to_mob_sprite.end()) {
@@ -346,7 +358,10 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 				try_get(keys::duration, activator.refire_after, true);
 			}
 
-			activator.delay = 0;
+			activator.activation_difficulty = model::default_activation_difficulty;
+			try_get(keys::activation_difficulty, activator.activation_difficulty, true);
+
+			activator.delay = model::default_activation_delay;
 			try_get(keys::delay, activator.delay, true);
 
 			auto targets = actor->get_array_of<std::string>(keys::acts_on_table);
@@ -511,7 +526,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				break;
 			case mob_behaviour::DLL:
 				world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
-				world.ninja_clown_handle                            = model_entity_handle; // TODO : multi-handle for DLL
 				break;
 		}
 
@@ -530,6 +544,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
 		world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
+		world.components.properties[model_entity_handle].throw_delay  = mob.type.throw_delay;
+		world.components.properties[model_entity_handle].attack_delay = mob.type.attack_delay;
 
 		model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
 
@@ -591,7 +607,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
 			                                std::optional<unsigned int>{} :
 			                                std::optional<unsigned int>(activator.refire_after),
-			                              activator.delay});
+			                              activator.delay, activator.activation_difficulty});
 		  },
 		  [&](const gate &gate) {
 			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;

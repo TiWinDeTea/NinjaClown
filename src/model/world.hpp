@@ -26,8 +26,6 @@ struct world {
 
 	grid_t grid{};
 
-	size_t ninja_clown_handle{};
-
 	::model::components components{};
 
 	std::vector<interaction> interactions{};

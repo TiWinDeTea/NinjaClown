@@ -15,7 +15,7 @@ namespace model {
 struct cell_view {
 	grid_point pos;
 	cell_type &type;
-	utils::optional<size_t> &interaction_handle;
+	utils::optional<handle_t> &interaction_handle;
 };
 
 template <typename Ref>

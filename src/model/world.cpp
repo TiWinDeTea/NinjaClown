@@ -149,7 +149,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, size
 			  move_entity(adapter, handle, movement);
 		  }
 
-		  if (handle == ninja_clown_handle) {
+		  if (components.metadata[handle].kind == ninja_api::nnj_entity_kind::EK_DLL) {
 			  float distance = components.hitbox[handle]
 			                     ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
 			                     .norm();
