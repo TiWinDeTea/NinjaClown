@@ -31,6 +31,7 @@ bool bot::bot_dll::load(const utils::resource_manager &res, std::string &&dll_pa
 
 bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
 	m_good = false;
+	reset();
 
 	if (!m_dll_path) { // TODO translate
 		spdlog::error("Attempted to reload bot dll without any path");
@@ -69,7 +70,9 @@ void bot::bot_dll::bot_start_level(ninja_api::nnj_api api) noexcept {
 }
 
 void bot::bot_dll::bot_think() noexcept {
-	m_think_fn();
+	if (m_think_fn) {
+		m_think_fn();
+	}
 }
 
 void bot::bot_dll::bot_end_level() noexcept {
@@ -87,6 +90,10 @@ bool bot::bot_dll::load_all_api_functions(const utils::resource_manager &res) {
 	try_load_function(res, m_init_fn, "bot_init", false);
 	try_load_function(res, m_end_level_fn, "bot_end_level", false);
 	try_load_function(res, m_destroy_fn, "bot_destroy", false);
+
+	if (!good) {
+		reset();
+	}
 
 	return good;
 }
@@ -109,4 +116,12 @@ bool bot::bot_dll::try_load_function(const utils::resource_manager &res, FuncPtr
 	}
 
 	return true;
+}
+
+void bot::bot_dll::reset() {
+    m_start_level_fn = nullptr;
+    m_think_fn = nullptr;
+    m_init_fn = nullptr;
+    m_end_level_fn = nullptr;
+    m_destroy_fn = nullptr;
 }

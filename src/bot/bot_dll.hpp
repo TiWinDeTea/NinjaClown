@@ -41,6 +41,8 @@ private:
 	template <typename FuncPtr>
 	bool try_load_function(const utils::resource_manager&, FuncPtr &ptr, const char *func_name, bool required);
 
+	void reset();
+
 	std::optional<std::string> m_dll_path{};
 	utils::dll m_dll{};
 	bool m_good{false};
