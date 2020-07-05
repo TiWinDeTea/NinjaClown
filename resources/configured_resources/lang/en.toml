@@ -114,20 +114,26 @@
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
         fmt = "Invalid value (got: {value}, max: {max_value})"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.none"
+        fmt = "There is no activator in this map"
 
     [[log.entry]]
         id = "terminal_commands.general.help"
         fmt = "Available commands:"
 
     [[log.entry]]
-        id = "terminal_commands.fire_activator.usage"
-        fmt = "Usage: {arg0} <activator id>"
+        id = "terminal_commands.fire_actionable.usage"
+        fmt = "Usage: {arg0} <actionable id>"
     [[log.entry]]
-        id = "terminal_commands.fire_activator.invalid_integer"
+        id = "terminal_commands.fire_actionable.invalid_integer"
         fmt = "Activator id should be a positive integer (got \"{value}\")"
     [[log.entry]]
-        id = "terminal_commands.fire_activator.invalid_value"
+        id = "terminal_commands.fire_actionable.invalid_value"
         fmt = "Invalid value (got: {value}, max: {max_value})"
+    [[log.entry]]
+        id = "terminal_commands.fire_actionable.none"
+        fmt = "There is no actionable in this map"
 
     [[log.entry]]
         id = "state_holder.configure.config_load_failed"

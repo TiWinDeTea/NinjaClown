@@ -114,20 +114,26 @@
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
         fmt = "Erreur : l’id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
+    [[log.entry]]
+        id = "terminal_commands.fire_activator.none"
+        fmt = "Erreur : il' n'y a pas d'activateur sur cette carte"
 
     [[log.entry]]
         id = "terminal_commands.general.help"
         fmt = "Commandes disponibles :"
 
     [[log.entry]]
-        id = "terminal_commands.fire_activator.usage"
-        fmt = "Utilisation: {arg0} <id d'activateur>"
+        id = "terminal_commands.fire_actionable.usage"
+        fmt = "Utilisation: {arg0} <id d'actionable>"
     [[log.entry]]
-        id = "terminal_commands.fire_activator.need_uint"
+        id = "terminal_commands.fire_actionable.need_uint"
         fmt = "Erreur : l'id \"{value}\" n’est pas un entier positif valide"
     [[log.entry]]
-        id = "terminal_commands.fire_activator.too_high"
+        id = "terminal_commands.fire_actionable.too_high"
         fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
+    [[log.entry]]
+        id = "terminal_commands.fire_actionable.none"
+        fmt = "Erreur : il' n'y a pas d'actionable sur cette carte"
 
     [[log.entry]]
         id = "state_holder.configure.config_load_failed"

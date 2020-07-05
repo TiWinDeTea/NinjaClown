@@ -351,8 +351,13 @@ void terminal_commands::fire_activator(argument_type &arg) {
 	}
 
 	if (*val >= arg.val.model().world.activators.size()) {
+		if (arg.val.model().world.activators.empty()) {
+			log_formatted_err(arg, "terminal_commands.fire_activator.none");
+		}
+		else {
 			log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
 			                  "max_value"_a = arg.val.model().world.activators.size());
+		}
 		return;
 	}
 
@@ -361,19 +366,24 @@ void terminal_commands::fire_activator(argument_type &arg) {
 
 void terminal_commands::fire_actionable(argument_type &arg) {
 	if (arg.command_line.size() != 2) {
-		log_formatted_err(arg, "terminal_commands.fire_activator.usage", "arg0"_a = arg.command_line.front());
+		log_formatted_err(arg, "terminal_commands.fire_actionable.usage", "arg0"_a = arg.command_line.front());
 		return;
 	}
 
 	std::optional<unsigned int> val = utils::from_chars<unsigned int>(arg.command_line[1]);
 	if (!val) {
-		log_formatted_err(arg, "terminal_commands.fire_activator.need_uint", "value"_a = arg.command_line.back());
+		log_formatted_err(arg, "terminal_commands.fire_actionable.need_uint", "value"_a = arg.command_line.back());
 		return;
 	}
 
 	if (*val >= arg.val.model().world.actionables.size()) {
-		log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
-		                  "max_value"_a = arg.val.model().world.actionables.size());
+		if (arg.val.model().world.actionables.empty()) {
+			log_formatted_err(arg, "terminal_commands.fire_actionable.none");
+		}
+		else {
+			log_formatted_err(arg, "terminal_commands.fire_actionable.too_high", "value"_a = arg.command_line.back(),
+			                  "max_value"_a = arg.val.model().world.actionables.size() - 1);
+		}
 		return;
 	}
 	arg.val.model().world.fire_actionable(arg.val.adapter(), *val);
