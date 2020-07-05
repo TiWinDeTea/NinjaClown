@@ -38,6 +38,8 @@ struct world {
 
 private:
 	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);
+	void single_entity_decision_update(adapter::adapter &adapter, size_t handle);
+	void single_entity_action_update(adapter::adapter &adapter, size_t handle);
 	void move_entity(adapter::adapter &adapter, size_t handle, vec2 movement);
 	void rotate_entity(adapter::adapter &adapter, size_t handle, float rotation_rad);
 	bool entity_check_collision(size_t handle);

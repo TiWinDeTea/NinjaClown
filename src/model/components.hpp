@@ -8,8 +8,9 @@
 #include <optional>
 #include <variant>
 
+#include "model/types.hpp"
+#include "model/vec2.hpp"
 #include "utils/universal_constants.hpp"
-#include "vec2.hpp"
 
 namespace model::component {
 
@@ -17,19 +18,30 @@ constexpr float default_move_speed     = 0.2f;
 constexpr float default_rotation_speed = 0.2f;
 constexpr float default_attack_range   = 1.0f;
 constexpr float default_activate_range = 1.0f;
+constexpr tick_t default_attack_delay  = 5;
+constexpr tick_t default_throw_delay   = 3;
 
 using decision = std::variant<ninja_api::nnj_movement_request, ninja_api::nnj_activate_request, ninja_api::nnj_attack_request,
-                              ninja_api::nnj_throw_request>;
+                              ninja_api::nnj_throw_request, ninja_api::nnj_cancel_action_request>;
+
+using preparable_action = std::variant<ninja_api::nnj_activate_request, ninja_api::nnj_attack_request, ninja_api::nnj_throw_request>;
 
 struct properties {
 	float move_speed     = default_move_speed;
 	float rotation_speed = default_rotation_speed;
 	float attack_range   = default_attack_range;
 	float activate_range = default_activate_range;
+	tick_t attack_delay  = default_attack_delay;
+	tick_t throw_delay   = default_throw_delay;
 };
 
 struct metadata {
 	ninja_api::nnj_entity_kind kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
+};
+
+struct state {
+	utils::optional<preparable_action> preparing_action = {};
+	tick_t ticks_before_ready                           = 0;
 };
 
 struct health {
@@ -104,6 +116,7 @@ struct components {
 	std::array<std::optional<component::decision>, cst::max_entities> decision;
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
+	std::array<component::state, cst::max_entities> state;
 };
 
 } // namespace model

@@ -26,6 +26,12 @@ void fill_entity_struct(const ::model::components &components, ninja_api::nnj_en
 			entity->properties.rotation_speed = properties.rotation_speed;
 			entity->properties.attack_range   = properties.attack_range;
 			entity->properties.activate_range = properties.activate_range;
+
+			if (components.state[entity->handle].preparing_action.has_value()) {
+				entity->state = ninja_api::nnj_entity_state::ES_BUSY;
+			} else {
+				entity->state = ninja_api::nnj_entity_state::ES_READY;
+			}
 		}
 		else {
 			// bot can't work with entity with no hitbox

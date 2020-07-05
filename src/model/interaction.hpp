@@ -1,6 +1,8 @@
 #ifndef NINJACLOWN_INTERACTION_HPP
 #define NINJACLOWN_INTERACTION_HPP
 
+#include <cstddef>
+
 namespace model {
 
 enum class interaction_kind {

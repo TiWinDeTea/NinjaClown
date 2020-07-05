@@ -28,6 +28,7 @@ void model::world::reset() {
 }
 
 void model::world::reset_entity(size_t handle) {
+	components.state[handle]      = {};
 	components.metadata[handle]   = {};
 	components.properties[handle] = {};
 	components.decision[handle].reset();
@@ -36,6 +37,87 @@ void model::world::reset_entity(size_t handle) {
 }
 
 void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t handle) {
+	if (components.state[handle].preparing_action.has_value()) {
+		single_entity_action_update(adapter, handle);
+	}
+	else {
+		single_entity_decision_update(adapter, handle);
+	};
+}
+
+void model::world::single_entity_action_update(adapter::adapter &adapter, size_t handle) {
+	if (!components.decision[handle] || !components.hitbox[handle]) {
+		return;
+	}
+
+	component::state &state = components.state[handle];
+
+	utils::visitor visitor{[&]([[maybe_unused]] ninja_api::nnj_cancel_action_request &cancel_req) {
+		                       state.preparing_action   = {};
+		                       state.ticks_before_ready = 0;
+	                       },
+	                       [&](ninja_api::nnj_movement_request &mov_req) {
+
+	                       },
+	                       [&](ninja_api::nnj_activate_request &activate_req) {
+
+	                       },
+	                       [&](ninja_api::nnj_attack_request &attack_req) {
+
+	                       },
+	                       [&](ninja_api::nnj_throw_request &throw_req) {
+
+	                       }};
+
+	std::visit(visitor, *components.decision[handle]);
+	components.decision[handle] = {};
+
+	if (state.preparing_action.has_value()) {
+		if (state.ticks_before_ready != 0) {
+			state.ticks_before_ready -= 1;
+		}
+		else {
+			component::hitbox &hitbox         = *components.hitbox[handle];
+			component::properties &properties = components.properties[handle];
+
+			utils::visitor visitor{
+			  [&](ninja_api::nnj_activate_request &activate_req) {
+				  const cell &c = grid[activate_req.column][activate_req.line];
+				  if (c.interaction_handle) {
+					  interaction &i = interactions[*c.interaction_handle];
+					  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
+						  vec2 cell_center{activate_req.column, activate_req.line};
+						  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
+							  fire_activator(adapter, i.interactable_handler);
+						  }
+					  }
+				  }
+			  },
+			  [&](ninja_api::nnj_attack_request &attack_req) {
+				  auto &health = components.health;
+				  if (health[attack_req.target_handle] && components.hitbox[attack_req.target_handle]) {
+					  component::hitbox &target_hitbox = *components.hitbox[attack_req.target_handle];
+					  if (hitbox.center.to(target_hitbox.center).norm() <= components.properties[handle].attack_range) {
+						  health[attack_req.target_handle]->points -= 1;
+						  if (health[attack_req.target_handle]->points == 0) {
+							  reset_entity(attack_req.target_handle);
+							  adapter.hide_entity(adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
+						  }
+					  }
+				  }
+			  },
+			  [&](ninja_api::nnj_throw_request &throw_req) {
+
+			  },
+			};
+
+			std::visit(visitor, *state.preparing_action);
+			state.preparing_action = {};
+		}
+	}
+}
+
+void model::world::single_entity_decision_update(adapter::adapter &adapter, size_t handle) {
 	if (!components.decision[handle] || !components.hitbox[handle]) {
 		return;
 	}
@@ -43,8 +125,9 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 	component::decision &decision     = *components.decision[handle];
 	component::hitbox &hitbox         = *components.hitbox[handle];
 	component::properties &properties = components.properties[handle];
+	component::state &state           = components.state[handle];
 
-	utils::visitor visitor{
+	utils::visitor visitor_with_a_very_long_name_for_clang_format{
 	  [&](ninja_api::nnj_movement_request &mov_req) {
 		  float rotation = std::clamp(mov_req.rotation, -properties.rotation_speed, properties.rotation_speed);
 		  if (std::abs(rotation) > significant_rotation_eta) {
@@ -82,29 +165,31 @@ void model::world::single_entity_simple_update(adapter::adapter &adapter, size_t
 			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
 				  vec2 cell_center{activate_req.column, activate_req.line};
 				  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
-					  fire_activator(adapter, i.interactable_handler);
+					  state.preparing_action   = {activate_req};
+					  state.ticks_before_ready = this->activators[i.interactable_handler].activation_difficulty;
 				  }
 			  }
 		  }
 	  },
 	  [&](ninja_api::nnj_attack_request &attack_req) {
-		  auto& health = components.health;
+		  auto &health = components.health;
 		  if (health[attack_req.target_handle] && components.hitbox[attack_req.target_handle]) {
 			  component::hitbox &target_hitbox = *components.hitbox[attack_req.target_handle];
 			  if (hitbox.center.to(target_hitbox.center).norm() <= components.properties[handle].attack_range) {
-				  health[attack_req.target_handle]->points -= 1;
-				  if (health[attack_req.target_handle]->points == 0) {
-					  reset_entity(attack_req.target_handle);
-					  adapter.hide_entity(adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
-				  }
+				  state.preparing_action   = {attack_req};
+				  state.ticks_before_ready = components.properties[handle].attack_delay;
 			  }
 		  }
 	  },
 	  [&](ninja_api::nnj_throw_request &throw_req) {
+		  state.preparing_action   = {throw_req};
+		  state.ticks_before_ready = components.properties[handle].throw_delay;
+	  },
+	  [&](ninja_api::nnj_cancel_action_request &cancel_req) {
 
 	  }};
 
-	std::visit(visitor, decision);
+	std::visit(visitor_with_a_very_long_name_for_clang_format, *components.decision[handle]);
 	components.decision[handle] = {};
 }
 

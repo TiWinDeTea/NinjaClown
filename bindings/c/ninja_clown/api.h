@@ -68,8 +68,14 @@ struct nnj_properties {
 	float activate_range;
 };
 
+enum nnj_entity_state {
+	ES_READY = 0, // entity is ready for any action
+	ES_BUSY  = 1, // entity is busy and cannot perform any other action
+};
+
 struct nnj_entity {
 	enum nnj_entity_kind kind;
+	enum nnj_entity_state state;
 	struct nnj_properties properties;
 	float x, y;
 	float angle;
@@ -77,11 +83,12 @@ struct nnj_entity {
 };
 
 enum nnj_decision_kind {
-	DK_NONE     = 0,
-	DK_MOVEMENT = 1,
-	DK_ACTIVATE = 2,
-	DK_ATTACK   = 3,
-	DK_THROW    = 4,
+	DK_NONE          = 0,
+	DK_MOVEMENT      = 1,
+	DK_ACTIVATE      = 2,
+	DK_ATTACK        = 3,
+	DK_THROW         = 4,
+	DK_CANCEL_ACTION = 5,
 };
 
 struct nnj_movement_request {
@@ -100,7 +107,11 @@ struct nnj_attack_request {
 };
 
 struct nnj_throw_request {
-	void* unused;
+	void *unused;
+};
+
+struct nnj_cancel_action_request {
+	void *unused;
 };
 
 struct nnj_decision {
@@ -110,6 +121,7 @@ struct nnj_decision {
 		struct nnj_activate_request activate_req;
 		struct nnj_attack_request attack_req;
 		struct nnj_throw_request throw_req;
+		struct nnj_cancel_action_request cancel_req;
 	};
 };
 
