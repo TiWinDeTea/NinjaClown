@@ -1,7 +1,7 @@
 use crate::path::PathGraph;
 use ninja_clown_bot::{
     decision::DecisionCommit,
-    entity::EntityKind,
+    entity::{EntityKind, EntityState},
     map::{CellPos, InteractionKind},
     Api, Decision, Entity,
 };
@@ -60,6 +60,10 @@ pub fn start_level(api: &mut Api) -> UserData {
 pub fn think(api: &mut Api, data: &mut UserData) {
     let ninja_clown = api.entities.get(data.ninja_handle).expect("ninja clown not found");
 
+    if ninja_clown.state() == EntityState::Busy {
+        return;
+    }
+
     if let Some(enemy) = api.entities.get(data.enemy_handle) {
         let dist = absdiff(enemy.x(), ninja_clown.x()) + absdiff(enemy.y(), ninja_clown.y());
         if dist < ninja_clown.properties().attack_range() {
@@ -106,6 +110,7 @@ pub fn think(api: &mut Api, data: &mut UserData) {
     {
         api.commit_decisions(&[Decision::activate(target.column(), target.line()).commit(data.ninja_handle)]);
         data.activated = true;
+        api.log_info("I push button! Bop!");
     } else if dist < 0.5 {
         if let Some(next_target) = data.path.next() {
             let decision = move_towards(ninja_clown, &next_target);
