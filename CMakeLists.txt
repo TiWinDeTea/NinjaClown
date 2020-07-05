@@ -50,7 +50,7 @@ set_target_properties(
         CXX_EXTENSIONS OFF
 )
 
-target_include_directories(ninja-clown PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/ ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
+target_include_directories(ninja-clown PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/ ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}
         ${IMTERM_INCLUDE_DIR}
@@ -110,7 +110,7 @@ target_include_directories(ninja-clown-tests SYSTEM PUBLIC
         ${CPPTOML_INCLUDE_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/bindings/c/
         ${CMAKE_CURRENT_LIST_DIR}/external/
-        ${CMAKE_CURRENT_LIST_DIR}/include/
+        ${CMAKE_CURRENT_LIST_DIR}/src/
         )
 
 target_link_libraries(

@@ -18,8 +18,8 @@ class mob_animations;
 namespace view {
 class mob: public overmap_displayable_interface {
 public:
-	mob() noexcept = default;
-	mob(mob&&) noexcept = default;
+	mob() noexcept       = default;
+	mob(mob &&) noexcept = default;
 	virtual ~mob();
 
 	void set_pos(float x, float y) {
