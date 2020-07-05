@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "model/grid_point.hpp"
+#include "model/types.hpp"
 #include "utils/utils.hpp"
 
 class terminal_commands;
@@ -38,14 +39,14 @@ struct model_handle {
 	};
 
 	explicit model_handle() noexcept = default;
-	explicit constexpr model_handle(size_t handle_, type_t type_) noexcept
+	explicit constexpr model_handle(model::handle_t handle_, type_t type_) noexcept
 	    : handle{handle_}
 	    , type{type_} { }
 	constexpr bool operator==(const model_handle &other) const noexcept {
 		return other.handle == handle && type == other.type;
 	}
 
-	size_t handle{};
+	model::handle_t handle{};
 	type_t type{};
 };
 
@@ -107,6 +108,7 @@ public:
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 	void hide_entity(model_handle entity) noexcept;
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
+	void mark_entity_as_dirty(model::handle_t) noexcept;
 	void clear_entities_changed_since_last_update() noexcept;
 	const std::vector<std::size_t> &entities_changed_since_last_update() noexcept;
 

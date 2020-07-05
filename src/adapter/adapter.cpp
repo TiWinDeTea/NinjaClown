@@ -126,7 +126,7 @@ void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		view.acquire_overmap()->move_entity(m_state.resources(), it->second, new_x, new_y);
-		m_entities_changed_since_last_update.emplace_back(entity.handle);
+		mark_entity_as_dirty(entity.handle);
 	}
 	else {
 		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
@@ -141,7 +141,7 @@ void adapter::adapter::hide_entity(model_handle entity) noexcept {
 		                  "operation"_a = "hide entity");
 	}
 	else {
-		m_entities_changed_since_last_update.emplace_back(entity.handle);
+		mark_entity_as_dirty(entity.handle);
 		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
 	}
 }
@@ -152,12 +152,16 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
 		view.acquire_overmap()->rotate_entity(m_state.resources(), it->second, view::facing_direction::from_angle(new_rad));
-		m_entities_changed_since_last_update.emplace_back(entity.handle);
+		mark_entity_as_dirty(entity.handle);
 	}
 	else {
 		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
 		                  "operation"_a = "rotate entity");
 	}
+}
+
+void adapter::adapter::mark_entity_as_dirty(model::handle_t model_handle) noexcept {
+	m_entities_changed_since_last_update.emplace_back(model_handle);
 }
 
 void adapter::adapter::clear_entities_changed_since_last_update() noexcept {

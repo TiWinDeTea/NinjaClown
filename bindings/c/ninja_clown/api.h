@@ -66,6 +66,8 @@ struct nnj_properties {
 	float rotation_speed;
 	float attack_range;
 	float activate_range;
+	float attack_delay;
+	float throw_delay;
 };
 
 enum nnj_entity_state {
@@ -88,7 +90,6 @@ enum nnj_decision_kind {
 	DK_ACTIVATE      = 2,
 	DK_ATTACK        = 3,
 	DK_THROW         = 4,
-	DK_CANCEL_ACTION = 5,
 };
 
 struct nnj_movement_request {
@@ -110,10 +111,6 @@ struct nnj_throw_request {
 	void *unused;
 };
 
-struct nnj_cancel_action_request {
-	void *unused;
-};
-
 struct nnj_decision {
 	enum nnj_decision_kind kind;
 	union {
@@ -121,7 +118,6 @@ struct nnj_decision {
 		struct nnj_activate_request activate_req;
 		struct nnj_attack_request attack_req;
 		struct nnj_throw_request throw_req;
-		struct nnj_cancel_action_request cancel_req;
 	};
 };
 

@@ -22,7 +22,7 @@ constexpr tick_t default_attack_delay  = 5;
 constexpr tick_t default_throw_delay   = 3;
 
 using decision = std::variant<ninja_api::nnj_movement_request, ninja_api::nnj_activate_request, ninja_api::nnj_attack_request,
-                              ninja_api::nnj_throw_request, ninja_api::nnj_cancel_action_request>;
+                              ninja_api::nnj_throw_request>;
 
 using preparable_action = std::variant<ninja_api::nnj_activate_request, ninja_api::nnj_attack_request, ninja_api::nnj_throw_request>;
 

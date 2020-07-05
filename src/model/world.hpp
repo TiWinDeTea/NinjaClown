@@ -22,7 +22,7 @@ struct world {
 
 	void update(adapter::adapter &);
 	void reset();
-	void reset_entity(size_t handle);
+	void reset_entity(handle_t);
 
 	grid_t grid{};
 
@@ -35,15 +35,15 @@ struct world {
 	grid_point target_tile;
 
 private:
-	void single_entity_simple_update(adapter::adapter &adapter, size_t handle);
-	void single_entity_decision_update(adapter::adapter &adapter, size_t handle);
-	void single_entity_action_update(adapter::adapter &adapter, size_t handle);
-	void move_entity(adapter::adapter &adapter, size_t handle, vec2 movement);
-	void rotate_entity(adapter::adapter &adapter, size_t handle, float rotation_rad);
-	bool entity_check_collision(size_t handle);
+	void single_entity_simple_update(adapter::adapter &, handle_t);
+	void single_entity_decision_update(adapter::adapter &, handle_t);
+	void single_entity_action_update(adapter::adapter &, handle_t);
+	void move_entity(adapter::adapter &, handle_t, vec2 movement);
+	void rotate_entity(adapter::adapter &, handle_t, float rotation_rad);
+	bool entity_check_collision(handle_t);
 
-	void fire_activator(adapter::adapter &, size_t handle);
-	void fire_actionable(adapter::adapter &, size_t handle);
+	void fire_activator(adapter::adapter &, handle_t);
+	void fire_actionable(adapter::adapter &, handle_t);
 
 	friend terminal_commands;
 };

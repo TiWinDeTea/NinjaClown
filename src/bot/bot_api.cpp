@@ -26,10 +26,13 @@ void fill_entity_struct(const ::model::components &components, ninja_api::nnj_en
 			entity->properties.rotation_speed = properties.rotation_speed;
 			entity->properties.attack_range   = properties.attack_range;
 			entity->properties.activate_range = properties.activate_range;
+			entity->properties.attack_delay   = properties.attack_delay;
+			entity->properties.throw_delay    = properties.throw_delay;
 
 			if (components.state[entity->handle].preparing_action.has_value()) {
 				entity->state = ninja_api::nnj_entity_state::ES_BUSY;
-			} else {
+			}
+			else {
 				entity->state = ninja_api::nnj_entity_state::ES_READY;
 			}
 		}
@@ -162,7 +165,7 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 
 #define SANITIZE(x)                                                                                                                        \
 	if (std::isinf((x)) || std::isnan((x))) {                                                                                              \
-        utils::log::warn(*get_resources(ninja_data), "bot_api.commit.sanitize", "value"_a = (x), "parameter"_a = #x);                      \
+		utils::log::warn(*get_resources(ninja_data), "bot_api.commit.sanitize", "value"_a = (x), "parameter"_a = #x);                      \
 		(x) = 0.0f;                                                                                                                        \
 	}
 

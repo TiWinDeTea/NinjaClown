@@ -31,7 +31,6 @@ struct nnj_decision nnj_build_decision_movement(float rotation, float forward_di
 struct nnj_decision nnj_build_decision_attack(size_t target_handle);
 struct nnj_decision nnj_build_decision_activate(size_t column, size_t line);
 struct nnj_decision nnj_build_decision_throw();
-struct nnj_decision nnj_build_decision_cancel_action();
 
 #ifdef NINJACLOWN_HELPERS_IMPLEMENT
 
@@ -123,12 +122,6 @@ struct nnj_decision nnj_build_decision_activate(size_t column, size_t line) {
 struct nnj_decision nnj_build_decision_throw() {
 	struct nnj_decision decision;
 	decision.kind = DK_THROW;
-	return decision;
-}
-
-struct nnj_decision nnj_build_decision_cancel_action() {
-	struct nnj_decision decision;
-	decision.kind = DK_CANCEL_ACTION;
 	return decision;
 }
 
