@@ -1,5 +1,5 @@
 use crate::RawApi;
-use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind, nnj_properties};
+use ninja_clown_bot_sys::{nnj_entity, nnj_entity_kind, nnj_properties, nnj_entity_state};
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
@@ -24,6 +24,32 @@ impl Properties {
     #[inline]
     pub fn activate_range(&self) -> f32 {
         self.0.activate_range
+    }
+
+    #[inline]
+    pub fn attack_delay(&self) -> f32 {
+        self.0.attack_delay
+    }
+
+    #[inline]
+    pub fn throw_delay(&self) -> f32 {
+        self.0.throw_delay
+    }
+}
+
+#[derive(Clone, Debug, Copy, PartialEq)]
+#[repr(u32)]
+pub enum EntityState {
+    Ready = nnj_entity_state::ES_READY.0,
+    Busy = nnj_entity_state::ES_BUSY.0,
+}
+
+impl EntityState {
+    /// # Safety
+    /// Calling this function with a value not representable by EntityKind
+    /// is undefined behavior.
+    unsafe fn from_u32_unchecked(v: u32) -> Self {
+        std::mem::transmute(v)
     }
 }
 
@@ -59,6 +85,17 @@ impl Entity {
             // Also, the only way to safely get an Entity is through Entities
             // that should never give an Entity with the EK_NOT_AT_ENTITY value kind.
             EntityKind::from_u32_unchecked(self.0.kind.0)
+        }
+    }
+
+    #[inline]
+    pub fn state(&self) -> EntityState {
+        unsafe {
+            // # Safety
+            // State should be a valid EntityState value at any given time
+            // Also, the only way to safely get an Entity is through Entities
+            // that should never give an unitialized Entity.
+            EntityState::from_u32_unchecked(self.0.state.0)
         }
     }
 
