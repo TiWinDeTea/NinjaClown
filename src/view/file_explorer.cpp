@@ -83,7 +83,15 @@ void view::file_explorer::give_control(const utils::resource_manager &res) noexc
 					working_directory = m_current;
 				}
 
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0xCB / 255.f, 0x33 / 255.f, 0x25 / 255.f, 1.f});
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0xCB / 255.f, 0x33 / 255.f, 0x25 / 255.f, 1.f});
+
+                if (ImGui::Selectable("../", working_directory.parent_path() == m_currently_selected, ImGuiSelectableFlags_AllowDoubleClick)) {
+                    m_currently_selected = working_directory.parent_path();
+                    if (ImGui::IsMouseDoubleClicked(0)) {
+                        m_current = m_currently_selected;
+                    }
+                }
+
 				for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator{working_directory}) {
 					if (!file.is_directory()) {
 						continue;
