@@ -2,6 +2,7 @@
 
 #include "bot/bot_dll.hpp"
 #include "utils/logging.hpp"
+#include "utils/resource_manager.hpp"
 
 using fmt::literals::operator""_a;
 
@@ -33,18 +34,18 @@ bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
 	m_good = false;
 	reset();
 
-	if (!m_dll_path) { // TODO translate
-		spdlog::error("Attempted to reload bot dll without any path");
+	if (!m_dll_path) {
+		spdlog::error(res.log_for("bot_dll.reload.no_path"));
 		return false;
 	}
 
 	if (!m_dll.load(*m_dll_path)) {
-		spdlog::error("Failed to load: {}", m_dll.error());
+		spdlog::error(res.log_for("bot_dll.load.failed"), "file"_a = *m_dll_path, "error"_a = m_dll.error());
 		return false;
 	}
 
 	if (!load_all_api_functions(res)) {
-		spdlog::error("Failed to load {}", *m_dll_path);
+		spdlog::error(res.log_for("bot_dll.load.bad_abi"), "file"_a = *m_dll_path);
 		return false;
 	}
 

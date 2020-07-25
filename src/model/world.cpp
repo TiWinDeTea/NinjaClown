@@ -128,7 +128,8 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 			  move_entity(adapter, handle, movement);
 		  }
 
-		  if (components.metadata[handle].kind == ninja_api::nnj_entity_kind::EK_DLL) {
+		  const auto& meta = components.metadata[handle]; // MSVC hax, won’t compile when inlining this variable
+		  if (meta.kind == ninja_api::nnj_entity_kind::EK_DLL) {
 			  float distance = components.hitbox[handle]
 			                     ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
 			                     .norm();

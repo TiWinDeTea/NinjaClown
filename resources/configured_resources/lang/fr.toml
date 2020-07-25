@@ -2,7 +2,7 @@
     language = "Français"
     variant = "France"
     shorthand = "fr-FR"
-    maps_to = "fr"
+    mapped_name = "fr"
 
 [commands]
     [commands.@COMMANDS_CLEARID@]
@@ -178,6 +178,15 @@
     [[log.entry]]
         id = "bot_dll.optional_load_success"
         fmt = "Fonction facultative {func_name} chargée depuis {file}"
+    [[log.entry]]
+        id = "bod_dll.reload.no_path"
+        fmt = "Échec du chargement de la dll : chemin d’accès vide."
+    [[log.entry]]
+        id = "bot_dll.load.failed"
+        fmt = "Échec du chargement de la dll \"{file}\": {error}"
+    [[log.entry]]
+        id = "bot_dll.load.bad_abi"
+        fmt = "Échec du chagement de la dll \"{file}\": ABI non valide"
 
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.unknown_mob_reference"

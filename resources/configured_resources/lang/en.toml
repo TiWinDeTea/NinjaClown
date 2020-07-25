@@ -1,8 +1,8 @@
 [meta]
     language = "English"
-    variant = "Great britain"
+    variant = "Great Britain"
     shorthand = "en-GB"
-    maps_to = "en"
+    mapped_name = "en"
 
 [commands]
     [commands.@COMMANDS_CLEARID@]
@@ -178,6 +178,15 @@
     [[log.entry]]
         id = "bot_dll.optional_load_success"
         fmt = "Optional function {func_name} present in {file}"
+    [[log.entry]]
+        id = "bod_dll.reload.no_path"
+        fmt = "Attempted to reload bot dll using an empty path"
+    [[log.entry]]
+        id = "bot_dll.load.failed"
+        fmt = "Failed to load library \"{file}\": {error}"
+    [[log.entry]]
+        id = "bot_dll.load.bad_abi"
+        fmt = "Failed to load library \"{file}\": bad ABI"
 
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.unknown_mob_reference"
