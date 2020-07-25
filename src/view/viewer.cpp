@@ -203,6 +203,7 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	std::string_view settings = res.gui_text_for("view.in_game_menu.settings");
 	std::string_view load_map = res.gui_text_for("view.in_game_menu.load_map");
 	std::string_view import   = res.gui_text_for("view.in_game_menu.import_maps");
+	std::string_view credits  = res.gui_text_for("view.in_game_menu.credits");
 	std::string_view quit     = res.gui_text_for("view.in_game_menu.quit");
 
 	ImVec2 max_text_size{0.f, 0.f};
@@ -217,6 +218,7 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	update_sz(settings);
 	update_sz(load_map);
 	update_sz(import);
+	update_sz(credits);
 	update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
@@ -248,15 +250,17 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
         }
 
         using_style(disabled_button) {
-			if (ImGui::Button(load_map.data(), ImVec2{text_width, 0.f})) {
-			}
-			if (ImGui::Button(import.data(), ImVec2{text_width, 0.f})) {
-			}
+			ImGui::Button(load_map.data(), ImVec2{text_width, 0.f});
+			ImGui::Button(import.data(), ImVec2{text_width, 0.f});
 		};
 
         if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
             state.configurator.show();
         }
+
+		using_style(disabled_button) {
+			ImGui::Button(credits.data(), ImVec2{text_width, 0.f});
+		};
 
         if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
 			state.window.close();
