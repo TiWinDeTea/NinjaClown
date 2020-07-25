@@ -10,15 +10,16 @@
 #include "terminal_commands.hpp"
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
+#include "utils/system.hpp"
 #include "view/viewer.hpp"
 
 using fmt::literals::operator""_a;
 
 namespace {
-utils::resource_manager configure_resources(const std::filesystem::path &config) {
+utils::resource_manager configure_resources() {
 	utils::resource_manager rm{};
-	if (!rm.load_config(config)) {
-		utils::log::warn(rm, "state_holder.configure.config_load_failed", "file"_a = config.generic_string());
+	if (!rm.load_config()) {
+		utils::log::warn(rm, "state_holder.configure.config_load_failed", "file"_a = (utils::config_directory() / "config.toml").generic_string());
 	}
 	return rm;
 }
@@ -32,9 +33,9 @@ std::shared_ptr<terminal_commands> build_commands_manager() {
 
 namespace state {
 struct pimpl {
-	pimpl(holder *holder, const std::filesystem::path &config, const std::filesystem::path &autorun_script) noexcept
+	pimpl(holder *holder, const std::filesystem::path &autorun_script) noexcept
 	    : command_manager{build_commands_manager()}
-	    , resources{configure_resources(config)}
+	    , resources{configure_resources()}
 	    , terminal{*holder, "Terminal", 0, 0, command_manager}
 	    , model{holder}
 	    , view{holder}
@@ -54,8 +55,8 @@ struct pimpl {
 
 state::holder::~holder() = default;
 
-state::holder::holder(const std::filesystem::path &config, const std::filesystem::path &autorun_script) noexcept
-    : m_pimpl{std::make_unique<pimpl>(this, config, autorun_script)} {
+state::holder::holder(const std::filesystem::path &autorun_script) noexcept
+    : m_pimpl{std::make_unique<pimpl>(this, autorun_script)} {
 
 	using view::viewer;
 

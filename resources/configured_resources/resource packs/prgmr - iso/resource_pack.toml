@@ -4,7 +4,7 @@
     name.fr = "programmeur - isométrique"
 
 [graphics]
-    file = "resources/assets.png"
+    file = "assets.png"
 
     [graphics.mobs]
         list = ["player", "scientist"]

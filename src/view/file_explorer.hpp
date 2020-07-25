@@ -30,11 +30,11 @@ public:
 		m_showing = false;
 	}
 
-	bool path_ready() const noexcept {
+	[[nodiscard]] bool path_ready() const noexcept {
 		return m_path_ready;
 	}
 
-	std::filesystem::path selected_path() noexcept {
+    [[nodiscard]] std::filesystem::path selected_path() noexcept {
 		if (m_path_ready) {
 			m_path_ready = false;
             m_currently_selected.clear();
@@ -42,7 +42,7 @@ public:
 		return std::exchange(m_current, {});
 	}
 
-	bool showing() const noexcept {
+    [[nodiscard]] bool showing() const noexcept {
 		return m_showing;
 	}
 

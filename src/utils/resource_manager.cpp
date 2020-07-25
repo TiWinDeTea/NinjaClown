@@ -7,6 +7,7 @@
 
 #include "utils/resource_manager.hpp"
 #include "utils/resources_type.hpp"
+#include "utils/system.hpp"
 
 using utils::optional;
 using utils::resource_manager;
@@ -26,7 +27,10 @@ auto parse_file(const std::filesystem::path &path) {
 	return parse_file(path.generic_string());
 }
 
-constexpr const char lang_folder[] = "lang/";
+constexpr const char lang_folder[]             = "lang";
+constexpr const char lang_file_ext[]           = ".toml";
+constexpr const char resource_pack_folder[]    = "resource packs";
+constexpr const char resource_pack_toml_name[] = "resource_pack.toml";
 
 namespace error_msgs {
 	constexpr const char loading_failed[] = "Error parsing config file";
@@ -37,18 +41,21 @@ namespace error_msgs {
 } // namespace error_msgs
 
 namespace config_keys {
-	constexpr const char graphics_resource_file[] = "user.resource_pack";
-	constexpr const char graphics[]               = "graphics";
-	constexpr const char graphics_main_file[]     = "file";
-	constexpr const char id[]                     = "id";
-	constexpr const char file[]                   = "file";
-	constexpr const char list[]                   = "list";
+	constexpr const char graphics_resource_file[]     = "user.resource_pack";
+	constexpr const char unqualified_graph_res_file[] = "resource_pack";
+	constexpr const char graphics[]                   = "graphics";
+	constexpr const char graphics_main_file[]         = "file";
+	constexpr const char id[]                         = "id";
+	constexpr const char file[]                       = "file";
+	constexpr const char list[]                       = "list";
 
 	namespace meta {
+		constexpr const char name_qualified[]       = "meta.name";
+		constexpr const char name_prefix[]          = "name";
 		constexpr const char language[]             = "meta.language";
 		constexpr const char variant[]              = "meta.variant";
 		constexpr const char shorthand[]            = "meta.shorthand";
-		constexpr const char respack_name_beg[]     = "meta.name.";
+		constexpr const char maps_to[]              = "meta.mapped_name";
 		constexpr const char respack_default_lang[] = "dflt_lang";
 	} // namespace meta
 
@@ -170,10 +177,63 @@ optional<view::animation> load_animation(const std::shared_ptr<cpptoml::table> &
 	return {animation};
 }
 
+template <typename T>
+T parse_lang_info_impl(std::filesystem::path &&path) {
+	namespace meta = config_keys::meta;
+
+	T ans{};
+	try {
+		std::shared_ptr<cpptoml::table> table = cpptoml::parse_file(path.generic_string());
+		ans.file                              = std::move(path);
+		if (!table) {
+			return ans;
+		}
+
+		cpptoml::option<std::string> lang   = table->get_qualified_as<std::string>(meta::language);
+		cpptoml::option<std::string> var    = table->get_qualified_as<std::string>(meta::variant);
+		cpptoml::option<std::string> shhand = table->get_qualified_as<std::string>(meta::shorthand);
+		cpptoml::option<std::string> map_n  = table->get_qualified_as<std::string>(meta::maps_to);
+
+		if (lang || shhand) {
+
+			if (shhand) {
+				ans.shorthand = *shhand;
+			}
+			if (var) {
+				ans.variant = *var;
+			}
+			if (lang) {
+				ans.name = *lang;
+			}
+			else {
+				std::swap(ans.name, ans.shorthand);
+			}
+
+			if (map_n) {
+				ans.map_name = *map_n;
+			}
+		}
+	}
+	catch (const std::exception &e) {
+		spdlog::error("{}: {}", path.generic_string(), e.what());
+	}
+	return ans;
+}
+
+template <typename T>
+T parse_lang_info(const std::filesystem::path &path) {
+	return parse_lang_info_impl<T>(std::move(std::filesystem::path{path}));
+}
+
+template <typename T>
+T parse_lang_info(std::filesystem::path &&path) {
+	return parse_lang_info_impl<T>(std::move(path));
+}
+
 } // namespace
 
-bool resource_manager::load_config(const std::filesystem::path &path) noexcept {
-	auto config = parse_file(path.generic_u8string());
+bool resource_manager::load_config() noexcept {
+	auto config = parse_file(utils::config_directory() / CONFIG_FILE);
 	if (!config) {
 		return false;
 	}
@@ -256,10 +316,11 @@ bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noe
 
 	std::string graphics_file;
 	if (auto f = config->get_as<std::string>(config_keys::graphics_main_file); f) {
-		graphics_file = *f;
+		graphics_file = (resourcepack_directory / *f).generic_string();
 	}
 	else {
-		graphics_file = DEFAULT_ASSET_FILE;
+		spdlog::error("No assets file specified");
+		return false;
 	}
 
 	auto mobs_config    = config->get_table(config_keys::mobs::anims);
@@ -563,8 +624,7 @@ bool resource_manager::load_objects_anims(const std::shared_ptr<cpptoml::table> 
 	return success;
 }
 
-bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
-                                  const std::filesystem::path &resources_directory) noexcept {
+bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config) noexcept {
 	namespace user = config_keys::user;
 
 	auto lang_config = config->get_table(config_keys::user::main_table);
@@ -582,22 +642,38 @@ bool resource_manager::load_texts(const std::shared_ptr<cpptoml::table> &config,
 		spdlog::error(R"({}: "{}.{}" {})", error_msgs::loading_failed, user::main_table, user::general_lang, error_msgs::missing_key);
 		return false;
 	}
-	m_user_general_lang.file = resources_directory / lang_folder / *general_lang;
 
-	auto parse = [&general_lang, &resources_directory](cpptoml::option<std::string> &to_parse, lang_info &related_info) {
+	std::filesystem::path res_dir = utils::resources_directory();
+	{
+		std::filesystem::path gen_lang_path(*general_lang);
+		if (gen_lang_path.is_relative()) {
+			m_user_general_lang = parse_lang_info<lang_info>(res_dir / lang_folder / gen_lang_path);
+		}
+		else {
+			m_user_general_lang = parse_lang_info<lang_info>(gen_lang_path);
+		}
+	}
+
+	auto parse = [&general_lang, &res_dir](cpptoml::option<std::string> &to_parse, lang_info &related_info) {
 		if (!to_parse) {
 			to_parse = general_lang;
 		}
-		related_info.file = resources_directory / lang_folder / *to_parse;
+		std::filesystem::path as_path{*to_parse};
+		if (as_path.is_relative()) {
+			related_info.file = res_dir / lang_folder / as_path;
+		}
+		else {
+			related_info.file = std::move(as_path);
+		}
 		return parse_file(related_info.file);
 	};
 
-	std::shared_ptr<cpptoml::table> log_text_file = parse(log_lang, m_user_general_lang);
+	std::shared_ptr<cpptoml::table> log_text_file = parse(log_lang, m_user_log_lang);
 	if (!log_text_file) {
 		return false;
 	}
 
-	std::shared_ptr<cpptoml::table> commands_text_file = parse(commands_lang, m_user_commands_lang);
+	std::shared_ptr<cpptoml::table> commands_text_file = parse(commands_lang, m_user_command_lang);
 	if (!commands_text_file) {
 		return false;
 	}
@@ -624,9 +700,10 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 		return "?????";
 	};
 
-	m_user_commands_lang.name      = try_read(config_keys::meta::language);
-	m_user_commands_lang.variant   = try_read(config_keys::meta::variant);
-	m_user_commands_lang.shorthand = try_read(config_keys::meta::shorthand);
+	m_user_command_lang.name      = try_read(config_keys::meta::language);
+	m_user_command_lang.variant   = try_read(config_keys::meta::variant);
+	m_user_command_lang.shorthand = try_read(config_keys::meta::shorthand);
+    m_user_command_lang.map_name  = try_read(config_keys::meta::maps_to);
 
 	bool result = true;
 	for (int i = 0; i < static_cast<int>(command_id::OUTOFRANGE); ++i) {
@@ -669,6 +746,7 @@ bool resource_manager::load_logging_texts(const std::shared_ptr<cpptoml::table> 
 	m_user_log_lang.name      = try_read(config_keys::meta::language);
 	m_user_log_lang.variant   = try_read(config_keys::meta::variant);
 	m_user_log_lang.shorthand = try_read(config_keys::meta::shorthand);
+    m_user_log_lang.map_name  = try_read(config_keys::meta::maps_to);
 
 	std::shared_ptr<cpptoml::table_array> logs = lang_file->get_table_array_qualified(log_ns::main_name);
 	return generic_load_keyed_texts(logs, log_ns::id, log_ns::text, m_log_strings, m_log_string_keys);
@@ -694,6 +772,7 @@ bool resource_manager::load_gui_texts(const std::shared_ptr<cpptoml::table> &gui
 	m_user_gui_lang.name      = try_read(config_keys::meta::language);
 	m_user_gui_lang.variant   = try_read(config_keys::meta::variant);
 	m_user_gui_lang.shorthand = try_read(config_keys::meta::shorthand);
+	m_user_gui_lang.map_name  = try_read(config_keys::meta::maps_to);
 
 	std::shared_ptr<cpptoml::table_array> gui_strings = gui_file->get_table_array_qualified(gui_ns::main_name);
 	return generic_load_keyed_texts(gui_strings, gui_ns::id, gui_ns::text, m_gui_strings, m_gui_string_keys);

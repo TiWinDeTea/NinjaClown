@@ -29,9 +29,11 @@ namespace resources_type {
 
 // TODO Effets sonores
 // TODO Choix de police d’écriture (principalement pour le support des caractères)
+// TODO éclater en plusieurs classes ?
 
 class resource_manager {
-	static constexpr std::string_view DEFAULT_ASSET_FILE = "resources/assets.png";
+	static constexpr std::string_view DEFAULT_ASSET_FILE = "assets.png";
+	static constexpr std::string_view CONFIG_FILE = "config.toml";
 
 	struct tiles_infos_t {
 		int xspacing;
@@ -46,13 +48,19 @@ class resource_manager {
 		std::string name;
 		std::string variant;
 		std::string shorthand;
+		std::string map_name;
 		std::filesystem::path file;
+
+		bool operator==(const lang_info& other) const noexcept {
+			return file == other.file;
+		}
 	};
 
 public:
-	[[nodiscard]] bool load_config(const std::filesystem::path &path) noexcept;
 
 	[[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
+	[[nodiscard]] bool load_config() noexcept;
+	[[nodiscard]] bool reload() noexcept {
 		resource_manager new_config{};
 		if (new_config.load_config(path)) {
 			*this = std::move(new_config);
@@ -88,7 +96,7 @@ private:
 	[[nodiscard]] bool load_mob_anim(const std::shared_ptr<cpptoml::table> &mob_anim_config, std::string_view mob_name,
 	                                 view::facing_direction::type dir, view::mob_animations &anims, sf::Texture &) noexcept;
 
-	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table> &config, const std::filesystem::path &resources_directory) noexcept;
+	[[nodiscard]] bool load_texts(const std::shared_ptr<cpptoml::table> &config) noexcept;
 	[[nodiscard]] bool load_command_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 	[[nodiscard]] bool load_logging_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
 	[[nodiscard]] bool load_tooltip_texts(const std::shared_ptr<cpptoml::table> &lang_file) noexcept;
@@ -99,11 +107,6 @@ private:
 	                                                   std::vector<std::string> &keys_out) noexcept;
 
 	sf::Texture *get_texture(const std::string &file) noexcept;
-
-	lang_info m_user_general_lang{};
-	lang_info m_user_commands_lang{};
-	lang_info m_user_gui_lang{};
-	lang_info m_user_log_lang{};
 
 	std::unordered_map<std::string, sf::Texture *> m_textures_by_file{};
 	std::forward_list<sf::Texture> m_textures_holder{};
@@ -120,6 +123,12 @@ private:
 	std::vector<std::string> m_tooltip_string_keys{};
 	std::unordered_map<std::string_view, std::string> m_gui_strings{};
 	std::vector<std::string> m_gui_string_keys{};
+
+    // user config (saved by "save_user_config"
+    lang_info m_user_general_lang{};
+    lang_info m_user_command_lang{};
+    lang_info m_user_gui_lang{};
+    lang_info m_user_log_lang{};
 };
 } // namespace utils
 

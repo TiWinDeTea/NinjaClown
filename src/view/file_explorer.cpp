@@ -140,14 +140,16 @@ void view::file_explorer::give_control(const utils::resource_manager &res) noexc
 			ImGui::EndChild();
 			ImGui::PopStyleColor();
 
-			std::string_view ok_text     = res.gui_text_for("file_explorer.ok_button").value_or("file_explorer.ok_button");
-			std::string_view cancel_text = res.gui_text_for("file_explorer.cancel_button").value_or("file_explorer.cancel_button");
+			std::string_view ok_text     = res.gui_text_for("file_explorer.ok_button");
+			std::string_view cancel_text = res.gui_text_for("file_explorer.cancel_button");
 
 			float text_width = ImGui::CalcTextSize(ok_text.data(), ok_text.data() + ok_text.size()).x
 			                   + ImGui::CalcTextSize(cancel_text.data(), cancel_text.data() + cancel_text.size()).x;
 
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - text_width - style.ItemSpacing.x * 4
 			                     - style.ItemInnerSpacing.x * 4);
+
+            glob_last_explored_folder = m_current;
 
 			if (ImGui::Button(std::string{ok_text}.c_str())) {
 				m_current     = m_currently_selected;

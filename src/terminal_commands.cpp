@@ -327,7 +327,7 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		return;
 	}
 
-	if (!arg.val.resources().reload(arg.command_line.back())) {
+	if (!arg.val.resources().reload(/*arg.command_line.back()*/)) { // FIXME
 		log_formatted(arg, "terminal_commands.reload.fail", "file_path"_a = arg.command_line.back());
 	}
 	else {

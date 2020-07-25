@@ -53,7 +53,7 @@ namespace state {
 
 class holder {
 public:
-	holder(const std::filesystem::path &config, const std::filesystem::path &autorun_script) noexcept;
+	holder(const std::filesystem::path &autorun_script) noexcept;
 	~holder();
 
 	void run() noexcept;

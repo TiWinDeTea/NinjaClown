@@ -1,5 +1,9 @@
 #include "utils/dll.hpp"
 
+#ifdef OS_WINDOWS
+#	include "utils/system.hpp"
+#endif
+
 namespace utils {
 
 dll::~dll() {
@@ -20,16 +24,7 @@ dll::operator bool() const {
 
 std::string dll::error() const {
 #if defined OS_WINDOWS
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0) {
-		return {};
-	}
-	LPSTR messageBuffer = nullptr;
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-	                             errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &messageBuffer, 0, nullptr);
-	std::string message(messageBuffer, size);
-	LocalFree(messageBuffer);
-	return message;
+	return sys_last_error();
 #elif defined OS_LINUX
 	const char *error = dlerror();
 	if (error == nullptr) {

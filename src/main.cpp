@@ -44,9 +44,11 @@ int main(int argc, char *argv[]) {
 int actual_main([[maybe_unused]] std::vector<std::string> &args) {
 	spdlog::default_logger()->set_level(spdlog::level::trace);
 
-    state::holder game{"resources/config.toml", "resources/autorun.ncs"};
+    state::holder game{"resources/autorun.ncs"};
     game.run();
     game.wait();
 
 	return 0;
+
+	// todo : ajouter un logger à spdlog qui fait des popups pour les erreurs
 }

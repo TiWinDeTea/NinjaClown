@@ -187,13 +187,13 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	const auto &res   = m_state_holder.resources();
 	const auto &style = ImGui::GetStyle();
 
-	std::string_view missing   = "MISSING TRANSLATION";
-	std::string_view resume    = res.gui_text_for("view.in_game_menu.resume").value_or(missing);
-	std::string_view load_dll  = res.gui_text_for("view.in_game_menu.dll").value_or(missing);
-	std::string_view restart   = res.gui_text_for("view.in_game_menu.restart").value_or(missing);
-	std::string_view settings  = res.gui_text_for("view.in_game_menu.settings").value_or(missing);
-	std::string_view main_menu = res.gui_text_for("view.in_game_menu.main_menu").value_or(missing);
-	std::string_view quit      = res.gui_text_for("view.in_game_menu.quit").value_or(missing);
+	std::string_view resume   = res.gui_text_for("view.in_game_menu.resume");
+	std::string_view load_dll = res.gui_text_for("view.in_game_menu.dll");
+	std::string_view restart  = res.gui_text_for("view.in_game_menu.restart");
+	std::string_view settings = res.gui_text_for("view.in_game_menu.settings");
+	std::string_view load_map = res.gui_text_for("view.in_game_menu.load_map");
+	std::string_view import   = res.gui_text_for("view.in_game_menu.import_maps");
+	std::string_view quit     = res.gui_text_for("view.in_game_menu.quit");
 
 	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {

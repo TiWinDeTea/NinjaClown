@@ -4,10 +4,8 @@
     language.log = "fr.toml"
     language.gui = "fr.toml"
 
-    resource_pack = "resources/assets-2d.toml"
+    resource_pack = "resources/resource packs/prgmr - 2d/resource_pack.toml"
 
-    # TODO:
-    # language.log = ""  [liste déroulante] + "select lang file"
     # font = ""          [liste déroulante] + "select font file"
     # engine.tps = n     [champ d’entrée  ]
     # volume = n         [curseur <---#-> ]
