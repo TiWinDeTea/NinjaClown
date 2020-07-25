@@ -14,7 +14,7 @@ std::filesystem::path utils::binary_directory() {
 		auto ptr = std::make_unique<char[]>(array_size);
 
 #ifdef OS_WINDOWS
-		DWORD result = GetModuleFileNameA(nullptr, ptr.get(), array_size);
+        DWORD result = GetModuleFileNameA(nullptr, ptr.get(), static_cast<DWORD>(array_size));
 #else
 		ssize_t result = readlink("/proc/self/exe", ptr.get(), array_size);
 #endif

@@ -2,7 +2,7 @@
 #define NINJACLOWN_VIEW_EVENT_INSPECTOR_HPP
 
 namespace sf {
-struct Event;
+class Event;
 }
 
 namespace view {

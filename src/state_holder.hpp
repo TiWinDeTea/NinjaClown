@@ -91,7 +91,7 @@ struct property {
 			return {[&val, set](const T &v) {
 				        std::invoke(set, val, v);
 			        },
-			        [&val, get]() -> const T & {
+			        [&val, get]() -> T {
 				        return std::invoke(get, val);
 			        }};
 		}

@@ -38,5 +38,5 @@ void behaviours_namespace::gate(const instance_data &data, const argument_type &
 
 void behaviours_namespace::autoshooter(const instance_data &data, const argument_type &) noexcept {
 	// TODO
-	throw std::runtime_error("autoshooter behaviour is not implemented");
+	assert(false && "autoshooter behaviour is not implemented");
 }

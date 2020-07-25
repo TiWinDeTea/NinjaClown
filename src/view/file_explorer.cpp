@@ -46,7 +46,7 @@ void view::file_explorer::give_control(const utils::resource_manager &res) noexc
 
 				unsigned int select = 0;
 				if (splited_path.size() > 1) {
-					for (unsigned int i = splited_path.size() - 1; i != 0; --i) {
+					for (std::size_t i = splited_path.size() - 1; i != 0; --i) {
 						ImGui::SameLine(0.f, 0.f);
 						if (ImGui::Button(splited_path[i].c_str())) {
 							select = i;
