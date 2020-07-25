@@ -239,7 +239,7 @@ void init_maps() {
 		}
 
 		auto try_get = [&res, &map, &mob, &type](const char *key, auto &value) -> bool {
-			return ::try_get(mob, key, value, utils::log::get_or_gen(res, "adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
+			return ::try_get(mob, key, value, res.log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
 			                 "map"_a = map, "type"_a = *type, "key"_a = key);
 		};
 
@@ -287,7 +287,7 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 				return try_get_silent(actor, key, value);
 			}
 			else {
-				return ::try_get(actor, key, value, utils::log::get_or_gen(res, "adapter_map_loader_v1_0_0.actor_missing_component"),
+				return ::try_get(actor, key, value, res.log_for("adapter_map_loader_v1_0_0.actor_missing_component"),
 				                 "key"_a = key, "type"_a = *type);
 			}
 		};
@@ -505,7 +505,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		++line_idx;
 	}
 
-	// TODO externalize
+	// TODO externalize to map file instead
 	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
 	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.25f;
 

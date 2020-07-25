@@ -69,11 +69,11 @@ public:
 
 	[[nodiscard]] utils::optional<std::pair<std::string_view, std::string_view>> text_for(command_id) const noexcept;
 
-	[[nodiscard]] utils::optional<std::string_view> log_for(std::string_view key) const noexcept;
+	[[nodiscard]] std::string_view log_for(std::string_view key) const noexcept;
 
-	[[nodiscard]] utils::optional<std::string_view> tooltip_for(std::string_view key) const noexcept;
+	[[nodiscard]] std::string_view tooltip_for(std::string_view key) const noexcept;
 
-	[[nodiscard]] utils::optional<std::string_view> gui_text_for(std::string_view key) const noexcept;
+	[[nodiscard]] std::string_view gui_text_for(std::string_view key) const noexcept;
 
 	[[nodiscard]] const tiles_infos_t &tiles_infos() const noexcept {
 		return m_tiles_infos;

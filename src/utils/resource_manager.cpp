@@ -223,28 +223,28 @@ utils::optional<std::pair<std::string_view, std::string_view>> resource_manager:
 	return {it->second};
 }
 
-utils::optional<std::string_view> resource_manager::log_for(std::string_view key) const noexcept {
+std::string_view resource_manager::log_for(std::string_view key) const noexcept {
 	auto it = m_log_strings.find(key);
 	if (it != m_log_strings.end()) {
-		return {it->second};
+		return it->second;
 	}
-	return {};
+	return key;
 }
 
-utils::optional<std::string_view> resource_manager::tooltip_for(std::string_view key) const noexcept {
+std::string_view resource_manager::tooltip_for(std::string_view key) const noexcept {
 	auto it = m_tooltip_strings.find(key);
 	if (it != m_tooltip_strings.end()) {
-		return {it->second};
+		return it->second;
 	}
-	return {};
+	return key;
 }
 
-utils::optional<std::string_view> resource_manager::gui_text_for(std::string_view key) const noexcept {
+std::string_view resource_manager::gui_text_for(std::string_view key) const noexcept {
 	auto it = m_gui_strings.find(key);
 	if (it != m_gui_strings.end()) {
-		return {it->second};
+		return it->second;
 	}
-	return {};
+	return key;
 }
 
 bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {

@@ -14,88 +14,38 @@ class resource_manager;
 
 namespace utils::log {
 namespace details {
-	[[nodiscard]] utils::optional<std::string_view> log_for(const resource_manager &, std::string_view key) noexcept;
+	[[nodiscard]] std::string_view log_for(const resource_manager &, std::string_view key) noexcept;
 }
 
 template <typename... Args>
-bool trace(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::trace(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::trace("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void trace(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::trace(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-bool debug(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::debug(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::debug("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void debug(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::debug(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-bool info(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::info(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::info("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void info(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::info(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-bool warn(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::warn(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::warn("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void warn(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::warn(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-bool error(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::error(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::error("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void error(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::error(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-bool critical(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
-	utils::optional<std::string_view> fmt = details::log_for(rm, fmt_key);
-	if (fmt) {
-		spdlog::critical(*fmt, std::forward<Args>(args)...);
-		return true;
-	}
-	else {
-		spdlog::critical("Unknown log key: {}", fmt_key);
-		return false;
-	}
+void critical(const resource_manager &rm, std::string_view fmt_key, Args &&... args) {
+    spdlog::critical(details::log_for(rm, fmt_key), std::forward<Args>(args)...);
 }
-
-[[nodiscard]] std::string get_or_gen(const resource_manager &rm, std::string_view key);
 } // namespace utils::log
 
 #endif //NINJACLOWN_UTILS_LOGGING_HPP

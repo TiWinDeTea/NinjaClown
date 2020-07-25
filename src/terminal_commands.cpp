@@ -21,15 +21,15 @@
 using fmt::literals::operator""_a;
 
 namespace {
-std::string log_get_or_gen(const terminal_commands::argument_type &arg, std::string_view key) {
-	return utils::log::get_or_gen(arg.val.resources(), key);
+std::string_view log_get(const terminal_commands::argument_type &arg, std::string_view key) {
+	return arg.val.resources().log_for(key);
 }
 
 template <typename... Args>
 void log_formatted(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
-	std::string fmt = log_get_or_gen(arg, key);
+	std::string_view fmt = log_get(arg, key);
 	try {
-		arg.term.add_formatted(fmt.c_str(), std::forward<Args>(args)...);
+		arg.term.add_formatted(fmt.data(), std::forward<Args>(args)...);
 	}
 	catch (const fmt::format_error &error) {
 		spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
@@ -38,9 +38,9 @@ void log_formatted(terminal_commands::argument_type &arg, std::string_view key, 
 
 template <typename... Args>
 void log_formatted_err(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
-	std::string fmt = log_get_or_gen(arg, key);
+	std::string_view fmt = log_get(arg, key);
 	try {
-		arg.term.add_formatted_err(fmt.c_str(), std::forward<Args>(args)...);
+		arg.term.add_formatted_err(fmt.data(), std::forward<Args>(args)...);
 	}
 	catch (const fmt::format_error &error) {
 		spdlog::error(R"("{}" while formatting string "{}")", error.what(), fmt);
@@ -199,7 +199,7 @@ void terminal_commands::help(argument_type &arg) {
 		arg.term.add_text(str);
 	};
 
-	arg.term.add_text(log_get_or_gen(arg, "terminal_commands.general.help"));
+	arg.term.add_text(log_get(arg, "terminal_commands.general.help").data());
 	for (const auto &cmd : commands) {
 		add_cmd(cmd.first, cmd.second);
 	}
@@ -224,7 +224,7 @@ void terminal_commands::load_shared_library(argument_type &arg) {
 	}
 	else {
 		if (!arg.val.model().load_dll(shared_library_path)) {
-			arg.term.add_text(log_get_or_gen(arg, "terminal_commands.load_dll.loading_failed"));
+			arg.term.add_text(log_get(arg, "terminal_commands.load_dll.loading_failed").data());
 		}
 	}
 }
@@ -245,7 +245,6 @@ void terminal_commands::update_world(argument_type &arg) {
 
 void terminal_commands::run_model(argument_type &arg) {
 	arg.val.model().run();
-	arg.val.view();
 }
 
 void terminal_commands::stop_model(argument_type &arg) {
@@ -356,7 +355,7 @@ void terminal_commands::fire_activator(argument_type &arg) {
 		}
 		else {
 			log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
-			                  "max_value"_a = arg.val.model().world.activators.size());
+			                  "max_value"_a = arg.val.model().world.activators.size() - 1);
 		}
 		return;
 	}
