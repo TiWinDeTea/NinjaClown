@@ -9,6 +9,8 @@
 
 #include "terminal_commands.hpp"
 
+#include "view/configurator.hpp"
+
 namespace ImTerm {
 template <typename>
 class terminal;
@@ -16,6 +18,9 @@ class terminal;
 
 namespace view {
 struct viewer_display_state {
+
+	view::configurator configurator;
+
 	sf::RenderWindow window;
 	ImTerm::terminal<terminal_commands> &terminal;
 	terminal_commands::argument_type empty_arg;

@@ -81,7 +81,14 @@ void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event
 							state.showing_escape_menu = true;
 						}
 						else {
-							if (!viewer.m_file_explorer.showing()) {
+							if (state.configurator.showing()) {
+								state.configurator.close();
+								state.showing_escape_menu = false;
+								if (state.autostep_bot) {
+                                    terminal_commands::run_model(state.empty_arg);
+								}
+							}
+							else if (!state.explorer.showing()) {
 								if (state.autostep_bot) {
 									terminal_commands::run_model(state.empty_arg);
 								}

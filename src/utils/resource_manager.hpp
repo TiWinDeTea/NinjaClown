@@ -58,11 +58,17 @@ class resource_manager {
 
 public:
 
-	[[nodiscard]] bool reload(const std::filesystem::path &path) noexcept {
+	struct resource_pack_info {
+        std::string default_name;
+		std::unordered_map<std::string, std::string> names_by_shorthand_lang;
+        std::filesystem::path file;
+	};
+
 	[[nodiscard]] bool load_config() noexcept;
+
 	[[nodiscard]] bool reload() noexcept {
 		resource_manager new_config{};
-		if (new_config.load_config(path)) {
+		if (new_config.load_config()) {
 			*this = std::move(new_config);
 			return true;
 		}
@@ -87,8 +93,56 @@ public:
 		return m_tiles_infos;
 	}
 
+	/**
+	 * @return a cached list of known language (according to language files within the lang folder)
+	 * @see refresh_language_list
+	 */
+	[[nodiscard]] const std::vector<lang_info>& get_language_list() const noexcept {
+		return m_available_langs;
+	}
+
+	/**
+	 * @return a cached list of known resource packs (according to resource pack files within the resource pack folder)
+	 * @see refresh_resource_pack_list
+	 */
+    [[nodiscard]] const std::vector<resource_pack_info>& get_resource_pack_list() const noexcept {
+		return m_resource_packs;
+    }
+
+	/**
+	 * Refreshes the known language cache
+	 * @see get_language_list
+	 */
+	void refresh_language_list();
+	void refresh_resource_pack_list();
+
+	[[nodiscard]] const lang_info& user_general_lang() const noexcept {
+		return m_user_general_lang;
+	}
+	[[nodiscard]] const lang_info& user_commands_lang() const noexcept {
+		return m_user_command_lang;
+	}
+	[[nodiscard]] const lang_info& user_gui_lang() const noexcept {
+		return m_user_gui_lang;
+	}
+	[[nodiscard]] const lang_info& user_log_lang() const noexcept {
+		return m_user_log_lang;
+	}
+
+    [[nodiscard]] const resource_pack_info& user_resource_pack() const noexcept {
+        return m_user_resource_pack;
+    }
+
+	void set_user_general_lang(const lang_info&) noexcept;
+	void set_user_command_lang(const lang_info&) noexcept;
+	void set_user_gui_lang(const lang_info&) noexcept;
+	void set_user_log_lang(const lang_info&) noexcept;
+	void set_user_resource_pack(const resource_pack_info&) noexcept;
+
+	bool save_user_config() const noexcept;
+
 private:
-	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config) noexcept;
+	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config, const std::filesystem::path &resourcepack_directory) noexcept;
 
 	[[nodiscard]] bool load_tiles_anims(const std::shared_ptr<cpptoml::table> &tiles_config, const std::string &graph_file) noexcept;
 	[[nodiscard]] bool load_objects_anims(const std::shared_ptr<cpptoml::table> &objects_config, const std::string &graph_file) noexcept;
@@ -124,11 +178,15 @@ private:
 	std::unordered_map<std::string_view, std::string> m_gui_strings{};
 	std::vector<std::string> m_gui_string_keys{};
 
+	std::vector<lang_info> m_available_langs;
+    std::vector<resource_pack_info> m_resource_packs;
+
     // user config (saved by "save_user_config"
     lang_info m_user_general_lang{};
     lang_info m_user_command_lang{};
     lang_info m_user_gui_lang{};
     lang_info m_user_log_lang{};
+	resource_pack_info m_user_resource_pack{};
 };
 } // namespace utils
 

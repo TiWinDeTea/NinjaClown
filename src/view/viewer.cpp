@@ -46,11 +46,15 @@ void view::viewer::wait() {
 	}
 }
 
+#include "view/configurator.hpp"
+
 void view::viewer::do_run() noexcept {
+
 	auto getterm = [this]() -> ImTerm::terminal<terminal_commands> & {
 		return state::access<view::viewer>::terminal(m_state_holder);
 	};
-	viewer_display_state dp_state{sf::RenderWindow{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"}, getterm(),
+	viewer_display_state dp_state{configurator{m_state_holder.resources()},
+	                              sf::RenderWindow{sf::VideoMode{cst::window_width, cst::window_height}, "Ninja clown !"}, getterm(),
 	                              terminal_commands::argument_type{m_state_holder, getterm(), {}}};
 	window = &dp_state.window;
 
@@ -150,6 +154,10 @@ void view::viewer::do_run() noexcept {
 		}
 
 		show_menu_window(dp_state);
+		dp_state.configurator.give_control();
+		if (dp_state.configurator.were_graphics_changed()) {
+			m_overmap.acquire()->reload_sprites(m_state_holder.resources());
+		}
 
 		ImGui::SFML::Render(dp_state.window);
 		dp_state.window.display();
@@ -205,7 +213,8 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	update_sz(load_dll);
 	update_sz(restart);
 	update_sz(settings);
-	update_sz(main_menu);
+	update_sz(load_map);
+	update_sz(import);
 	update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
@@ -223,8 +232,10 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 			state.autostep_bot        = false;
 			state.showing_escape_menu = false;
 		}
-		if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
-		}
+
+        if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
+            state.configurator.show();
+        }
 		if (ImGui::Button(main_menu.data(), ImVec2{text_width, 0.f})) {
 		}
 		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {

@@ -32,16 +32,18 @@ set(NINJA_CLOWN_SOURCES
         src/utils/system.cpp
 
         src/view/animation.cpp
+        src/view/configurator.cpp
         src/view/event_inspector.cpp
         src/view/facing_dir.cpp
         src/view/file_explorer.cpp
         src/view/fps_limiter.cpp
+        src/view/imgui_styles.cpp
         src/view/map.cpp
         src/view/mob_object.cpp
         src/view/mob_animations.cpp
         src/view/overmap_collection.cpp
         src/view/viewer.cpp
-        )
+)
 
 add_executable(ninja-clown ${OPTIONS} ${NINJA_CLOWN_SOURCES} src/main.cpp)
 
@@ -113,7 +115,7 @@ target_include_directories(ninja-clown-tests SYSTEM PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/bindings/c/
         ${CMAKE_CURRENT_LIST_DIR}/external/
         ${CMAKE_CURRENT_LIST_DIR}/src/
-        )
+)
 
 target_link_libraries(
         ninja-clown-tests

@@ -289,6 +289,19 @@
         id = "adapter.unknown_view_entity"
         fmt = "Unknown view entity with id {view_handle}, logic and view might be out of sync (internal error)"
 
+    [[log.entry]]
+        id = "resource_manager.commands_texts.reload_failed"
+        fmt = "Failed to reload command texts"
+    [[log.entry]]
+        id = "resource_manager.gui_texts.reload_failed"
+        fmt = "Failed to reload user interface texts"
+    [[log.entry]]
+        id = "resource_manger.log_texts.reload_failed"
+        fmt = "Failed to reload logging texts"
+    [[log.entry]]
+        id = "resource_manager.resource_pack.reload_failed"
+        fmt = "Failed to reload user interface textures"
+
 [tooltip]
     [[tooltip.entry]]
         id = "adapter.objective"
@@ -336,14 +349,43 @@
         id = "view.in_game_menu.settings"
         fmt = "Settings"
     [[gui.entry]]
-        id = "view.in_game_menu.main_menu"
-        fmt = "Main menu"
+        id = "view.in_game_menu.import_maps"
+        fmt = "Import maps"
+    [[gui.entry]]
+        id = "view.in_game_menu.load_map"
+        fmt = "Load map"
     [[gui.entry]]
         id = "view.in_game_menu.quit"
         fmt = "Quit"
+    [[gui.entry]]
+        id = "view.in_game_menu.credits"
+        fmt = "Credits"
+
     [[gui.entry]]
         id = "file_explorer.ok_button"
         fmt = "OK"
     [[gui.entry]]
         id = "file_explorer.cancel_button"
         fmt = "cancel"
+
+    [[gui.entry]]
+        id = "configurator.general_lang"
+        fmt = "General language: "
+    [[gui.entry]]
+        id = "configurator.command_lang"
+        fmt = "Command language: "
+    [[gui.entry]]
+        id = "configurator.gui_lang"
+        fmt = "Interface language: "
+    [[gui.entry]]
+        id = "configurator.log_lang"
+        fmt = "Logging language: "
+    [[gui.entry]]
+        id = "configurator.resource_pack"
+        fmt = "User interface textures: "
+    [[gui.entry]]
+        id = "configurator.import_respack"
+        fmt = "Import textures"
+    [[gui.entry]]
+        id = "configurator.import_lang"
+        fmt = "Import language file"

@@ -321,6 +321,19 @@
         id = "adapter.nameless_gate"
         fmt = "Portail: {handle}"
 
+    [[log.entry]]
+        id = "resource_manager.commands_texts.reload_failed"
+        fmt = "Échec lors du rechargement du nom des commandes"
+    [[log.entry]]
+        id = "resource_manager.gui_texts.reload_failed"
+        fmt = "Échec lors du rechargement des textes de l’interface"
+    [[log.entry]]
+        id = "resource_manger.log_texts.reload_failed"
+        fmt = "Échec lors du rechargement des textes de log"
+    [[log.entry]]
+        id = "resource_manager.resource_pack.reload_failed"
+        fmt = "Échec lors du rechargement des textures"
+
 
 [gui]
     [[gui.entry]]
@@ -336,14 +349,43 @@
         id = "view.in_game_menu.settings"
         fmt = "Paramètres"
     [[gui.entry]]
-        id = "view.in_game_menu.main_menu"
-        fmt = "Menu Principal"
+        id = "view.in_game_menu.import_maps"
+        fmt = "Importer des cartes"
+    [[gui.entry]]
+        id = "view.in_game_menu.load_map"
+        fmt = "Charger une carte"
     [[gui.entry]]
         id = "view.in_game_menu.quit"
         fmt = "Quitter"
+    [[gui.entry]]
+        id = "view.in_game_menu.credits"
+        fmt = "Credits"
+
     [[gui.entry]]
         id = "file_explorer.ok_button"
         fmt = "OK"
     [[gui.entry]]
         id = "file_explorer.cancel_button"
         fmt = "Annuler"
+
+    [[gui.entry]]
+        id = "configurator.general_lang"
+        fmt = "Langue générale : "
+    [[gui.entry]]
+        id = "configurator.command_lang"
+        fmt = "Langue de commandes : "
+    [[gui.entry]]
+        id = "configurator.gui_lang"
+        fmt = "Langue de l’interface : "
+    [[gui.entry]]
+        id = "configurator.log_lang"
+        fmt = "Langue de log : "
+    [[gui.entry]]
+        id = "configurator.resource_pack"
+        fmt = "Habillage graphique : "
+    [[gui.entry]]
+        id = "configurator.import_respack"
+        fmt = "Importer des textures"
+    [[gui.entry]]
+        id = "configurator.import_lang"
+        fmt = "Importer une langue"

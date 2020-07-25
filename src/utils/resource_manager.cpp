@@ -230,6 +230,52 @@ T parse_lang_info(std::filesystem::path &&path) {
 	return parse_lang_info_impl<T>(std::move(path));
 }
 
+resource_manager::resource_pack_info parse_resource_pack_info(std::filesystem::path &&path) {
+	resource_manager::resource_pack_info info;
+	try {
+		std::shared_ptr<cpptoml::table> table = cpptoml::parse_file(path.generic_string());
+		info.file                             = std::move(path);
+		if (!table) {
+			return info;
+		}
+
+		namespace meta = config_keys::meta;
+		table          = table->get_table_qualified(meta::name_qualified);
+		if (!table) {
+			return info;
+		}
+
+		for (const auto &entry : *table) {
+			if (entry.first != meta::respack_default_lang) {
+				std::shared_ptr<cpptoml::value<std::string>> name_toml = entry.second->as<std::string>();
+				std::string lang                                       = entry.first;
+
+				if (name_toml) {
+					info.names_by_shorthand_lang.insert(std::make_pair(std::move(lang), name_toml->get()));
+				}
+			}
+		}
+
+		cpptoml::option<std::string> default_lang = table->get_qualified_as<std::string>(meta::respack_default_lang);
+		if (default_lang) {
+			if (auto it = info.names_by_shorthand_lang.find(*default_lang); it != info.names_by_shorthand_lang.end()) {
+				info.default_name = it->second;
+			}
+			else {
+				info.default_name = "??????";
+			}
+		}
+	}
+	catch (const std::exception &e) {
+		spdlog::error("{}: {}", path.generic_string(), e.what());
+	}
+	return info;
+}
+
+resource_manager::resource_pack_info parse_resource_pack_info(const std::filesystem::path &path) {
+	return parse_resource_pack_info(std::move(std::filesystem::path{path}));
+}
+
 } // namespace
 
 bool resource_manager::load_config() noexcept {
@@ -248,7 +294,8 @@ bool resource_manager::load_config() noexcept {
 	if (!graphics) {
 		return false;
 	}
-	return load_graphics(graphics) && load_texts(config, path.parent_path());
+	m_user_resource_pack = parse_resource_pack_info(*resource_pack);
+	return load_graphics(graphics, std::filesystem::path{*resource_pack}.parent_path()) && load_texts(config);
 }
 
 optional<const view::animation &> resource_manager::tile_animation(resources_type::tile_id tile) const noexcept {
@@ -307,7 +354,13 @@ std::string_view resource_manager::gui_text_for(std::string_view key) const noex
 	return key;
 }
 
-bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config) noexcept {
+bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config, const std::filesystem::path &resourcepack_directory) noexcept {
+    assert(m_textures_by_file.empty());
+    assert(m_textures_holder.empty());
+    assert(m_tiles_anims.empty());
+    assert(m_objects_anims.empty());
+    assert(m_mobs_anims.empty());
+
 	config = config->get_table(config_keys::graphics);
 	if (!config) {
 		spdlog::critical("{}: \"{}\" {}", error_msgs::loading_failed, config_keys::graphics, error_msgs::missing_table);
@@ -834,4 +887,178 @@ bool resource_manager::generic_load_keyed_texts(const std::shared_ptr<cpptoml::t
 	}
 
 	return result;
+}
+
+void resource_manager::refresh_language_list() {
+	std::vector<std::filesystem::path> language_directories;
+	language_directories.emplace_back(utils::resources_directory() / lang_folder);
+
+	auto add_folder = [&language_directories](const std::filesystem::path &file) {
+		if (!file.empty()) {
+			std::filesystem::path dir = file.parent_path();
+			if (std::find(language_directories.begin(), language_directories.end(), dir) == language_directories.end()) {
+				language_directories.emplace_back(std::move(dir));
+			}
+		}
+	};
+
+	for (lang_info &info : m_available_langs) {
+		add_folder(info.file);
+	}
+
+	add_folder(m_user_general_lang.file);
+	add_folder(m_user_command_lang.file);
+	add_folder(m_user_gui_lang.file);
+	add_folder(m_user_log_lang.file);
+
+	if (language_directories.empty()) {
+		return;
+	}
+	m_available_langs.clear();
+
+	namespace fs = std::filesystem;
+
+	for (const fs::path &directory : language_directories) {
+		for (const fs::directory_entry &file : fs::directory_iterator{directory}) {
+			const fs::path &file_path = file.path();
+			if (file.is_regular_file() && file_path.extension() == lang_file_ext) {
+				m_available_langs.emplace_back(parse_lang_info<lang_info>(file_path));
+			}
+		}
+	}
+
+	std::sort(m_available_langs.begin(), m_available_langs.end(), [](const lang_info &lhs, const lang_info &rhs) {
+		return lhs.name < rhs.name;
+	});
+}
+
+void resource_manager::refresh_resource_pack_list() {
+	m_resource_packs.clear();
+	for (const auto &entry : std::filesystem::directory_iterator{resources_directory() / resource_pack_folder}) {
+		if (!entry.is_directory()) {
+			continue;
+		}
+		std::filesystem::path toml_path = entry.path() / resource_pack_toml_name;
+		if (std::filesystem::is_regular_file(toml_path)) {
+			m_resource_packs.emplace_back(parse_resource_pack_info(toml_path));
+		}
+	}
+}
+
+void resource_manager::set_user_general_lang(const lang_info &lang) noexcept {
+	m_user_general_lang = lang; // todo : sans effet
+}
+
+// TODO : mettre les trois "set_user_*_lang" fonctions ensemble
+void resource_manager::set_user_command_lang(const lang_info &lang) noexcept {
+	try {
+		std::unordered_map<command_id, std::pair<std::string, std::string>> str_backup;
+		std::swap(str_backup, m_commands_strings);
+
+		std::shared_ptr<cpptoml::table> config = cpptoml::parse_file(lang.file.generic_string());
+		if (!config || !load_command_texts(config)) {
+			std::swap(str_backup, m_commands_strings);
+			spdlog::warn(log_for("resource_manager.commands_texts.reload_failed"));
+		}
+		m_user_command_lang.file = lang.file;
+	}
+	catch (const std::exception &e) {
+		spdlog::error("{}", e.what());
+	}
+}
+
+void resource_manager::set_user_gui_lang(const lang_info &lang) noexcept {
+	try {
+		std::unordered_map<std::string_view, std::string> str_backup;
+		std::vector<std::string> keys_backup;
+		std::swap(str_backup, m_gui_strings);
+		std::swap(keys_backup, m_gui_string_keys);
+
+		std::shared_ptr<cpptoml::table> config = cpptoml::parse_file(lang.file.generic_string());
+		if (!config || !load_gui_texts(config)) {
+			std::swap(str_backup, m_gui_strings);
+			std::swap(keys_backup, m_gui_string_keys);
+			spdlog::warn(log_for("resource_manager.gui_texts.reload_failed"));
+		}
+		m_user_gui_lang.file = lang.file;
+	}
+	catch (const std::exception &e) {
+		spdlog::error("{}", e.what());
+	}
+}
+
+void resource_manager::set_user_log_lang(const lang_info &lang) noexcept {
+	try {
+		std::unordered_map<std::string_view, std::string> str_backup;
+		std::vector<std::string> keys_backup;
+		std::swap(str_backup, m_log_strings);
+		std::swap(keys_backup, m_log_string_keys);
+
+		std::shared_ptr<cpptoml::table> config = cpptoml::parse_file(lang.file.generic_string());
+		if (!config || !load_logging_texts(config)) {
+			std::swap(str_backup, m_log_strings);
+			std::swap(keys_backup, m_log_string_keys);
+			spdlog::warn(log_for("resource_manger.log_texts.reload_failed"));
+		}
+		m_user_log_lang.file = lang.file;
+	}
+	catch (const std::exception &e) {
+		spdlog::error("{}", e.what());
+	}
+}
+
+void resource_manager::set_user_resource_pack(const resource_pack_info &res_pack) noexcept {
+
+
+    std::unordered_map<std::string, sf::Texture *> textures_by_file_backup{};
+    std::forward_list<sf::Texture> textures_holder_backup{};
+    std::unordered_map<resources_type::tile_id, view::animation> tiles_anims_backup{};
+    std::unordered_map<resources_type::object_id, view::shifted_animation> objects_anims_backup{};
+    std::unordered_map<resources_type::mob_id, view::mob_animations> mobs_anims_backup{};
+    std::swap(textures_by_file_backup, m_textures_by_file);
+    std::swap(textures_holder_backup, m_textures_holder);
+    std::swap(tiles_anims_backup, m_tiles_anims);
+    std::swap(objects_anims_backup, m_objects_anims);
+    std::swap(mobs_anims_backup, m_mobs_anims);
+
+	std::shared_ptr<cpptoml::table> toml = parse_file(res_pack.file);
+	if (toml && load_graphics(toml, res_pack.file.parent_path())) {
+		m_user_resource_pack = res_pack;
+	}
+	else {
+        std::swap(textures_by_file_backup, m_textures_by_file);
+        std::swap(textures_holder_backup, m_textures_holder);
+        std::swap(tiles_anims_backup, m_tiles_anims);
+        std::swap(objects_anims_backup, m_objects_anims);
+        std::swap(mobs_anims_backup, m_mobs_anims);
+		spdlog::warn(log_for("resource_manager.resource_pack.reload_failed"));
+	}
+}
+
+bool resource_manager::save_user_config() const noexcept {
+	using namespace fmt::literals;
+	namespace uk = config_keys::user;
+
+	std::filesystem::path config_file = utils::config_directory() / CONFIG_FILE;
+
+	std::shared_ptr<cpptoml::table> config = cpptoml::make_table();
+
+	config->insert(uk::general_lang, m_user_general_lang.file.generic_string());
+	config->insert(uk::commands_lang, m_user_command_lang.file.generic_string());
+	config->insert(uk::gui_lang, m_user_gui_lang.file.generic_string());
+	config->insert(uk::log_lang, m_user_log_lang.file.generic_string());
+	config->insert(config_keys::unqualified_graph_res_file, m_user_resource_pack.file.generic_string());
+
+	std::ofstream ofs(config_file, std::ios_base::trunc | std::ios_base::out);
+	if (!ofs) {
+		spdlog::error("resource_manager.write_opening_failed", "error"_a = sys_last_error(),
+		              "file"_a = (utils::config_directory() / CONFIG_FILE).generic_string());
+		return false;
+	}
+
+	auto global = cpptoml::make_table();
+	global->insert(uk::main_table, config);
+
+	ofs << *global;
+	return true;
 }
