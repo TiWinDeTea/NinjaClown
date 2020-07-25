@@ -97,10 +97,17 @@ namespace config_keys {
 
 	namespace user {
 		constexpr const char main_table[]    = "user";
+		constexpr const char lang_table[]    = "language";
 		constexpr const char general_lang[]  = "language.general";
 		constexpr const char commands_lang[] = "language.commands";
 		constexpr const char gui_lang[]      = "language.gui";
 		constexpr const char log_lang[]      = "language.log";
+		namespace non_qualified {
+			constexpr const char general_lang[]  = "general";
+			constexpr const char commands_lang[] = "commands";
+			constexpr const char gui_lang[]      = "gui";
+			constexpr const char log_lang[]      = "log";
+		} // namespace non_qualified
 	} // namespace user
 
 	namespace lang::internal::commands {
@@ -355,11 +362,11 @@ std::string_view resource_manager::gui_text_for(std::string_view key) const noex
 }
 
 bool resource_manager::load_graphics(std::shared_ptr<cpptoml::table> config, const std::filesystem::path &resourcepack_directory) noexcept {
-    assert(m_textures_by_file.empty());
-    assert(m_textures_holder.empty());
-    assert(m_tiles_anims.empty());
-    assert(m_objects_anims.empty());
-    assert(m_mobs_anims.empty());
+	assert(m_textures_by_file.empty());
+	assert(m_textures_holder.empty());
+	assert(m_tiles_anims.empty());
+	assert(m_objects_anims.empty());
+	assert(m_mobs_anims.empty());
 
 	config = config->get_table(config_keys::graphics);
 	if (!config) {
@@ -756,7 +763,7 @@ bool resource_manager::load_command_texts(const std::shared_ptr<cpptoml::table> 
 	m_user_command_lang.name      = try_read(config_keys::meta::language);
 	m_user_command_lang.variant   = try_read(config_keys::meta::variant);
 	m_user_command_lang.shorthand = try_read(config_keys::meta::shorthand);
-    m_user_command_lang.map_name  = try_read(config_keys::meta::maps_to);
+	m_user_command_lang.map_name  = try_read(config_keys::meta::maps_to);
 
 	bool result = true;
 	for (int i = 0; i < static_cast<int>(command_id::OUTOFRANGE); ++i) {
@@ -799,7 +806,7 @@ bool resource_manager::load_logging_texts(const std::shared_ptr<cpptoml::table> 
 	m_user_log_lang.name      = try_read(config_keys::meta::language);
 	m_user_log_lang.variant   = try_read(config_keys::meta::variant);
 	m_user_log_lang.shorthand = try_read(config_keys::meta::shorthand);
-    m_user_log_lang.map_name  = try_read(config_keys::meta::maps_to);
+	m_user_log_lang.map_name  = try_read(config_keys::meta::maps_to);
 
 	std::shared_ptr<cpptoml::table_array> logs = lang_file->get_table_array_qualified(log_ns::main_name);
 	return generic_load_keyed_texts(logs, log_ns::id, log_ns::text, m_log_strings, m_log_string_keys);
@@ -1009,28 +1016,27 @@ void resource_manager::set_user_log_lang(const lang_info &lang) noexcept {
 
 void resource_manager::set_user_resource_pack(const resource_pack_info &res_pack) noexcept {
 
-
-    std::unordered_map<std::string, sf::Texture *> textures_by_file_backup{};
-    std::forward_list<sf::Texture> textures_holder_backup{};
-    std::unordered_map<resources_type::tile_id, view::animation> tiles_anims_backup{};
-    std::unordered_map<resources_type::object_id, view::shifted_animation> objects_anims_backup{};
-    std::unordered_map<resources_type::mob_id, view::mob_animations> mobs_anims_backup{};
-    std::swap(textures_by_file_backup, m_textures_by_file);
-    std::swap(textures_holder_backup, m_textures_holder);
-    std::swap(tiles_anims_backup, m_tiles_anims);
-    std::swap(objects_anims_backup, m_objects_anims);
-    std::swap(mobs_anims_backup, m_mobs_anims);
+	std::unordered_map<std::string, sf::Texture *> textures_by_file_backup{};
+	std::forward_list<sf::Texture> textures_holder_backup{};
+	std::unordered_map<resources_type::tile_id, view::animation> tiles_anims_backup{};
+	std::unordered_map<resources_type::object_id, view::shifted_animation> objects_anims_backup{};
+	std::unordered_map<resources_type::mob_id, view::mob_animations> mobs_anims_backup{};
+	std::swap(textures_by_file_backup, m_textures_by_file);
+	std::swap(textures_holder_backup, m_textures_holder);
+	std::swap(tiles_anims_backup, m_tiles_anims);
+	std::swap(objects_anims_backup, m_objects_anims);
+	std::swap(mobs_anims_backup, m_mobs_anims);
 
 	std::shared_ptr<cpptoml::table> toml = parse_file(res_pack.file);
 	if (toml && load_graphics(toml, res_pack.file.parent_path())) {
 		m_user_resource_pack = res_pack;
 	}
 	else {
-        std::swap(textures_by_file_backup, m_textures_by_file);
-        std::swap(textures_holder_backup, m_textures_holder);
-        std::swap(tiles_anims_backup, m_tiles_anims);
-        std::swap(objects_anims_backup, m_objects_anims);
-        std::swap(mobs_anims_backup, m_mobs_anims);
+		std::swap(textures_by_file_backup, m_textures_by_file);
+		std::swap(textures_holder_backup, m_textures_holder);
+		std::swap(tiles_anims_backup, m_tiles_anims);
+		std::swap(objects_anims_backup, m_objects_anims);
+		std::swap(mobs_anims_backup, m_mobs_anims);
 		spdlog::warn(log_for("resource_manager.resource_pack.reload_failed"));
 	}
 }
@@ -1038,15 +1044,18 @@ void resource_manager::set_user_resource_pack(const resource_pack_info &res_pack
 bool resource_manager::save_user_config() const noexcept {
 	using namespace fmt::literals;
 	namespace uk = config_keys::user;
+	namespace uknq = config_keys::user::non_qualified;
 
 	std::filesystem::path config_file = utils::config_directory() / CONFIG_FILE;
 
-	std::shared_ptr<cpptoml::table> config = cpptoml::make_table();
+    std::shared_ptr<cpptoml::table> lang_config = cpptoml::make_table();
+    lang_config->insert(uknq::general_lang, m_user_general_lang.file.generic_string());
+    lang_config->insert(uknq::commands_lang, m_user_command_lang.file.generic_string());
+    lang_config->insert(uknq::gui_lang, m_user_gui_lang.file.generic_string());
+    lang_config->insert(uknq::log_lang, m_user_log_lang.file.generic_string());
 
-	config->insert(uk::general_lang, m_user_general_lang.file.generic_string());
-	config->insert(uk::commands_lang, m_user_command_lang.file.generic_string());
-	config->insert(uk::gui_lang, m_user_gui_lang.file.generic_string());
-	config->insert(uk::log_lang, m_user_log_lang.file.generic_string());
+	std::shared_ptr<cpptoml::table> config = cpptoml::make_table();
+	config->insert(uk::lang_table, lang_config);
 	config->insert(config_keys::unqualified_graph_res_file, m_user_resource_pack.file.generic_string());
 
 	std::ofstream ofs(config_file, std::ios_base::trunc | std::ios_base::out);
