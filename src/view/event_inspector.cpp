@@ -32,14 +32,14 @@ const sf::Event::MouseButtonEvent &mouse_button(const sf::Event &event) {
 }
 } // namespace
 
-void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event, viewer_display_state &state) {
+bool view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event, viewer_display_state &state) {
 #define NEEDS_NOPOPUP                                                                                                                      \
 	do {                                                                                                                                   \
 		if (state.showing_escape_menu) {                                                                                                   \
-			return;                                                                                                                        \
+			return true;                                                                                                                   \
 		}                                                                                                                                  \
 	} while (false)
-// ENDS NEEDS_NOPOPUP
+	// ENDS NEEDS_NOPOPUP
 
 	switch (event.type) {
 		case sf::Event::Closed:
@@ -99,7 +99,7 @@ void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event
 					else {
 						state.displaying_term = false;
 					}
-					break;
+					return false;
 				default:
 					break;
 			}
@@ -128,7 +128,7 @@ void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event
 		case sf::Event::MouseWheelScrolled:
 			NEEDS_NOPOPUP;
 			if (state.terminal_hovered) {
-				return;
+				return true;
 			}
 			{
 				sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
@@ -241,4 +241,6 @@ void view::inspect_event([[maybe_unused]] viewer &viewer, const sf::Event &event
 		default:
 			break;
 	}
+
+	return true;
 }

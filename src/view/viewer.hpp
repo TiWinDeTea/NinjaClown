@@ -35,6 +35,7 @@ class holder;
 
 namespace view {
 
+// todo: nettoyer cette classe
 class viewer {
 public:
 	explicit viewer(state::holder *state_holder) noexcept;
@@ -116,9 +117,7 @@ private:
 
 	fps_limiter m_fps_limiter{};
 
-    file_explorer m_file_explorer{};
-
-	friend void view::inspect_event(viewer &viewer, const sf::Event &event, struct viewer_display_state &state);
+	friend bool view::inspect_event(viewer &viewer, const sf::Event &event, struct viewer_display_state &state);
 };
 } // namespace view
 

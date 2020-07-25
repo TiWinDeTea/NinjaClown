@@ -15,6 +15,7 @@
 #include "utils/resource_manager.hpp"
 #include "view/event_inspector.hpp"
 #include "view/file_explorer.hpp"
+#include "view/imgui_styles.hpp"
 #include "view/viewer.hpp"
 #include "view/viewer_display_state.hpp"
 
@@ -81,8 +82,9 @@ void view::viewer::do_run() noexcept {
 	while (dp_state.window.isOpen() && m_running && !close_requested) {
 		sf::Event event{};
 		while (dp_state.window.pollEvent(event)) {
-			ImGui::SFML::ProcessEvent(event);
-			inspect_event(*this, event, dp_state);
+			if (inspect_event(*this, event, dp_state)) {
+				ImGui::SFML::ProcessEvent(event);
+			}
 		}
 
 		ImGui::SFML::Update(dp_state.window, dp_state.delta_clock.restart());
@@ -177,9 +179,9 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	if (!state.showing_escape_menu) {
 		if (state.escape_menu_currently_open) {
 			state.escape_menu_currently_open = false;
-			if (ImGui::BeginPopupModal(menu_window_name)) {
-                m_file_explorer.close();
-                m_file_explorer.give_control(m_state_holder.resources());
+			if (ImGui::BeginPopupModal(menu_window_name, nullptr, ImGuiWindowFlags_NoTitleBar)) {
+				state.explorer.close();
+				state.explorer.give_control(m_state_holder.resources());
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 			}
@@ -221,33 +223,53 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
 	if (ImGui::BeginPopupModal(menu_window_name, nullptr,
 	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
-		if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
-			state.showing_escape_menu = false;
-		}
-		if (ImGui::Button(load_dll.data(), ImVec2{text_width, 0.f})) {
-			m_file_explorer.open(with_extensions{".dll", ".so"});
-		}
-		if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
-			state::access<view::viewer>::adapter(m_state_holder).load_map(m_state_holder.current_map_path());
-			state.autostep_bot        = false;
-			state.showing_escape_menu = false;
-		}
+
+		if (!state::access<viewer>::adapter(m_state_holder).map_is_loaded()) {
+			using_style(disabled_button) {
+                ImGui::Button(resume.data(), ImVec2{text_width, 0.f});
+                ImGui::Button(restart.data(), ImVec2{text_width, 0.f});
+			};
+		} else {
+            if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
+                state.showing_escape_menu = false;
+				if (state.autostep_bot) {
+					terminal_commands::run_model(state.empty_arg);
+				}
+			}
+			if (ImGui::Button(restart.data(), ImVec2{text_width, 0.f})) {
+				state::access<view::viewer>::adapter(m_state_holder).load_map(m_state_holder.current_map_path());
+				state.autostep_bot        = false;
+				state.showing_escape_menu = false;
+            }
+        }
+
+        if (ImGui::Button(load_dll.data(), ImVec2{text_width, 0.f})) {
+            state.explorer.open(with_extensions{".dll", ".so"});
+        }
+
+        using_style(disabled_button) {
+			if (ImGui::Button(load_map.data(), ImVec2{text_width, 0.f})) {
+			}
+			if (ImGui::Button(import.data(), ImVec2{text_width, 0.f})) {
+			}
+		};
 
         if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
             state.configurator.show();
         }
-		if (ImGui::Button(main_menu.data(), ImVec2{text_width, 0.f})) {
-		}
-		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
+
+        if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
 			state.window.close();
 		}
 
-		m_file_explorer.give_control(m_state_holder.resources());
-		if (m_file_explorer.path_ready()) {
-            auto arg_copy = state.empty_arg;
+		state.explorer.give_control(m_state_holder.resources());
+		if (state.explorer.path_ready()) {
+			auto arg_copy = state.empty_arg;
 			arg_copy.command_line.emplace_back("");
-			arg_copy.command_line.emplace_back(m_file_explorer.selected_path().generic_string());
+			arg_copy.command_line.emplace_back(state.explorer.selected_path().generic_string());
 			terminal_commands::load_shared_library(arg_copy);
+			state.showing_escape_menu = false;
+			state.autostep_bot = false;
 		}
 		ImGui::EndPopup();
 	}

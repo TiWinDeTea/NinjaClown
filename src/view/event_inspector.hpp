@@ -9,7 +9,10 @@ namespace view {
 class viewer;
 struct viewer_display_state;
 
-void inspect_event(view::viewer&, const sf::Event& event, viewer_display_state& state);
+/**
+ * @return true if the event should be passed to ImGui
+ */
+[[nodiscard]] bool inspect_event(view::viewer&, const sf::Event& event, viewer_display_state& state);
 }
 
 #endif //NINJACLOWN_VIEW_EVENT_INSPECTOR_HPP

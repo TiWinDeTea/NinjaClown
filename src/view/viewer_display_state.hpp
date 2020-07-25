@@ -10,6 +10,7 @@
 #include "terminal_commands.hpp"
 
 #include "view/configurator.hpp"
+#include "view/file_explorer.hpp"
 
 namespace ImTerm {
 template <typename>
@@ -36,13 +37,15 @@ struct viewer_display_state {
 
 	// commands/terminal related
 	bool terminal_hovered{false};
-	bool displaying_term{true};
+	bool displaying_term{false};
 	bool autostep_bot{false};
 
 	// misc
 	bool resized_once{false}; // TODO useless ?
-	bool showing_escape_menu{false};
+	bool showing_escape_menu{true};
 	bool escape_menu_currently_open{false};
+
+	file_explorer explorer{};
 };
 } // namespace view
 

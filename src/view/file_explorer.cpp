@@ -4,8 +4,16 @@
 #include "utils/system.hpp"
 #include "view/file_explorer.hpp"
 
+
+// TODO : rendre la classe file_explorer statique (pas vraiment besoin de l’instancier plusieurs fois)
+
+// TODO : boutons précédent/suivant
+
+// TODO : sauvegarder le dernier dossier accédé dans la config ?
+
 namespace {
 constexpr const char window_name[] = "##file explorer";
+std::optional<std::filesystem::path> glob_last_explored_folder{}; // TODO : si la classe est statique, cette variable est superflue (par rapport aux variables déjà présentes dans la classe)
 }
 
 void view::file_explorer::give_control(const utils::resource_manager &res) noexcept {
@@ -179,9 +187,14 @@ void view::file_explorer::give_control(const utils::resource_manager &res) noexc
 
 void view::file_explorer::open(with_extensions exts) noexcept {
 	m_currently_selected.clear();
-	m_current = utils::binary_directory().parent_path();
 	m_showing = true;
 	m_prefered_extensions = std::move(exts.exts);
+
+	if (glob_last_explored_folder) {
+		m_current = *glob_last_explored_folder;
+	} else {
+        m_current = utils::binary_directory().parent_path();
+	}
 }
 
 void view::file_explorer::open(std::filesystem::path path, with_extensions exts) noexcept {
