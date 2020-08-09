@@ -32,8 +32,11 @@ struct event {
 
 class event_queue {
 public:
+	/// Need to be called at each game tick
 	void update(world &, adapter::adapter &);
+	/// Register activator to be activated in future
 	void add_event(handle_t, tick_t delay, event_reason);
+	/// Unregister all events related to a specific activator
 	void clear_for_handle(handle_t);
 
 private:
