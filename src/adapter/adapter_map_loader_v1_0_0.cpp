@@ -65,6 +65,7 @@ struct activator {
 	point pos;
 	model::tick_t delay;
 	model::tick_t refire_after;
+	bool refire_repeat;
 	model::tick_t activation_difficulty;
 	activator_type type;
 	std::vector<size_t> target_tiles;
@@ -98,6 +99,7 @@ namespace keys {
 	constexpr const char *firing_rate           = "firing_rate";
 	constexpr const char *closed                = "closed";
 	constexpr const char *refire_after          = "refire_after";
+	constexpr const char *refire_repeat          = "refire_repeat";
 	constexpr const char *activation_difficulty = "activation_difficulty";
 	constexpr const char *duration              = "duration";
 	constexpr const char *delay                 = "delay";
@@ -358,6 +360,11 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 				try_get(keys::duration, activator.refire_after, true);
 			}
 
+			activator.refire_repeat = false;
+			if (!try_get(keys::refire_repeat, activator.refire_repeat, true)) {
+				try_get(keys::duration, activator.refire_repeat, true);
+			}
+
 			activator.activation_difficulty = model::default_activation_difficulty;
 			try_get(keys::activation_difficulty, activator.activation_difficulty, true);
 
@@ -607,7 +614,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
 			                                std::optional<unsigned int>{} :
 			                                std::optional<unsigned int>(activator.refire_after),
-			                              activator.delay, activator.activation_difficulty});
+			                              activator.delay, activator.activation_difficulty, activator.refire_repeat});
 		  },
 		  [&](const gate &gate) {
 			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;

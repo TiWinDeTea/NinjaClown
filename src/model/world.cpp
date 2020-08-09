@@ -1,5 +1,6 @@
 #include <array>
 #include <cmath>
+#include <model/event.hpp>
 #include <spdlog/spdlog.h>
 #include <variant>
 
@@ -14,6 +15,8 @@ void model::world::update(adapter::adapter &adapter) {
 	for (handle_t handle = cst::max_entities; (handle--) != 0u;) {
 		single_entity_simple_update(adapter, handle);
 	}
+
+	m_event_queue.update(*this, adapter);
 }
 
 void model::world::reset() {
@@ -63,7 +66,7 @@ void model::world::single_entity_action_update(adapter::adapter &adapter, handle
 			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
 				  vec2 cell_center{activate_req.column, activate_req.line};
 				  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
-					  fire_activator(adapter, i.interactable_handler);
+					  fire_activator(adapter, i.interactable_handler, event_reason::NONE);
 				  }
 			  }
 		  }
@@ -128,7 +131,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 			  move_entity(adapter, handle, movement);
 		  }
 
-		  const auto& meta = components.metadata[handle]; // MSVC hax, won’t compile when inlining this variable
+		  const auto &meta = components.metadata[handle]; // MSVC hax, won’t compile when inlining this variable
 		  if (meta.kind == ninja_api::nnj_entity_kind::EK_DLL) {
 			  float distance = components.hitbox[handle]
 			                     ->center.to({target_tile.x + cst::cell_width / 2.f, target_tile.y + cst::cell_height / 2.f})
@@ -236,11 +239,32 @@ bool model::world::entity_check_collision(handle_t handle) {
 	return false;
 }
 
-void model::world::fire_activator(adapter::adapter &adapter, handle_t handle) {
-	for (handle_t target : activators[handle].targets) {
-		fire_actionable(adapter, target);
+void model::world::fire_activator(adapter::adapter &adapter, handle_t handle, event_reason reason) {
+	auto &activator = activators[handle];
+
+	m_event_queue.clear_for_handle(handle);
+
+	if (activator.enabled && reason == event_reason::NONE) {
+		activator.enabled = false;
 	}
-	adapter.fire_activator(adapter::model_handle{handle, adapter::model_handle::ACTIVATOR});
+	else {
+		if (activator.activation_delay != 0 && reason != event_reason::DELAY) {
+			m_event_queue.add_event(handle, activator.activation_delay, event_reason::DELAY);
+			activator.enabled = true;
+		}
+		else {
+			activator.enabled = false;
+			for (handle_t target : activators[handle].targets) {
+				fire_actionable(adapter, target);
+			}
+			adapter.fire_activator(adapter::model_handle{handle, adapter::model_handle::ACTIVATOR});
+
+			if (activator.refire_after && (reason != event_reason::REFIRE || activator.refire_repeat)) {
+				m_event_queue.add_event(handle, *activators[handle].refire_after, event_reason::REFIRE);
+				activator.enabled = true;
+			}
+		}
+	}
 }
 
 void model::world::fire_actionable(adapter::adapter &adapter, handle_t handle) {

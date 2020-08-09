@@ -3,6 +3,7 @@
 #include <array>
 #include <filesystem>
 
+#include <model/event.hpp>
 #include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 
@@ -360,7 +361,7 @@ void terminal_commands::fire_activator(argument_type &arg) {
 		return;
 	}
 
-	arg.val.model().world.fire_activator(arg.val.adapter(), *val);
+	arg.val.model().world.fire_activator(arg.val.adapter(), *val, model::event_reason::NONE);
 }
 
 void terminal_commands::fire_actionable(argument_type &arg) {

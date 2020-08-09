@@ -2,6 +2,7 @@
 #define NINJACLOWN_WORLD_HPP
 
 #include <algorithm> // max, min
+#include <model/event.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -42,10 +43,13 @@ private:
 	void rotate_entity(adapter::adapter &, handle_t, float rotation_rad);
 	bool entity_check_collision(handle_t);
 
-	void fire_activator(adapter::adapter &, handle_t);
+	void fire_activator(adapter::adapter &, handle_t, event_reason);
 	void fire_actionable(adapter::adapter &, handle_t);
 
+	event_queue m_event_queue{};
+
 	friend terminal_commands;
+	friend event_queue;
 };
 
 } // namespace model
