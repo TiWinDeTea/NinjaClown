@@ -26,6 +26,9 @@ namespace cst {
 } // namespace cst
 } // namespace
 
+// TODO : afficher un camembert pour les actions en cours mais qui prennent du temps
+// TODO : bouton "carte suivante" en bas à droite pour les campagnes
+
 view::viewer::viewer(state::holder *state_holder) noexcept
     : m_state_holder{*state_holder} { }
 
@@ -250,8 +253,8 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
         }
 
         using_style(disabled_button) {
-			ImGui::Button(load_map.data(), ImVec2{text_width, 0.f});
-			ImGui::Button(import.data(), ImVec2{text_width, 0.f});
+			ImGui::Button(load_map.data(), ImVec2{text_width, 0.f});  // TODO
+			ImGui::Button(import.data(), ImVec2{text_width, 0.f});    // TODO
 		};
 
         if (ImGui::Button(settings.data(), ImVec2{text_width, 0.f})) {
@@ -259,7 +262,7 @@ void view::viewer::show_menu_window(viewer_display_state &state) noexcept {
         }
 
 		using_style(disabled_button) {
-			ImGui::Button(credits.data(), ImVec2{text_width, 0.f});
+			ImGui::Button(credits.data(), ImVec2{text_width, 0.f});   // TODO
 		};
 
         if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {

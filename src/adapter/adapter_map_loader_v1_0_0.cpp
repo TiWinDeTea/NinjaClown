@@ -505,7 +505,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		++line_idx;
 	}
 
-	// TODO externalize to map file instead
+	// TODO externaliser vers le fichier de la carte + ajouter une option de mise à l’échelle des objets graphiques
 	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
 	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.25f;
 

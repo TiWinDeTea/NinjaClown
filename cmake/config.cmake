@@ -25,9 +25,9 @@ else()
 
 endif()
 
-if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(CONFIG_ARCH_32 1)
-elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CONFIG_ARCH_64 1)
 endif()
 

@@ -51,8 +51,7 @@ std::string utils::sys_last_error() {
     static_assert(std::is_same_v<std::invoke_result_t<decltype(strerror_r), int, char *, size_t>, char *>,
 	              "using XSI-compliant strerror_r instead of GNU-specific");
 
-	constexpr int buffer_sz = 1024;
-	auto buffer = std::make_unique<char[]>(buffer_sz);
-	return strerror_r(errno, buffer.get(), buffer_sz);
+	std::array<char, 1024> buffer{};
+	return strerror_r(errno, buffer.data(), buffer.size());
 #endif
 }
