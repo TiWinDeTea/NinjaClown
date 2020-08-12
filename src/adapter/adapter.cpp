@@ -114,7 +114,7 @@ void adapter::adapter::open_gate(model_handle gate) noexcept {
 	}
 }
 
-void adapter::adapter::update_map(const model::grid_point &target, model::cell_type new_cell) noexcept {
+void adapter::adapter::update_map(const model::grid_point &target, model::cell_type  /*new_cell*/) noexcept {
 	m_cells_changed_since_last_update.emplace_back(target);
 }
 
@@ -209,7 +209,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			}
 			if (!info_req.lines.empty()) {
 				list.emplace_back(std::move(info_req));
-				info_req.lines.clear();
+				info_req.lines.clear(); // NOLINT (`clear` after `std::move` is fine and intended)
 			}
 		}
 		else {
