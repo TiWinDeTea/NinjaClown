@@ -11,6 +11,10 @@
 
 const float significant_rotation_eta = 0.001f;
 
+float slowdown_factor(float r) {
+	return -(0.3 * r * r) / 2 - 0.1 * std::pow(std::cos(1.1 * r), 2) + 1.1 - 0.03 * r * r * std::cos(r); // NOLINT
+}
+
 void model::world::update(adapter::adapter &adapter) {
 	for (handle_t handle = cst::max_entities; (handle--) != 0u;) {
 		single_entity_simple_update(adapter, handle);
@@ -121,11 +125,14 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 		  float dy = -(std::sin(components.hitbox[handle]->rad) * mov_req.forward_diff
 		               + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * mov_req.lateral_diff);
 		  vec2 movement{dx, dy};
-		  if (movement.norm() > properties.move_speed) {
+
+		  // maximal speed is achieved by fully moving forward, otherwise entity is slowed down
+		  float max_norm = properties.move_speed * slowdown_factor(components.hitbox[handle]->rad + movement.atan2());
+		  if (movement.norm() > max_norm) {
 			  // cap movement vector to max speed
 			  movement.unitify();
-			  movement.x *= properties.move_speed;
-			  movement.y *= properties.move_speed;
+			  movement.x *= max_norm;
+			  movement.y *= max_norm;
 		  }
 		  if (movement.norm() != 0) {
 			  move_entity(adapter, handle, movement);
