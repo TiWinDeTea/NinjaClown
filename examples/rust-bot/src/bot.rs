@@ -13,7 +13,7 @@ pub struct UserData {
     ninja_handle: usize,
     enemy_handle: usize,
     target: CellPos,
-    button: CellPos,
+    button: Option<CellPos>,
     path: vec::IntoIter<CellPos>,
     current_target: Option<CellPos>,
     activated: bool,
@@ -49,7 +49,7 @@ pub fn start_level(api: &mut Api) -> UserData {
         ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
         enemy_handle: enemy_handle_opt.unwrap_or(usize::MAX),
         target: CellPos::new(2, 1),
-        button: button_bos.expect("button not found"),
+        button: button_bos,
         path: Vec::new().into_iter(),
         current_target: None,
         activated: false,
@@ -82,12 +82,17 @@ pub fn think(api: &mut Api, data: &mut UserData) {
             data.is_going_to_button = false;
             api.log_info("Moving to the target!");
             path
-        } else if let Some(path) = graph.path_to(&start, &data.button) {
-            data.is_going_to_button = true;
-            api.log_info("Moving to the button!");
-            path
+        } else if let Some(button_pos) = &data.button {
+            if let Some(path) = graph.path_to(&start, button_pos) {
+                data.is_going_to_button = true;
+                api.log_info("Moving to the button!");
+                path
+            } else {
+                api.log_warn("Bib bop I can't find path to button");
+                return;
+            }
         } else {
-            api.log_warn("Bib bop I'm stuck");
+            api.log_warn("Bib bop I can't find path to target");
             return;
         };
 
