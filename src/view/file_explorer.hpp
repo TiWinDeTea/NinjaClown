@@ -2,6 +2,7 @@
 #define NINJACLOWN_FILE_EXPLORER_HPP
 
 #include <filesystem>
+#include <vector>
 
 namespace utils {
 class resource_manager;
