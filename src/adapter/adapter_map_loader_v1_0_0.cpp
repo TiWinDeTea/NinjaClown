@@ -417,15 +417,12 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
 		auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
 
-		if (!mobs_defs_toml || !mobs_spawns_toml || !actors_toml || !map_layout_toml) {
-			if (!mobs_defs_toml) {
-				error("missing_mob_def");
-			}
+        if (!mobs_defs_toml || !mobs_spawns_toml || !map_layout_toml) {
+            if (!mobs_defs_toml) {
+                error("missing_mob_def");
+            }
 			if (!mobs_spawns_toml) {
 				error("missing_mob_placings");
-			}
-			if (!actors_toml) {
-				error("missing_actors");
 			}
 			if (!map_layout_toml) {
 				error("missing_map_layout");
@@ -450,7 +447,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		}
 
 		std::vector<std::variant<activator, gate, autoshooter>> actors;
-		{
+		if (actors_toml) {
 			auto maybe_actors = load_actors(m_state.resources(), actors_toml, map);
 			if (!maybe_actors) {
 				return false;
