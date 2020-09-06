@@ -13,13 +13,14 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/scope_guards.hpp"
-#include "view/viewer.hpp"
+#include "view/game_viewer.hpp"
+#include "view/view.hpp"
 
 namespace {
 template <typename... Args>
 [[nodiscard]] std::string tooltip_text_prefix(utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
 	std::string_view fmt = res.tooltip_for(key);
-    return prefix + fmt::format(fmt, std::forward<Args>(args)...);
+	return prefix + fmt::format(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
@@ -37,8 +38,6 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 	auto clear = [this] {
 		state::access<adapter>::model(m_state).world.reset();
-		state::access<adapter>::view(m_state).acquire_overmap()->clear();
-		state::access<adapter>::view(m_state).acquire_map()->m_cells.clear();
 		m_target_handle.reset();
 
 		m_target_handle.reset();
@@ -85,8 +84,8 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 }
 
 bool adapter::adapter::map_is_loaded() noexcept {
-	view::viewer &view = state::access<adapter>::view(m_state);
-	return !view.acquire_map()->m_cells.empty();
+	view::view &view = state::access<adapter>::view(m_state);
+	return view.has_map();
 }
 
 void adapter::adapter::fire_activator(model_handle handle) noexcept {
@@ -100,7 +99,7 @@ void adapter::adapter::close_gate(model_handle gate) noexcept {
 		                  "operation"_a = "close gate");
 	}
 	else {
-		state::access<adapter>::view(m_state).acquire_overmap()->reveal(it->second);
+		state::access<adapter>::view(m_state).game().reveal(it->second);
 	}
 }
 
@@ -110,7 +109,7 @@ void adapter::adapter::open_gate(model_handle gate) noexcept {
 		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = gate.handle, "operation"_a = "open gate");
 	}
 	else {
-		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
+		state::access<adapter>::view(m_state).game().hide(it->second);
 	}
 }
 
@@ -119,10 +118,10 @@ void adapter::adapter::update_map(const model::grid_point &target, model::cell_t
 }
 
 void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y) noexcept {
-	view::viewer &view = state::access<adapter>::view(m_state);
+	view::view &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
-		view.acquire_overmap()->move_entity(m_state.resources(), it->second, new_x, new_y);
+		view.game().move_entity(it->second, new_x, new_y);
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
@@ -139,16 +138,16 @@ void adapter::adapter::hide_entity(model_handle entity) noexcept {
 	}
 	else {
 		mark_entity_as_dirty(entity.handle);
-		state::access<adapter>::view(m_state).acquire_overmap()->hide(it->second);
+		state::access<adapter>::view(m_state).game().hide(it->second);
 	}
 }
 
 void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcept {
-	view::viewer &view = state::access<adapter>::view(m_state);
+	view::view &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
-		view.acquire_overmap()->rotate_entity(m_state.resources(), it->second, view::facing_direction::from_angle(new_rad));
+		view.game().rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {

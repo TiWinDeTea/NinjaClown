@@ -14,7 +14,7 @@ class resource_manager;
 }
 
 namespace view {
-class viewer;
+class map_viewer;
 
 class overmap_collection {
 	using pair_type = std::pair<const overmap_displayable_interface *, adapter::view_handle>;
@@ -28,9 +28,9 @@ class overmap_collection {
 public:
 	void reload_sprites(const utils::resource_manager &res) noexcept;
 
-	void print_all(view::viewer &) const noexcept;
+	void print_all(map_viewer &) const noexcept;
 
-	[[nodiscard]] std::vector<std::vector<std::string>> print_all(view::viewer &, adapter::adapter &,
+	[[nodiscard]] std::vector<std::vector<std::string>> print_all(map_viewer &, adapter::adapter &,
 	                                                              utils::resource_manager &) const noexcept;
 
 	adapter::view_handle add_object(object &&) noexcept;
@@ -38,7 +38,7 @@ public:
 
 	void move_entity(utils::resource_manager &, adapter::view_handle handle, float newx, float newy);
 
-	void rotate_entity(utils::resource_manager &, adapter::view_handle handle, view::facing_direction::type new_direction) noexcept;
+	void rotate_entity(utils::resource_manager &, adapter::view_handle handle, facing_direction::type new_direction) noexcept;
 
 	void hide(adapter::view_handle handle);
 	void reveal(adapter::view_handle handle);

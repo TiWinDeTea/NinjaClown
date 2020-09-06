@@ -11,7 +11,7 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/system.hpp"
-#include "view/viewer.hpp"
+#include "view/view.hpp"
 
 using fmt::literals::operator""_a;
 
@@ -38,14 +38,14 @@ struct pimpl {
 	    , resources{configure_resources()}
 	    , terminal{*holder, "Terminal", 0, 0, command_manager}
 	    , model{holder}
-	    , view{holder}
+	    , view{}
 	    , adapter{holder} { }
 
 	std::shared_ptr<terminal_commands> command_manager;
 	utils::resource_manager resources;
 	ImTerm::terminal<terminal_commands> terminal;
 	model::model model;
-	view::viewer view;
+	view::view view;
 	adapter::adapter adapter;
 
 	std::map<std::string, property> properties{};
@@ -58,14 +58,14 @@ state::holder::~holder() = default;
 state::holder::holder(const std::filesystem::path &autorun_script) noexcept
     : m_pimpl{std::make_unique<pimpl>(this, autorun_script)} {
 
-	using view::viewer;
+	using view::view;
 
-	m_pimpl->properties.emplace("average_fps", property{&viewer::average_fps, m_pimpl->view}); // TODO translations
+	m_pimpl->properties.emplace("average_fps", property{&view::average_fps, m_pimpl->view}); // TODO translations
 
-	m_pimpl->properties.emplace("target_fps", property::proxy<unsigned int>::from_accessor<viewer>(
-	                                            m_pimpl->view, &viewer::target_fps, &viewer::target_fps)); // TODO translations
+	m_pimpl->properties.emplace("target_fps", property::proxy<unsigned int>::from_accessor<view>(
+	                                            m_pimpl->view, &view::target_fps, &view::target_fps)); // TODO translations
 
-	m_pimpl->properties.emplace("display_debug_data", property{&viewer::show_debug_data, m_pimpl->view}); // TODO translations
+	m_pimpl->properties.emplace("display_debug_data", property{&view::show_debug_data, m_pimpl->view}); // TODO translations
 
 	m_pimpl->command_manager->load_commands(m_pimpl->resources);
 	if (is_regular_file(autorun_script)) {
@@ -78,11 +78,13 @@ state::holder::holder(const std::filesystem::path &autorun_script) noexcept
 }
 
 void state::holder::run() noexcept {
-	m_pimpl->view.run();
+	m_pimpl->view.exec(*this);
+	// todo : lancer le thread logique ici ? c.f. state_holder::wait, terminal_commands::quit
 }
 
 void state::holder::wait() noexcept {
 	m_pimpl->view.wait();
+    // todo : attendre le thread logique ici ? c.f. state_holder::run, terminal_commands::quit
 }
 utils::resource_manager &state::holder::resources() noexcept {
 	return m_pimpl->resources;
@@ -110,6 +112,6 @@ model::model &state::holder::model() noexcept {
 	return m_pimpl->model;
 }
 
-view::viewer &state::holder::view() noexcept {
+view::view &state::holder::view() noexcept {
 	return m_pimpl->view;
 }

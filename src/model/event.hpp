@@ -11,7 +11,7 @@ class adapter;
 
 namespace model {
 
-class world;
+struct world;
 
 enum class event_reason {
 	NONE,

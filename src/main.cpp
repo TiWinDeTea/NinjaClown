@@ -11,7 +11,6 @@ int actual_main(std::vector<std::string> &);
 #	include <shellapi.h>
 #	include <tchar.h>
 #	include <windows.h>
-#	include <view/viewer.hpp>
 
 INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, INT) {
 

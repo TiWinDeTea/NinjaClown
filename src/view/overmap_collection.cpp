@@ -1,9 +1,10 @@
+
 #include "view/overmap_collection.hpp"
 #include "adapter/adapter.hpp"
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
-#include "view/viewer.hpp"
+#include "view/map_viewer.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -26,13 +27,13 @@ void view::overmap_collection::clear() noexcept {
 	m_objects.clear();
 }
 
-void view::overmap_collection::print_all(view::viewer &viewer) const noexcept {
+void view::overmap_collection::print_all(view::map_viewer &viewer) const noexcept {
 	for (const auto &displayable : m_ordered_displayable) {
 		displayable.first->print(viewer);
 	}
 }
 
-std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::viewer &viewer, adapter::adapter &adapter,
+std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::map_viewer &viewer, adapter::adapter &adapter,
                                                                           utils::resource_manager &resources) const noexcept {
 
 	std::vector<std::string> local_info;
@@ -47,20 +48,20 @@ std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::
 		                               rect.setPosition(screen_x, screen_y);
 		                               rect.setFillColor(sf::Color{128, 255, 128, 128}); // todo externalize
 
-		                               viewer.window->draw(rect);
+		                               viewer.draw(rect);
 	                               },
 	                               [&](const adapter::request::coords &coord) {
-		                               viewer.acquire_map()->highlight_tile(viewer, coord.x, coord.y, resources);
+		                               viewer.highlight_tile({static_cast<int>(coord.x), static_cast<int>(coord.y)});
 	                               },
 	                               [&](const adapter::request::info &info) {
 		                               std::move(info.lines.begin(), info.lines.end(), std::back_inserter(local_info));
 	                               }};
 
-    std::vector<std::vector<std::string>> ret;
+	std::vector<std::vector<std::string>> ret;
 	for (const auto &displayable : m_ordered_displayable) {
 		displayable.first->print(viewer);
 		if (displayable.first->is_hovered(viewer)) {
-            local_info.clear();
+			local_info.clear();
 			adapter::draw_request requests = adapter.tooltip_for(displayable.second);
 			for (const adapter::draw_request::value_type &request : requests) {
 				std::visit(request_visitor, request);

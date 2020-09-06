@@ -9,7 +9,7 @@
 #include "model/world.hpp"
 #include "utils/visitor.hpp"
 
-const float significant_rotation_eta = 0.001f;
+const float significant_rotation_epsilon = 0.001f;
 
 float slowdown_factor(float r) {
 	return -(0.3 * r * r) / 2 - 0.1 * std::pow(std::cos(1.1 * r), 2) + 1.1 - 0.03 * r * r * std::cos(r); // NOLINT
@@ -116,7 +116,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 	utils::visitor visitor_with_a_very_long_name_for_clang_format{
 	  [&](ninja_api::nnj_movement_request &mov_req) {
 		  float rotation = std::clamp(mov_req.rotation, -properties.rotation_speed, properties.rotation_speed);
-		  if (std::abs(rotation) > significant_rotation_eta) {
+		  if (std::abs(rotation) > significant_rotation_epsilon) {
 			  rotate_entity(adapter, handle, rotation);
 		  }
 
@@ -126,15 +126,15 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 		               + std::sin(components.hitbox[handle]->rad + uni::math::pi_2<float>) * mov_req.lateral_diff);
 		  vec2 movement{dx, dy};
 
-		  // maximal speed is achieved by fully moving forward, otherwise entity is slowed down
-		  float max_norm = properties.move_speed * slowdown_factor(components.hitbox[handle]->rad + movement.atan2());
-		  if (movement.norm() > max_norm) {
-			  // cap movement vector to max speed
-			  movement.unitify();
-			  movement.x *= max_norm;
-			  movement.y *= max_norm;
-		  }
 		  if (movement.norm() != 0) {
+              // maximal speed is achieved by fully moving forward, otherwise entity is slowed down
+              float max_norm = properties.move_speed * slowdown_factor(components.hitbox[handle]->rad + movement.atan2());
+			  if (movement.norm() > max_norm) {
+				  // cap movement vector to max speed
+				  movement.unitify();
+				  movement.x *= max_norm;
+				  movement.y *= max_norm;
+			  }
 			  move_entity(adapter, handle, movement);
 		  }
 

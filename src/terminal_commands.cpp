@@ -17,7 +17,8 @@
 #include "utils/resource_manager.hpp"
 #include "utils/utils.hpp"
 #include "utils/visitor.hpp"
-#include "view/viewer.hpp"
+#include "view/view.hpp"
+#include "view/game_viewer.hpp"
 
 using fmt::literals::operator""_a;
 
@@ -208,7 +209,8 @@ void terminal_commands::help(argument_type &arg) {
 }
 
 void terminal_commands::quit(argument_type &arg) {
-	arg.val.view().close_requested = true;
+	arg.val.view().stop();
+	// TODO fermer le thread logique ici ? c.f. state_holder::run, state_holder::wait
 }
 
 void terminal_commands::load_shared_library(argument_type &arg) {
@@ -333,7 +335,7 @@ void terminal_commands::reconfigure(argument_type &arg) {
 	}
 	else {
 		log_formatted(arg, "terminal_commands.reload.success", "file_path"_a = arg.command_line.back());
-		arg.val.view().reload_sprites();
+		arg.val.view().game().reload_sprites();
 		arg.val.terminal().get_terminal_helper()->load_commands(arg.val.resources());
 	}
 }

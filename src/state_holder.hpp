@@ -26,7 +26,10 @@ struct ffi;
 }
 
 namespace view {
-class viewer;
+class game_viewer;
+class map_viewer;
+class view;
+class menu;
 }
 
 namespace adapter {
@@ -53,7 +56,7 @@ namespace state {
 
 class holder {
 public:
-	holder(const std::filesystem::path &autorun_script) noexcept;
+	explicit holder(const std::filesystem::path &autorun_script) noexcept;
 	~holder();
 
 	void run() noexcept;
@@ -74,10 +77,13 @@ private:
 	ImTerm::terminal<terminal_commands> &terminal() noexcept;
 	adapter::adapter &adapter() noexcept;
 	model::model &model() noexcept;
-	view::viewer &view() noexcept;
+	view::view &view() noexcept;
 
 	friend terminal_commands;
-	friend access<view::viewer>;
+	friend access<view::game_viewer>;
+	friend access<view::view>;
+    friend access<view::map_viewer>;
+    friend access<view::menu>;
 	friend access<adapter::adapter>;
 	friend access<model::model>;
 	friend access<bot::ffi>;
@@ -141,16 +147,30 @@ template <typename>
 class access { };
 
 template <>
-class access<view::viewer> {
-	static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
-		return holder.terminal();
-	}
+class access<view::game_viewer> {
+    static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
+        return holder.terminal();
+    }
 
-	static adapter::adapter &adapter(holder &holder) noexcept {
-		return holder.adapter();
-	}
+    static adapter::adapter &adapter(holder &holder) noexcept {
+        return holder.adapter();
+    }
 
-	friend view::viewer;
+    friend view::game_viewer;
+};
+
+
+template <>
+class access<view::map_viewer> {
+    static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
+        return holder.terminal();
+    }
+
+    static adapter::adapter &adapter(holder &holder) noexcept {
+        return holder.adapter();
+    }
+
+    friend view::map_viewer;
 };
 
 template <>
@@ -168,7 +188,7 @@ class access<adapter::adapter> {
 		return holder.model();
 	}
 
-	static view::viewer &view(holder &holder) noexcept {
+	static view::view &view(holder &holder) noexcept {
 		return holder.view();
 	}
 
@@ -177,6 +197,32 @@ class access<adapter::adapter> {
 	}
 
 	friend adapter::adapter;
+};
+
+template<>
+class access<view::menu> {
+    static adapter::adapter &adapter(holder& holder) noexcept {
+        return holder.adapter();
+    }
+
+    friend view::menu;
+};
+
+template<>
+class access<view::view> {
+    static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
+        return holder.terminal();
+    }
+
+    static adapter::adapter &adapter(holder& holder) noexcept {
+        return holder.adapter();
+    }
+
+	static model::model &model(holder& holder) noexcept {
+		return holder.model(); // FIXME REMOVE (TEMP CODE)
+	}
+
+    friend view::view;
 };
 
 template <>

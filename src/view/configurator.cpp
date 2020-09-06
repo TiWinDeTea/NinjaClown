@@ -185,4 +185,6 @@ void view::configurator::give_control() noexcept {
 	}
 
 	ImGui::EndPopup();
+
+	// TODO: bouton pour quitter le menu de configuration
 }

@@ -31,9 +31,9 @@ public:
 	void reload_sprites(const utils::resource_manager &res);
 
 private:
-	void vprint(view::viewer &view) const override;
+	void vprint(map_viewer &view) const override;
 
-	bool vis_hovered(view::viewer &view) const noexcept override;
+	bool vis_hovered(map_viewer &view) const noexcept override;
 
 	utils::resources_type::object_id m_object_id;
 

@@ -34,16 +34,18 @@ set(NINJA_CLOWN_SOURCES
 
         src/view/animation.cpp
         src/view/configurator.cpp
-        src/view/event_inspector.cpp
         src/view/facing_dir.cpp
         src/view/file_explorer.cpp
         src/view/fps_limiter.cpp
+        src/view/game_viewer.cpp
         src/view/imgui_styles.cpp
         src/view/map.cpp
+        src/view/map_viewer.cpp
+        src/view/menu.cpp
         src/view/mob_object.cpp
         src/view/mob_animations.cpp
         src/view/overmap_collection.cpp
-        src/view/viewer.cpp
+        src/view/view.cpp
 )
 
 add_executable(ninja-clown ${OPTIONS} ${NINJA_CLOWN_SOURCES} src/main.cpp)
@@ -55,6 +57,9 @@ set_target_properties(
         CXX_EXTENSIONS OFF
 )
 
+#target_compile_options(ninja-clown PRIVATE "-fsanitize=address")
+#target_link_options(ninja-clown PRIVATE "-fsanitize=address")
+
 target_include_directories(ninja-clown PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/ ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}
@@ -63,7 +68,8 @@ target_include_directories(ninja-clown SYSTEM PUBLIC
         ${SFML_INCLUDE_DIR}
         ${FMT_INCLUDE_DIR}
         ${CPPTOML_INCLUDE_DIR}
-        )
+)
+
 target_link_libraries(
         ninja-clown
         ${IMGUI_SFML_LIBRARIES}

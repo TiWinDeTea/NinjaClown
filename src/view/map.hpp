@@ -9,6 +9,10 @@ class adapter;
 
 namespace sf {
 class RenderWindow;
+
+template <typename>
+class Vector2;
+typedef Vector2<unsigned int> Vector2u;
 }
 
 namespace utils {
@@ -16,7 +20,7 @@ class resource_manager;
 }
 
 namespace view {
-class viewer;
+class map_viewer;
 
 class map {
 public:
@@ -30,18 +34,17 @@ public:
 		m_cells = std::move(cells);
 	}
 
-	[[nodiscard]] std::pair<std::size_t, std::size_t> level_size() const noexcept {
-		if (m_cells.empty()) {
-			return {0u, 0u};
-		}
-		return {m_cells.size(), m_cells.front().size()};
+	[[nodiscard]] sf::Vector2u level_size() const noexcept;
+
+	void print(map_viewer& view, utils::resource_manager& resources) const noexcept;
+
+	void highlight_tile(map_viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
+
+	void frame_tile(map_viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
+
+	[[nodiscard]] bool empty() const noexcept {
+		return m_cells.empty();
 	}
-
-	void print(view::viewer& view, utils::resource_manager& resources) const noexcept;
-
-	void highlight_tile(view::viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
-
-	void frame_tile(view::viewer& view, size_t x, size_t y, utils::resource_manager& resources) const noexcept;
 
 private:
 	std::vector<std::vector<cell>> m_cells;

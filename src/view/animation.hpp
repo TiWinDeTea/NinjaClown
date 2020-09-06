@@ -6,7 +6,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 
 namespace view {
-class viewer;
+class map_viewer;
 
 class animation {
 public:
@@ -16,9 +16,9 @@ public:
 		m_frames.emplace_back(std::move(sprite));
 	}
 
-	void print(view::viewer &viewer, float posx, float posy) const noexcept;
+	void print(map_viewer &viewer, float posx, float posy) const noexcept;
 
-	void highlight(view::viewer &viewer, float posx, float posy) const noexcept;
+	void highlight(map_viewer &viewer, float posx, float posy) const noexcept;
 
 	friend class shifted_animation;
 
@@ -39,7 +39,7 @@ public:
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
 	shifted_animation &operator=(const shifted_animation &) = default;
 
-	bool is_hovered(view::viewer &viewer) const noexcept;
+	bool is_hovered(map_viewer &viewer) const noexcept;
 
 	void add_frame(sf::Sprite &&sprite) {
 		m_frames.emplace_back(std::move(sprite));
@@ -50,7 +50,7 @@ public:
 		m_yshift = yshift;
 	}
 
-	void print(view::viewer &viewer, float posx, float posy) const noexcept;
+	void print(map_viewer &viewer, float posx, float posy) const noexcept;
 
 	bool empty() const noexcept {
 		return m_frames.empty();

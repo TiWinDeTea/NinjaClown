@@ -1,10 +1,12 @@
+#ifndef OS_WINDOWS
+
 #include <model/collision.hpp>
 #include <model/vec2.hpp>
 #include <utils/universal_constants.hpp>
 
 #include <catch2/catch.hpp>
 
-bool operator==(const model::vec2 &a, const model::vec2 &b) {
+bool operator==(const model::vec2 &a, const model::vec2 &b) noexcept {
 	return a.x == Approx(b.x).margin(0.01) && a.y == Approx(b.y).margin(0.01);
 }
 
@@ -58,3 +60,5 @@ SCENARIO("OBB OBB SAT collisions") {
 		CHECK(model::obb_obb_sat_test(c_box, rotated_a_box));
 	}
 }
+
+#endif

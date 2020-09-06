@@ -11,10 +11,12 @@
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
 #include "view/facing_dir.hpp"
+#include "view/game_viewer.hpp"
 #include "view/map.hpp"
+#include "view/map_viewer.hpp"
 #include "view/mob.hpp"
 #include "view/object.hpp"
-#include "view/viewer.hpp"
+#include "view/view.hpp"
 
 using fmt::literals::operator""_a;
 
@@ -99,7 +101,7 @@ namespace keys {
 	constexpr const char *firing_rate           = "firing_rate";
 	constexpr const char *closed                = "closed";
 	constexpr const char *refire_after          = "refire_after";
-	constexpr const char *refire_repeat          = "refire_repeat";
+	constexpr const char *refire_repeat         = "refire_repeat";
 	constexpr const char *activation_difficulty = "activation_difficulty";
 	constexpr const char *duration              = "duration";
 	constexpr const char *delay                 = "delay";
@@ -241,8 +243,8 @@ void init_maps() {
 		}
 
 		auto try_get = [&res, &map, &mob, &type](const char *key, auto &value) -> bool {
-			return ::try_get(mob, key, value, res.log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
-			                 "map"_a = map, "type"_a = *type, "key"_a = key);
+			return ::try_get(mob, key, value, res.log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"), "map"_a = map,
+			                 "type"_a = *type, "key"_a = key);
 		};
 
 		int x_pos{};
@@ -289,8 +291,8 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 				return try_get_silent(actor, key, value);
 			}
 			else {
-				return ::try_get(actor, key, value, res.log_for("adapter_map_loader_v1_0_0.actor_missing_component"),
-				                 "key"_a = key, "type"_a = *type);
+				return ::try_get(actor, key, value, res.log_for("adapter_map_loader_v1_0_0.actor_missing_component"), "key"_a = key,
+				                 "type"_a = *type);
 			}
 		};
 
@@ -406,262 +408,270 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		                  std::forward<decltype(vals)>(vals)...);
 	};
 
-	auto mobs_defs_toml   = map_file->get_table_array_qualified(keys::mobs_def_table);
-	auto mobs_spawns_toml = map_file->get_table_array_qualified(keys::mobs_spawn_table);
-	auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
-	auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
+	view::map_viewer map_viewer{m_state};
 
-	if (!mobs_defs_toml || !mobs_spawns_toml || !actors_toml || !map_layout_toml) {
-		if (!mobs_defs_toml) {
-			error("missing_mob_def");
-		}
-		if (!mobs_spawns_toml) {
-			error("missing_mob_placings");
-		}
-		if (!actors_toml) {
-			error("missing_actors");
-		}
-		if (!map_layout_toml) {
-			error("missing_map_layout");
-		}
-		return false;
-	}
-
-	usmap<mob_definition> mobs_defs = load_mobs_defs(m_state.resources(), mobs_defs_toml, map);
-	if (mobs_defs.empty()) {
-		error("bad_mob_defs", "map"_a = map);
-		return false;
-	}
-
-	std::vector<mob> mobs = load_mobs_spawns(m_state.resources(), mobs_spawns_toml, mobs_defs, map);
-	if (mobs.empty()) {
-		error("bad_mob_spawns", "map"_a = map);
-		return false;
-	}
-	if (mobs.size() > model::cst::max_entities) {
-		error("too_many_spawns", "map"_a = map);
-		return false;
-	}
-
-	std::vector<std::variant<activator, gate, autoshooter>> actors;
 	{
-		auto maybe_actors = load_actors(m_state.resources(), actors_toml, map);
-		if (!maybe_actors) {
-			return false;
-		}
-		actors = std::move(*maybe_actors);
-	}
 
-	size_t map_height = map_layout_toml->size();
-	if (map_height == 0) {
-		error("empty_map", "map"_a = map);
-		return false;
-	}
-	size_t map_width = map_layout_toml->begin()->size();
-	if (map_width == 0) {
-		error("empty_map", "map"_a = map);
-		return false;
-	}
+		auto mobs_defs_toml   = map_file->get_table_array_qualified(keys::mobs_def_table);
+		auto mobs_spawns_toml = map_file->get_table_array_qualified(keys::mobs_spawn_table);
+		auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
+		auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
 
-	view::viewer &view  = state::access<adapter>::view(m_state);
-	model::world &world = state::access<adapter>::model(m_state).world;
-
-	std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
-	world.grid.resize(map_width, map_height);
-
-	unsigned int line_idx{0};
-	for (const std::string &line : *map_layout_toml) {
-
-		if (line.size() != map_width) {
-			utils::log::error(m_state.resources(), "adapter_map_loader_v1_0_0.bad_map_size", "map"_a = map, "line"_a = line_idx + 1);
-			return false;
-		}
-
-		for (size_t column_idx = 0; column_idx < map_width; ++column_idx) {
-			switch (line[column_idx]) {
-				case '#':
-					world.grid[column_idx][line_idx].type = model::cell_type::CHASM;
-					view_map[column_idx][line_idx]        = view::map::cell::abyss;
-					break;
-				case ' ':
-					world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
-					view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-					break;
-				case '~':
-					world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
-					view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
-					break;
-				case 'T': {
-					world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
-					view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-					world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
-
-					view::object obj;
-					obj.set_id(utils::resources_type::object_id::target, m_state.resources());
-					obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
-					obj.reveal();
-					m_target_handle = view.acquire_overmap()->add_object(std::move(obj));
-					break;
-				}
-				default:
-					error("bad_map_char", "char"_a = line[column_idx], "line"_a = line_idx + 1, "column"_a = column_idx + 1);
-					return false;
+		if (!mobs_defs_toml || !mobs_spawns_toml || !actors_toml || !map_layout_toml) {
+			if (!mobs_defs_toml) {
+				error("missing_mob_def");
 			}
+			if (!mobs_spawns_toml) {
+				error("missing_mob_placings");
+			}
+			if (!actors_toml) {
+				error("missing_actors");
+			}
+			if (!map_layout_toml) {
+				error("missing_map_layout");
+			}
+			return false;
 		}
 
-		++line_idx;
-	}
-
-	// TODO externaliser vers le fichier de la carte + ajouter une option de mise à l’échelle des objets graphiques
-	const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
-	const float DEFAULT_HITBOX_HALF_HEIGHT = 0.25f;
-
-	size_t model_entity_handle = 0;
-	for (const mob &mob : mobs) {
-		const float CENTER_X = static_cast<float>(mob.pos.x) * model::cst::cell_width + model::cst::cell_width / 2.f;
-		const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cst::cell_height + model::cst::cell_height / 2.f;
-
-		switch (mob.type.behaviour) {
-			case mob_behaviour::NONE:
-				world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
-				break;
-			case mob_behaviour::SCIENTIST:
-				// TODO
-				break;
-			case mob_behaviour::CLOWN:
-				// TODO
-				break;
-			case mob_behaviour::DLL:
-				world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
-				break;
+		usmap<mob_definition> mobs_defs = load_mobs_defs(m_state.resources(), mobs_defs_toml, map);
+		if (mobs_defs.empty()) {
+			error("bad_mob_defs", "map"_a = map);
+			return false;
 		}
 
-		utils::resources_type::mob_id resource_id;
-		switch (mob.type.sprite) {
-			case mob_sprite::NONE:
-				error("Internal error");
+		std::vector<mob> mobs = load_mobs_spawns(m_state.resources(), mobs_spawns_toml, mobs_defs, map);
+		if (mobs.empty()) {
+			error("bad_mob_spawns", "map"_a = map);
+			return false;
+		}
+		if (mobs.size() > model::cst::max_entities) {
+			error("too_many_spawns", "map"_a = map);
+			return false;
+		}
+
+		std::vector<std::variant<activator, gate, autoshooter>> actors;
+		{
+			auto maybe_actors = load_actors(m_state.resources(), actors_toml, map);
+			if (!maybe_actors) {
 				return false;
-			case mob_sprite::SCIENTIST:
-				resource_id = utils::resources_type::mob_id::scientist;
-				break;
-			case mob_sprite::CLOWN:
-				resource_id = utils::resources_type::mob_id::player;
-				break;
+			}
+			actors = std::move(*maybe_actors);
 		}
 
-		world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
-		world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
-		world.components.properties[model_entity_handle].throw_delay  = mob.type.throw_delay;
-		world.components.properties[model_entity_handle].attack_delay = mob.type.attack_delay;
+		size_t map_height = map_layout_toml->size();
+		if (map_height == 0) {
+			error("empty_map", "map"_a = map);
+			return false;
+		}
+		size_t map_width = map_layout_toml->begin()->size();
+		if (map_width == 0) {
+			error("empty_map", "map"_a = map);
+			return false;
+		}
 
-		model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
+		auto map_viewer_omap = map_viewer.m_overmap.acquire();
 
-		view::mob m{};
-		m.set_mob_id(resource_id, m_state.resources());
-		m.set_direction(view::facing_direction::from_angle(mob.facing));
-		m.set_pos(hitbox.center.x, hitbox.center.y);
+		model::world &world = state::access<adapter>::model(m_state).world;
 
-		view_handle view_handle = view.acquire_overmap()->add_mob(std::move(m));
-		model_handle model_handle{model_entity_handle, model_handle::ENTITY};
-		m_model2view[model_handle] = view_handle;
-		m_view2model[view_handle]  = model_handle;
+		std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
+		world.grid.resize(map_width, map_height);
 
-		++model_entity_handle;
-	}
+		unsigned int line_idx{0};
+		for (const std::string &line : *map_layout_toml) {
 
-	for (const std::variant<activator, gate, autoshooter> &actor : actors) {
+			if (line.size() != map_width) {
+				utils::log::error(m_state.resources(), "adapter_map_loader_v1_0_0.bad_map_size", "map"_a = map, "line"_a = line_idx + 1);
+				return false;
+			}
 
-		utils::visitor visitor{
-		  [&](const activator &activator) {
-			  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cst::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cst::cell_height;
+			for (size_t column_idx = 0; column_idx < map_width; ++column_idx) {
+				switch (line[column_idx]) {
+					case '#':
+						world.grid[column_idx][line_idx].type = model::cell_type::CHASM;
+						view_map[column_idx][line_idx]        = view::map::cell::abyss;
+						break;
+					case ' ':
+						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+						break;
+					case '~':
+						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
+						break;
+					case 'T': {
+						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+						world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 
-			  world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
+						view::object obj;
+						obj.set_id(utils::resources_type::object_id::target, m_state.resources());
+						obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
+						obj.reveal();
+						m_target_handle = map_viewer_omap->add_object(std::move(obj));
+						break;
+					}
+					default:
+						error("bad_map_char", "char"_a = line[column_idx], "line"_a = line_idx + 1, "column"_a = column_idx + 1);
+						return false;
+				}
+			}
 
-			  view::object o{};
-			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+			++line_idx;
+		}
 
-			  switch (activator.type) {
+		// TODO externaliser vers le fichier de la carte + ajouter une option de mise à l’échelle des objets graphiques
+		const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
+		const float DEFAULT_HITBOX_HALF_HEIGHT = 0.25f;
 
-				  case activator_type::BUTTON:
-					  world.interactions.push_back(
-					    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
-					  o.set_id(utils::resources_type::object_id::button, m_state.resources());
-					  break;
-				  case activator_type::INDUCTION_LOOP:
-					  world.interactions.push_back(
-					    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
-					  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
-					  break;
-				  case activator_type::INFRARED_LASER:
-					  world.interactions.push_back(
-					    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
-					  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
-					  break;
-				  case activator_type::NONE:
-					  [[fallthrough]];
-				  default:
-					  error("internal_error");
-					  break;
-			  }
+		size_t model_entity_handle = 0;
+		for (const mob &mob : mobs) {
+			const float CENTER_X = static_cast<float>(mob.pos.x) * model::cst::cell_width + model::cst::cell_width / 2.f;
+			const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cst::cell_height + model::cst::cell_height / 2.f;
 
-			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-			  model_handle model_handle{world.activators.size(), model_handle::ACTIVATOR};
-			  m_model2view[model_handle] = view_handle;
-			  m_view2model[view_handle]  = model_handle;
+			switch (mob.type.behaviour) {
+				case mob_behaviour::NONE:
+					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
+					break;
+				case mob_behaviour::SCIENTIST:
+					// TODO
+					break;
+				case mob_behaviour::CLOWN:
+					// TODO
+					break;
+				case mob_behaviour::DLL:
+					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
+					break;
+			}
 
-			  world.activators.push_back({activator.target_tiles,
-			                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
-			                                std::optional<unsigned int>{} :
-			                                std::optional<unsigned int>(activator.refire_after),
-			                              activator.delay, activator.activation_difficulty, activator.refire_repeat});
-		  },
-		  [&](const gate &gate) {
-			  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cst::cell_height;
+			utils::resources_type::mob_id resource_id;
+			switch (mob.type.sprite) {
+				case mob_sprite::NONE:
+					error("Internal error");
+					return false;
+				case mob_sprite::SCIENTIST:
+					resource_id = utils::resources_type::mob_id::scientist;
+					break;
+				case mob_sprite::CLOWN:
+					resource_id = utils::resources_type::mob_id::player;
+					break;
+			}
 
-			  world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()},
-			                               model::actionable::behaviours_ns::gate});
+			world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
+			world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
+			world.components.properties[model_entity_handle].throw_delay  = mob.type.throw_delay;
+			world.components.properties[model_entity_handle].attack_delay = mob.type.attack_delay;
 
-			  view::object o{};
-			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-			  o.set_id(utils::resources_type::object_id::gate, m_state.resources());
-			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
-			  m_model2view[model_handle] = view_handle;
-			  m_view2model[view_handle]  = model_handle;
-			  if (gate.closed) {
-				  world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
-			  }
-			  else {
-				  view.acquire_overmap()->hide(view_handle);
-			  }
+			model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
 
-			  m_view2name[view_handle] = gate.name;
-		  },
-		  [&](const autoshooter &autoshooter) {
-			  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cst::cell_width;
-			  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cst::cell_height;
+			view::mob m{};
+			m.set_mob_id(resource_id, m_state.resources());
+			m.set_direction(view::facing_direction::from_angle(mob.facing));
+			m.set_pos(hitbox.center.x, hitbox.center.y);
 
-			  world.actionables.push_back(
-			    {model::actionable::instance_data{
-			       {autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
-			     model::actionable::behaviours_ns::autoshooter});
+			view_handle view_handle = map_viewer_omap->add_mob(std::move(m));
+			model_handle model_handle{model_entity_handle, model_handle::ENTITY};
+			m_model2view[model_handle] = view_handle;
+			m_view2model[view_handle]  = model_handle;
 
-			  view::object o{};
-			  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-			  o.set_id(utils::resources_type::object_id::autoshooter, m_state.resources());
-			  view_handle view_handle = view.acquire_overmap()->add_object(std::move(o));
-			  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
-			  m_model2view[model_handle] = view_handle;
-			  m_view2model[view_handle]  = model_handle;
+			++model_entity_handle;
+		}
 
-			  m_view2name[view_handle] = autoshooter.name;
-		  }};
-		std::visit(visitor, actor);
-	}
+		for (const std::variant<activator, gate, autoshooter> &actor : actors) {
 
-	view.set_map(std::move(view_map));
+			utils::visitor visitor{
+			  [&](const activator &activator) {
+				  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cst::cell_width;
+				  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cst::cell_height;
+
+				  world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
+
+				  view::object o{};
+				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+
+				  switch (activator.type) {
+
+					  case activator_type::BUTTON:
+						  world.interactions.push_back(
+						    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
+						  o.set_id(utils::resources_type::object_id::button, m_state.resources());
+						  break;
+					  case activator_type::INDUCTION_LOOP:
+						  world.interactions.push_back(
+						    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
+						  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
+						  break;
+					  case activator_type::INFRARED_LASER:
+						  world.interactions.push_back(
+						    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
+						  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
+						  break;
+					  case activator_type::NONE:
+						  [[fallthrough]];
+					  default:
+						  error("internal_error");
+						  break;
+				  }
+
+				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
+				  model_handle model_handle{world.activators.size(), model_handle::ACTIVATOR};
+				  m_model2view[model_handle] = view_handle;
+				  m_view2model[view_handle]  = model_handle;
+
+				  world.activators.push_back({activator.target_tiles,
+				                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
+				                                std::optional<unsigned int>{} :
+				                                std::optional<unsigned int>(activator.refire_after),
+				                              activator.delay, activator.activation_difficulty, activator.refire_repeat});
+			  },
+			  [&](const gate &gate) {
+				  const float TOPLEFT_X = static_cast<float>(gate.pos.x) * model::cst::cell_width;
+				  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cst::cell_height;
+
+				  world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()},
+				                               model::actionable::behaviours_ns::gate});
+
+				  view::object o{};
+				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+				  o.set_id(utils::resources_type::object_id::gate, m_state.resources());
+				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
+				  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
+				  m_model2view[model_handle] = view_handle;
+				  m_view2model[view_handle]  = model_handle;
+				  if (gate.closed) {
+					  world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
+				  }
+				  else {
+					  map_viewer_omap->hide(view_handle);
+				  }
+
+				  m_view2name[view_handle] = gate.name;
+			  },
+			  [&](const autoshooter &autoshooter) {
+				  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cst::cell_width;
+				  const float TOPLEFT_Y = static_cast<float>(autoshooter.pos.y) * model::cst::cell_height;
+
+				  world.actionables.push_back(
+				    {model::actionable::instance_data{
+				       {autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
+				     model::actionable::behaviours_ns::autoshooter});
+
+				  view::object o{};
+				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
+				  o.set_id(utils::resources_type::object_id::autoshooter, m_state.resources());
+				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
+				  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
+				  m_model2view[model_handle] = view_handle;
+				  m_view2model[view_handle]  = model_handle;
+
+				  m_view2name[view_handle] = autoshooter.name;
+			  }};
+			std::visit(visitor, actor);
+		}
+
+		map_viewer.set_map(std::move(view_map));
+	} // unlocking locks on map_viewer before moving
+
+	state::access<adapter>::view(m_state).game().set_map(std::move(map_viewer));
 
 	utils::log::info(m_state.resources(), "adapter_map_loader_v1_0_0.map_loaded", "map"_a = map);
 	return true;

@@ -19,7 +19,7 @@ class terminal_commands;
 namespace model {
 
 struct world {
-	world() noexcept = default;
+	world() = default;
 
 	void update(adapter::adapter &);
 	void reset();

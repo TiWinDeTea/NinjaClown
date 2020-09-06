@@ -25,13 +25,13 @@ void view::mob::set_direction(facing_direction::type dir) {
 	m_dir = dir;
 }
 
-void view::mob::vprint(view::viewer &view) const {
+void view::mob::vprint(view::map_viewer &view) const {
 	const auto &anim = m_animations->animation_for(m_dir);
 	assert(anim);
 	anim->print(view, p_posx, p_posy);
 }
 
-bool view::mob::vis_hovered(view::viewer &view) const noexcept {
+bool view::mob::vis_hovered(view::map_viewer &view) const noexcept {
 	const auto &anim = m_animations->animation_for(m_dir);
 	assert(anim);
 	return anim->is_hovered(view);
@@ -48,12 +48,12 @@ void view::object::reload_sprites(const utils::resource_manager &res) {
 	m_animation = std::make_unique<view::shifted_animation>(*animation);
 }
 
-void view::object::vprint(view::viewer &view) const {
+void view::object::vprint(view::map_viewer &view) const {
 	assert(!m_animation->empty());
 	m_animation->print(view, p_posx, p_posy);
 }
 
-bool view::object::vis_hovered(view::viewer &view) const noexcept {
+bool view::object::vis_hovered(view::map_viewer &view) const noexcept {
 	assert(!m_animation->empty());
 	return m_animation->is_hovered(view);
 }

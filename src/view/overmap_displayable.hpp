@@ -2,7 +2,7 @@
 #define NINJACLOWN_VIEW_OVERMAP_DISPLAYABLE_HPP
 
 namespace view {
-class viewer;
+class map_viewer;
 
 // to display objects (buttons & cie) and mobs
 // basically anything that is over the map
@@ -10,13 +10,13 @@ class viewer;
 class overmap_displayable_interface {
 public:
 
-	void print(view::viewer& v) const {
+	void print(map_viewer& v) const {
 		if (!m_hidden) {
 			vprint(v);
 		}
 	}
 
-	bool is_hovered(view::viewer& v) const noexcept {
+	bool is_hovered(map_viewer& v) const noexcept {
 		return !m_hidden && vis_hovered(v);
 	}
 
@@ -36,10 +36,10 @@ public:
 
 protected:
     // prints the displayable in a view
-    virtual void vprint(view::viewer&) const = 0;
+    virtual void vprint(map_viewer&) const = 0;
 
     // returns true if the displayable is currently hovered by the mouse
-    virtual bool vis_hovered(view::viewer&) const noexcept = 0;
+    virtual bool vis_hovered(map_viewer&) const noexcept = 0;
 
 	float p_posx{};
 	float p_posy{};
