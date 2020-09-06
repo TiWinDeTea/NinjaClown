@@ -360,6 +360,12 @@
     [[gui.entry]]
         id = "view.in_game_menu.credits"
         fmt = "Credits"
+    [[gui.entry]]
+        id = "view.in_game_menu.map_editor"
+        fmt = "Éditeur de carte"
+    [[gui.entry]]
+        id = "view.in_game_menu.campaign_editor"
+        fmt = "Éditeur de campagne"
 
     [[gui.entry]]
         id = "file_explorer.ok_button"

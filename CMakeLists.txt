@@ -40,6 +40,7 @@ set(NINJA_CLOWN_SOURCES
         src/view/game_viewer.cpp
         src/view/imgui_styles.cpp
         src/view/map.cpp
+        src/view/map_explorer.cpp
         src/view/map_viewer.cpp
         src/view/menu.cpp
         src/view/mob_object.cpp
@@ -81,14 +82,14 @@ target_link_libraries(
 
 file(GLOB_RECURSE files RELATIVE "${CMAKE_CURRENT_LIST_DIR}/resources/configured_resources/" "resources/configured_resources/*")
 foreach (file ${files})
-    message(STATUS "resources/configured_resources/${file}   ->   resources/${file}")
-    configure_file("resources/configured_resources/${file}" "resources/${file}" @ONLY)
+    message(STATUS "resources/configured_resources/${file}   ->   ${file}")
+    configure_file("resources/configured_resources/${file}" "${file}" @ONLY)
 endforeach ()
 
 file(GLOB_RECURSE files RELATIVE "${CMAKE_CURRENT_LIST_DIR}/resources/raw_resources/" "resources/raw_resources/*")
 foreach (file ${files})
-    message(STATUS "resources/raw_resources/${file}   ->   resources/${file}")
-    configure_file("resources/raw_resources/${file}" "resources/${file}" COPYONLY)
+    message(STATUS "resources/raw_resources/${file}   ->   ${file}")
+    configure_file("resources/raw_resources/${file}" "${file}" COPYONLY)
 endforeach ()
 
 
@@ -101,7 +102,7 @@ add_dependencies(ninja-clown ninja-clown-basic-bot)
 
 set(NINJA_CLOWN_TESTS_SOURCES
         tests/collisions.cpp
-        )
+)
 
 add_executable(ninja-clown-tests ${NINJA_CLOWN_SOURCES} ${NINJA_CLOWN_TESTS_SOURCES} tests/main.cpp)
 

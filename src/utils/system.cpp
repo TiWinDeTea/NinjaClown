@@ -28,11 +28,11 @@ std::filesystem::path utils::binary_directory() {
 }
 
 std::filesystem::path utils::resources_directory() {
-	return binary_directory() / "resources";
+	return binary_directory();
 }
 
 std::filesystem::path utils::config_directory() {
-	return binary_directory() / "resources";
+	return binary_directory();
 }
 
 std::string utils::sys_last_error() {

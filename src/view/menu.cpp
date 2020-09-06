@@ -37,14 +37,16 @@ view::menu::user_request view::menu::show() {
 	const auto &res   = m_state.resources();
 	const auto &style = ImGui::GetStyle();
 
-	std::string_view resume   = res.gui_text_for("view.in_game_menu.resume");
-	std::string_view load_dll = res.gui_text_for("view.in_game_menu.dll");
-	std::string_view restart  = res.gui_text_for("view.in_game_menu.restart");
-	std::string_view settings = res.gui_text_for("view.in_game_menu.settings");
-	std::string_view load_map = res.gui_text_for("view.in_game_menu.load_map");
-	std::string_view import   = res.gui_text_for("view.in_game_menu.import_maps");
-	std::string_view credits  = res.gui_text_for("view.in_game_menu.credits");
-	std::string_view quit     = res.gui_text_for("view.in_game_menu.quit");
+	std::string_view resume          = res.gui_text_for("view.in_game_menu.resume");
+	std::string_view load_dll        = res.gui_text_for("view.in_game_menu.dll");
+	std::string_view restart         = res.gui_text_for("view.in_game_menu.restart");
+	std::string_view settings        = res.gui_text_for("view.in_game_menu.settings");
+	std::string_view load_map        = res.gui_text_for("view.in_game_menu.load_map");
+	std::string_view import          = res.gui_text_for("view.in_game_menu.import_maps");
+	std::string_view credits         = res.gui_text_for("view.in_game_menu.credits");
+	std::string_view map_editor      = res.gui_text_for("view.in_game_menu.map_editor");
+	std::string_view campaign_editor = res.gui_text_for("view.in_game_menu.campaign_editor");
+	std::string_view quit            = res.gui_text_for("view.in_game_menu.quit");
 
 	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {
@@ -59,13 +61,15 @@ view::menu::user_request view::menu::show() {
 	update_sz(load_map);
 	update_sz(import);
 	update_sz(credits);
+	update_sz(map_editor);
+	update_sz(campaign_editor);
 	update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
 	if (ImGui::BeginPopupModal(menu_window_name, nullptr,
 	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
-
+		
 		if (!::state::access<menu>::adapter(m_state).map_is_loaded()) {
 			using_style(disabled_button) {
 				ImGui::Button(resume.data(), ImVec2{text_width, 0.f});
@@ -74,7 +78,7 @@ view::menu::user_request view::menu::show() {
 		}
 		else {
 			if (ImGui::Button(resume.data(), ImVec2{text_width, 0.f})) {
-                ImGui::CloseCurrentPopup();
+				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 				return user_request::close_menu;
 			}
@@ -104,10 +108,12 @@ view::menu::user_request view::menu::show() {
 
 		using_style(disabled_button) {
 			ImGui::Button(credits.data(), ImVec2{text_width, 0.f}); // TODO
+			ImGui::Button(map_editor.data(), ImVec2{text_width, 0.f}); // TODO
+			ImGui::Button(campaign_editor.data(), ImVec2{text_width, 0.f}); // TODO
 		};
 
 		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
-            ImGui::CloseCurrentPopup();
+			ImGui::CloseCurrentPopup();
 			ImGui::EndPopup();
 			return user_request::close_window;
 		}
@@ -130,7 +136,7 @@ view::menu::user_request view::menu::show() {
 							// todo : log error
 							break;
 						case substate::loading_dll:
-                            ImGui::EndPopup();
+							ImGui::EndPopup();
 							return user_request::load_dll;
 					}
 					m_current_state = state::none;

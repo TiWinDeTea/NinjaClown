@@ -92,27 +92,28 @@ void view::game_viewer::event(const sf::Event &event) {
 			}
             m_resized_once = true;
 
-			{
-				sf::Event::SizeEvent sz = size(event);
-				const float x_ratio     = static_cast<float>(sz.width) / m_window_size.x;
-				const float y_ratio     = static_cast<float>(sz.height) / m_window_size.y;
+            sf::Event::SizeEvent sz = size(event);
+            const float x_ratio     = static_cast<float>(sz.width) / m_window_size.x;
+            const float y_ratio     = static_cast<float>(sz.height) / m_window_size.y;
 
-				sf::FloatRect viewport = m_window.getView().getViewport();
-				viewport.width *= x_ratio;
-				viewport.height *= y_ratio;
+            sf::View view = m_window.getView();
+            sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f;
+			view.setSize(view.getSize().x * x_ratio, view.getSize().y * y_ratio);
+			view.setCenter(top_left + view.getSize() / 2.f);
 
-                m_window_size.x = sz.width;
-                m_window_size.y = sz.height;
-				m_window.setView(sf::View{viewport});
-			}
+            m_window_size.x = sz.width;
+            m_window_size.y = sz.height;
+            m_window.setView(view);
+
 			break;
 		}
 		case sf::Event::MouseWheelScrolled: {
 			sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
 			if (wheel_scroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
+                sf::View view     = m_window.getView();
 
 				const float delta = 1.1f;
-				float transform{};
+				float transform;
 				if (wheel_scroll.delta < 0) {
 					transform = delta;
 				}
@@ -120,32 +121,27 @@ void view::game_viewer::event(const sf::Event &event) {
 					transform = 1 / delta;
 				}
 
-				sf::FloatRect viewport     = m_window.getView().getViewport();
-				const float vp2win_ratio_x = viewport.width / m_window_size.x;
-				const float vp2win_ratio_y = viewport.height / m_window_size.y;
+				const float vp2win_ratio_x = view.getSize().x / m_window_size.x;
+				const float vp2win_ratio_y = view.getSize().y / m_window_size.y;
 				const auto wheel_x         = static_cast<float>(wheel_scroll.x);
 				const auto wheel_y         = static_cast<float>(wheel_scroll.y);
 
-				sf::FloatRect new_viewport;
-				new_viewport.width  = viewport.width * transform;
-				new_viewport.height = viewport.height * transform;
-				new_viewport.left   = viewport.left + wheel_x * (1 - transform) * vp2win_ratio_x;
-				new_viewport.top    = viewport.top + wheel_y * (1 - transform) * vp2win_ratio_y;
+				sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f + sf::Vector2f{wheel_x * (1 - transform) * vp2win_ratio_x, wheel_y * (1 - transform) * vp2win_ratio_y};
+                view.zoom(transform);
+                view.setCenter(top_left + view.getSize() / 2.f);
 
-				viewport = new_viewport;
-				m_window.setView(sf::View{viewport});
+				m_window.setView(view);
 			}
 		} break;
 		case sf::Event::MouseMoved:
 			{
 				sf::Event::MouseMoveEvent move = mouse_move(event);
 				if (m_left_click_pos) {
-				    sf::FloatRect viewport = m_window.getView().getViewport();
-					const float zoom_factor = m_window.getSize().x / viewport.width;
+				    sf::View view = m_window.getView();
+					const float zoom_factor = m_window.getSize().x / view.getSize().x;
 
-					viewport.left += static_cast<float>(m_mouse_pos.x - move.x) / zoom_factor;
-					viewport.top += static_cast<float>(m_mouse_pos.y - move.y) / zoom_factor;
-                    m_window.setView(sf::View{viewport});
+				    view.move(static_cast<float>(m_mouse_pos.x - move.x) / zoom_factor, static_cast<float>(m_mouse_pos.y - move.y) / zoom_factor);
+                    m_window.setView(view);
 				}
                 m_mouse_pos        = {move.x, move.y};
 				break;

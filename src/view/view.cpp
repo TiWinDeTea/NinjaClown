@@ -77,9 +77,10 @@ void view::view::do_run(state::holder &state) {
 	m_fps_limiter.start_now();
 	sf::Clock clock{};
 
-//	state::access<::view::view>::adapter(state).load_map("resources/map_test.map");
-//	state::access<::view::view>::model(state).load_dll("ninja-clown-basic-bot.dll");
-//	state::access<::view::view>::model(state).run();
+	state::access<::view::view>::adapter(state).load_map("maps/map_test/map_test.map");
+	//state::access<::view::view>::model(state).load_dll("ninja-clown-basic-bot.dll");
+	//state::access<::view::view>::model(state).load_dll("libninja-clown-basic-bot.so");
+	//state::access<::view::view>::model(state).run();
 
 	while (m_running.test_and_set() && window.isOpen()) {
 		ImGui::SFML::Update(window, clock.restart());
@@ -108,7 +109,8 @@ void view::view::do_run(state::holder &state) {
 			}
 
 			const bool is_mouse_event = mouse_type_event(event.type);
-			if (!is_mouse_event || (sf::Mouse::getPosition(window).y > terminal.get_size().y + 2 && m_showing_term)) {
+			if (m_showing != window::menu
+			    && (!is_mouse_event || sf::Mouse::getPosition(window).y > terminal.get_size().y + 2 || !m_showing_term)) {
 				game.event(event);
 			}
 
@@ -149,15 +151,17 @@ void view::view::do_run(state::holder &state) {
 		}
 
 		// somebody help me
-        sf::RectangleShape rect;
-        rect.setFillColor(sf::Color::Transparent);
-        rect.setSize({0,0});
-        rect.setPosition(0, 0);
-        window.draw(rect);
+		sf::RectangleShape rect;
+		rect.setFillColor(sf::Color::Transparent);
+		rect.setSize({0, 0});
+		rect.setPosition(0, 0);
+		window.draw(rect);
 
 		game.show(show_debug_data);
 
-        ImGui::SFML::Render();
+		auto view = window.getView();
+		ImGui::SFML::Render();
+		window.setView(view);
 
 		window.display();
 		m_fps_limiter.wait();

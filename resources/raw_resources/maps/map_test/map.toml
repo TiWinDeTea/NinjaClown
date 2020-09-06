@@ -1,0 +1,17 @@
+[meta]
+    name.dflt_lang = "en"
+    name.en = "Test maps"
+    name.fr = "Cartes de test"
+
+[[files]]
+    [[map]]
+        file = "map_test.map"
+        name.en = "Test map #1"
+        name.fr = "Carte de test #1"
+
+    [[map]]
+        file = "map_test_2.map"
+        name.en = "Test map #2"
+        name.fr = "Carte de test #2"
+        [[requires_completion]]
+            file = "map_test.map"

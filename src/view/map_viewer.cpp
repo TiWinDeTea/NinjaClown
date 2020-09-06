@@ -96,7 +96,15 @@ void view::map_viewer::reload_sprites() {
 
 // conversions necessary to account for the viewport
 sf::Vector2f view::map_viewer::get_mouse_pos() const noexcept {
-	return to_viewport_coord(sf::Mouse::getPosition(*m_window));
+	auto view = m_window->getView();
+	auto size = m_window->getSize();
+	sf::Vector2f ratio{view.getSize().x / size.x, view.getSize().y / size.y};
+
+	sf::Vector2f mouse(sf::Mouse::getPosition(*m_window));
+	mouse.x *= ratio.x;
+	mouse.y *= ratio.y;
+
+	return mouse + view.getCenter() - view.getSize() / 2.f;
 }
 
 sf::Vector2f view::map_viewer::to_screen_coords(float x, float y) const noexcept {
@@ -107,16 +115,4 @@ sf::Vector2f view::map_viewer::to_screen_coords(float x, float y) const noexcept
 	screen.y = x * tiles.x_yshift + y * tiles.yspacing;
 
 	return screen;
-}
-
-sf::Vector2f view::map_viewer::to_viewport_coord(const sf::Vector2f &coords) const noexcept {
-	const auto WINDOW_SZ      = m_window->getSize();
-	const float VP_WIN_XRATIO = m_viewport.width / WINDOW_SZ.x;
-	const float VP_WIN_YRATIO = m_viewport.height / WINDOW_SZ.y;
-
-	return {VP_WIN_XRATIO * coords.x + m_viewport.left, VP_WIN_YRATIO * coords.y + m_viewport.top};
-}
-
-sf::Vector2f view::map_viewer::to_viewport_coord(const sf::Vector2i &coords) const noexcept {
-	return to_viewport_coord(sf::Vector2f{static_cast<float>(coords.x), static_cast<float>(coords.y)});
 }

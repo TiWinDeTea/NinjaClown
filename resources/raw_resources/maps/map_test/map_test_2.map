@@ -1,0 +1,99 @@
+[file]
+	version = "1.0.0"
+[mobs]
+	[[mobs.definition]]
+			name = "clown"
+			hp = 1
+			behaviour = "dll"
+			sprite = "clown"
+	[[mobs.definition]]
+			name = "scientist"
+			inherits = "clown"
+			behaviour = "none"
+			sprite = "scientist"
+
+	[[mobs.spawn]]
+		type = "clown"
+		pos.x = 10
+		pos.y = 2
+		facing = 0
+
+	[[mobs.spawn]]
+		type = "scientist"
+		pos.x = 2
+		pos.y = 4
+		facing = -1.5
+
+[actors]
+	[[actors.spawn]]
+	    name = "gate1"
+	    type = "gate"
+	    pos.x = 4
+	    pos.y = 11
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate2"
+	    type = "gate"
+	    pos.x = 10
+	    pos.y = 2
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate3"
+	    type = "gate"
+	    pos.x = 9
+	    pos.y = 4
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate4"
+	    type = "gate"
+	    pos.x = 7
+	    pos.y = 3
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate5"
+	    type = "gate"
+	    pos.x = 7
+	    pos.y = 4
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate6"
+	    type = "gate"
+	    pos.x = 8
+	    pos.y = 6
+	    closed = false
+
+	[[actors.spawn]]
+	    name = "gate7"
+	    type = "gate"
+	    pos.x = 9
+	    pos.y = 5
+	    closed = false
+
+	[[actors.spawn]]
+		type = "button"
+		pos.x = 6
+		pos.y = 1
+		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7"]
+
+[map]
+	layout = [
+		"############",
+		"#   # #### #",
+		"#   #      #",
+		"## ###  ~  #",
+		"#  ### ~~~ #",
+		"# ######~~~#",
+		"# ####~~~~~#",
+		"# ####~~~~~#",
+		"#  T#      #",
+		"# ####~~~~~#",
+		"#  #####~~~#",
+		"#        ~~#",
+		"##  #   ~~ #",
+		"############"
+	]

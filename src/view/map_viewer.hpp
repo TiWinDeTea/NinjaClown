@@ -93,10 +93,6 @@ private:
         m_level_size = map->level_size();
 	}
 
-	// converts sfml events coords to viewport coords
-    sf::Vector2f to_viewport_coord(const sf::Vector2f &coords) const noexcept;
-    sf::Vector2f to_viewport_coord(const sf::Vector2i &coords) const noexcept;
-
 
     state::holder* m_state{nullptr};
 	sf::RenderWindow* m_window{nullptr};

@@ -58,7 +58,7 @@ public:
         m_fps_limiter.target_fps(target);
     }
 
-    std::atomic_bool show_debug_data{false};
+    std::atomic_bool show_debug_data{true};
 
 private:
 	void do_run(state::holder&);
