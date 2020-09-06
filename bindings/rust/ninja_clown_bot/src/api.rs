@@ -1,4 +1,4 @@
-use crate::{decision::DecisionCommit, Entities, LogLevel, Map, RawApi};
+use crate::{decision::DecisionCommit, Entities, LogLevel, Map, RawApi, map::CellPos};
 use ninja_clown_bot_sys::{nnj_decision_commit, nnj_log_level};
 use std::ffi::CString;
 
@@ -45,6 +45,11 @@ impl Api {
 
     pub fn log_critical<S: Into<String>>(&self, s: S) {
         self.log(LogLevel::Critical, s);
+    }
+
+    pub fn target_position(&self) -> CellPos {
+        let pos = unsafe { (self.raw.target_position.unwrap())(self.raw.ninja_descriptor) };
+        CellPos::from(pos)
     }
 
     pub fn map_update(&mut self) -> usize {

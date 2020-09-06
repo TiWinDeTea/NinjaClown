@@ -19,6 +19,7 @@ struct ffi {
 
 	static size_t NINJACLOWN_CALLCONV map_width(void *ninja_data);
 	static size_t NINJACLOWN_CALLCONV map_height(void *ninja_data);
+	static ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV target_position(void *ninja_data);
 	static void NINJACLOWN_CALLCONV map_scan(void *ninja_data, ninja_api::nnj_cell *map_view);
 	static size_t NINJACLOWN_CALLCONV map_update(void *ninja_data, ninja_api::nnj_cell *map_view, ninja_api::nnj_cell_pos *changed_cells,
 	                                             size_t changed_size);

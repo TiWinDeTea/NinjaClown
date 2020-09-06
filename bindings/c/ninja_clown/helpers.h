@@ -17,6 +17,7 @@ extern void (*NNJ_INIT_CALLBACK)();
 extern void (*NNJ_DESTROY_CALLBACK)();
 extern void (*NNJ_THINK_CALLBACK)();
 
+#define nnj_target_position()                      BOT.target_position(BOT.ninja_descriptor)
 #define nnj_log(log_level, text)                   BOT.log(log_level, text)
 #define nnj_map_scan()                             BOT.map_scan(BOT.ninja_descriptor, MAP)
 #define nnj_map_update()                           BOT.map_update(BOT.ninja_descriptor, MAP, NULL, 0)

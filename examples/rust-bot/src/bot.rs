@@ -48,7 +48,7 @@ pub fn start_level(api: &mut Api) -> UserData {
     UserData {
         ninja_handle: ninja_handle_opt.expect("ninja clown not found"),
         enemy_handle: enemy_handle_opt.unwrap_or(usize::MAX),
-        target: CellPos::new(2, 1),
+        target: api.target_position(),
         button: button_bos,
         path: Vec::new().into_iter(),
         current_target: None,

@@ -68,6 +68,18 @@ impl Cell {
 #[repr(transparent)]
 pub struct CellPos(nnj_cell_pos);
 
+impl From<nnj_cell_pos> for CellPos {
+    fn from(v: nnj_cell_pos) -> Self {
+        Self(v)
+    }
+}
+
+impl From<CellPos> for nnj_cell_pos {
+    fn from(v: CellPos) -> Self {
+        v.0
+    }
+}
+
 impl CellPos {
     pub fn new(column: usize, line: usize) -> Self {
         Self(nnj_cell_pos { column, line })

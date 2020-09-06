@@ -1,4 +1,5 @@
 #include <cmath>
+#include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
@@ -54,6 +55,7 @@ ffi::operator ninja_api::nnj_api() noexcept {
 
 	api.map_width  = &ffi::map_width;
 	api.map_height = &ffi::map_height;
+	api.target_position = &ffi::target_position;
 	api.map_scan   = &ffi::map_scan;
 	api.map_update = &ffi::map_update;
 
@@ -97,6 +99,11 @@ size_t NINJACLOWN_CALLCONV ffi::map_width(void *ninja_data) {
 
 size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
 	return get_world(ninja_data)->grid.height();
+}
+
+ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV ffi::target_position(void *ninja_data) {
+	model::grid_point &target = get_world(ninja_data)->target_tile;
+	return ninja_api::nnj_cell_pos { static_cast<size_t>(target.x), static_cast<size_t>(target.y) };
 }
 
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, ninja_api::nnj_cell *map_view) {
