@@ -82,14 +82,14 @@ target_link_libraries(
 
 file(GLOB_RECURSE files RELATIVE "${CMAKE_CURRENT_LIST_DIR}/resources/configured_resources/" "resources/configured_resources/*")
 foreach (file ${files})
-    message(STATUS "resources/configured_resources/${file}   ->   ${file}")
-    configure_file("resources/configured_resources/${file}" "${file}" @ONLY)
+    message(STATUS "resources/configured_resources/${file}   ->   resources/${file}")
+    configure_file("resources/configured_resources/${file}" "resources/${file}" @ONLY)
 endforeach ()
 
 file(GLOB_RECURSE files RELATIVE "${CMAKE_CURRENT_LIST_DIR}/resources/raw_resources/" "resources/raw_resources/*")
 foreach (file ${files})
-    message(STATUS "resources/raw_resources/${file}   ->   ${file}")
-    configure_file("resources/raw_resources/${file}" "${file}" COPYONLY)
+    message(STATUS "resources/raw_resources/${file}   ->   resources/${file}")
+    configure_file("resources/raw_resources/${file}" "resources/${file}" COPYONLY)
 endforeach ()
 
 

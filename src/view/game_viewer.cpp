@@ -85,6 +85,12 @@ void view::game_viewer::event(const sf::Event &event) {
 			}
 			break;
 		case sf::Event::Resized: {
+			if (m_window_size.x == 0 || m_window_size.y == 0) {
+				m_window_size.x = size(event).width;
+				m_window_size.y = size(event).height;
+				break;
+			}
+
 			auto &terminal = state::access<game_viewer>::terminal(m_state);
 			terminal.set_width(m_window.getSize().x);
 			if (m_resized_once) {

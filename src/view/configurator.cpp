@@ -68,6 +68,9 @@ const T *combo(std::string_view label, const std::vector<T> &choices, const lang
 }
 } // namespace
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantConditionsOC" // false positive
+#pragma ide diagnostic ignored "UnreachableCode" // false positive
 void view::configurator::give_control() noexcept {
 	m_graphics_changed = false;
 	if (!m_showing) {
@@ -188,3 +191,4 @@ void view::configurator::give_control() noexcept {
 
 	// TODO: bouton pour quitter le menu de configuration
 }
+#pragma clang diagnostic pop

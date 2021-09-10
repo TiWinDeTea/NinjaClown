@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-avoid-c-arrays"
+#pragma ide diagnostic ignored "cppcoreguidelines-pro-bounds-array-to-pointer-decay"
 #include <cpptoml.h>
 #include <spdlog/spdlog.h>
 
@@ -826,7 +829,7 @@ bool resource_manager::load_gui_texts(const std::shared_ptr<cpptoml::table> &gui
 		if (auto val = gui_file->get_qualified_as<std::string>(key)) {
 			return *val;
 		}
-		return "?????";
+		return "PASTEQ?????";
 	};
 
 	m_user_gui_lang.name      = try_read(config_keys::meta::language);
@@ -941,14 +944,18 @@ void resource_manager::refresh_language_list() {
 
 void resource_manager::refresh_resource_pack_list() {
 	m_resource_packs.clear();
-	for (const auto &entry : std::filesystem::directory_iterator{resources_directory() / resource_pack_folder}) {
-		if (!entry.is_directory()) {
-			continue;
+	try {
+		for (const auto &entry : std::filesystem::directory_iterator{resources_directory() / resource_pack_folder}) {
+			if (!entry.is_directory()) {
+				continue;
+			}
+			std::filesystem::path toml_path = entry.path() / resource_pack_toml_name;
+			if (std::filesystem::is_regular_file(toml_path)) {
+				m_resource_packs.emplace_back(parse_resource_pack_info(toml_path));
+			}
 		}
-		std::filesystem::path toml_path = entry.path() / resource_pack_toml_name;
-		if (std::filesystem::is_regular_file(toml_path)) {
-			m_resource_packs.emplace_back(parse_resource_pack_info(toml_path));
-		}
+	} catch (const std::filesystem::filesystem_error& e) {
+		spdlog::error("{}", e.what());
 	}
 }
 
@@ -1071,3 +1078,5 @@ bool resource_manager::save_user_config() const noexcept {
 	ofs << *global;
 	return true;
 }
+
+#pragma clang diagnostic pop

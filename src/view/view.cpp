@@ -77,7 +77,7 @@ void view::view::do_run(state::holder &state) {
 	m_fps_limiter.start_now();
 	sf::Clock clock{};
 
-	state::access<::view::view>::adapter(state).load_map("maps/map_test/map_test.map");
+	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map");
 	//state::access<::view::view>::model(state).load_dll("ninja-clown-basic-bot.dll");
 	//state::access<::view::view>::model(state).load_dll("libninja-clown-basic-bot.so");
 	//state::access<::view::view>::model(state).run();
@@ -119,6 +119,8 @@ void view::view::do_run(state::holder &state) {
 			}
 		}
 
+		auto view_fixmyub = window.getView();
+
 		if (m_showing == window::menu) {
 			auto request = menu.show();
 			switch (request) {
@@ -127,6 +129,7 @@ void view::view::do_run(state::holder &state) {
 				case menu::user_request::close_menu:
 					m_showing = window::game;
 					game.resume();
+					menu.close();
 					break;
 				case menu::user_request::close_window:
 					m_running.clear();
@@ -135,6 +138,7 @@ void view::view::do_run(state::holder &state) {
 					state::access<view>::adapter(state).load_map(state.current_map_path());
 					m_showing = window::game;
 					game.restart();
+					menu.close();
 					break;
 				case menu::user_request::load_dll:
 					terminal_commands::argument_type arg{state, terminal, {}};
@@ -150,18 +154,15 @@ void view::view::do_run(state::holder &state) {
 			terminal.show();
 		}
 
-		// somebody help me
-		sf::RectangleShape rect;
-		rect.setFillColor(sf::Color::Transparent);
-		rect.setSize({0, 0});
-		rect.setPosition(0, 0);
-		window.draw(rect);
-
 		game.show(show_debug_data);
+        ImGui::SFML::Render();
 
-		auto view = window.getView();
-		ImGui::SFML::Render();
-		window.setView(view);
+		{ // Fixxy doo fix, fixes linux display bug somehow
+			sf::RectangleShape rect;
+			rect.setFillColor(sf::Color::Transparent);
+			window.draw(rect);
+			window.setView(view_fixmyub);
+		}
 
 		window.display();
 		m_fps_limiter.wait();
