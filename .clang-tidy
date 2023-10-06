@@ -1,4 +1,4 @@
-Checks: '*,-abseil-*,-boost-*,-darwin-*,-fuchsia-*,-google-objc-*,-google-uild-using-namespace,-google-upgrade-googletest-case,-mpi-*,-objc-*,-openmp-*,-cert-err58-cpp,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-modernize-use-trailing-return-type,-modernize-use-transparent-functors,-readability-uppercase-literal-suffix,-cppcoreguidelines-pro-bounds-constant-array-index,-cert-dcl21-cpp,-misc-non-private-member-variables-in-classes,-google-runtime-references,-hicpp-uppercase-literal-suffix,-llvmlibc-callee-namespace'
+Checks: '*,-abseil-*,-boost-*,-darwin-*,-fuchsia-*,-google-objc-*,-google-uild-using-namespace,-google-upgrade-googletest-case,-mpi-*,-objc-*,-openmp-*,-cert-err58-cpp,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-modernize-use-trailing-return-type,-modernize-use-transparent-functors,-readability-uppercase-literal-suffix,-cppcoreguidelines-pro-bounds-constant-array-index,-cert-dcl21-cpp,-misc-non-private-member-variables-in-classes,-google-runtime-references,-hicpp-uppercase-literal-suffix,-llvmlibc-*,-altera-unroll-loops,-*-pro-type-union-access,-*-pro-bounds-pointer-arithmetic'
 CheckOptions:
   - key:   bugprone-assert-side-effect.CheckFunctionCalls
     value: 'true'
@@ -52,6 +52,14 @@ CheckOptions:
     value: '5'
   - key:   readability-function-size.VariableThreshold
     value: '10'
+  - key:   readability-identifier-length.MinimumVariableNameLength
+    value: '2'
+  - key:   readability-identifier-length.MinimumParameterNameLength
+    value: '1'
+  - key:   readability-identifier-length.MinimumLoopCounterNameLength
+    value: '1'
+  - key:   readability-identifier-length.MinimumExceptionNameLength
+    value: '1'
   - key:   readability-identifier-naming.AbstractClassCase
     value: 'lower_case'
   - key:   readability-identifier-naming.AbstractClassSuffix
