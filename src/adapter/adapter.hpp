@@ -122,7 +122,10 @@ public:
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 	void hide_entity(model_handle entity) noexcept;
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
-	void mark_entity_as_dirty(model::handle_t) noexcept; // QUESTION: what’s the purpose of this?
+	/**
+	 * "Touch" this entity so that next call to `entities_changed_since_last_update` returns it.
+	 */
+	void mark_entity_as_dirty(model::handle_t) noexcept;
 	void clear_entities_changed_since_last_update() noexcept;
 
 	[[nodiscard]] utils::resource_manager &resources();

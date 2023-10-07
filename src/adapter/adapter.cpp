@@ -189,6 +189,7 @@ void adapter::adapter::bot_log(bot_log_level level, const char *text) {
 			spdlog::critical("[BOT] {}", text);
 			break;
 		default:
+			spdlog::warn("DLL used unknown log level ({})", level);
 			spdlog::info("[BOT] {}", text);
 			break;
 	}

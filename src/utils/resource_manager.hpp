@@ -59,9 +59,9 @@ class resource_manager {
 public:
 
 	struct resource_pack_info {
-        std::string default_name;
+		std::string default_name;
 		std::unordered_map<std::string, std::string> names_by_shorthand_lang;
-        std::filesystem::path file;
+		std::filesystem::path file;
 	};
 
 	[[nodiscard]] bool load_config() noexcept;
@@ -129,9 +129,9 @@ public:
 		return m_user_log_lang;
 	}
 
-    [[nodiscard]] const resource_pack_info& user_resource_pack() const noexcept {
-        return m_user_resource_pack;
-    }
+	[[nodiscard]] const resource_pack_info& user_resource_pack() const noexcept {
+	    return m_user_resource_pack;
+  }
 
 	void set_user_general_lang(const lang_info&) noexcept;
 	void set_user_command_lang(const lang_info&) noexcept;
@@ -179,13 +179,13 @@ private:
 	std::vector<std::string> m_gui_string_keys{};
 
 	std::vector<lang_info> m_available_langs;
-    std::vector<resource_pack_info> m_resource_packs;
+	std::vector<resource_pack_info> m_resource_packs;
 
-    // user config (saved by "save_user_config"
-    lang_info m_user_general_lang{};
-    lang_info m_user_command_lang{};
-    lang_info m_user_gui_lang{};
-    lang_info m_user_log_lang{};
+	// user config (saved by "save_user_config"
+	lang_info m_user_general_lang{};
+	lang_info m_user_command_lang{};
+	lang_info m_user_gui_lang{};
+	lang_info m_user_log_lang{};
 	resource_pack_info m_user_resource_pack{};
 };
 } // namespace utils
