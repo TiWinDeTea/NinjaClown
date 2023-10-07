@@ -1,7 +1,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-avoid-c-arrays"
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-bounds-array-to-pointer-decay"
-#include <cpptoml.h>
+#include <cpptoml/cpptoml.h>
 #include <spdlog/spdlog.h>
 
 #include <iterator>

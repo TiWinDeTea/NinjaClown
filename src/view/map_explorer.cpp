@@ -1,6 +1,7 @@
 #include "view/map_explorer.hpp"
 
 #include <imgui.h>
+#include <utility>
 
 namespace {
 constexpr const char window_name[] = "##map explorer";

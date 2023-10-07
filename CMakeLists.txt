@@ -69,6 +69,7 @@ target_include_directories(ninja-clown SYSTEM PUBLIC
         ${SFML_INCLUDE_DIR}
         ${FMT_INCLUDE_DIR}
         ${CPPTOML_INCLUDE_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/external/
 )
 
 target_link_libraries(

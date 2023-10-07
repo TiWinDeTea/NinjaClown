@@ -18,6 +18,7 @@ struct bounding_circle {
     float radius;
 };
 
+// Oriented Bounding Box
 struct obb {
 	using min = float;
 	using max = float;

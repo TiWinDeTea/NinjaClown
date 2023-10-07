@@ -5,6 +5,7 @@
 #else
 #	include <unistd.h>
 #	include <string.h>
+#	include <array>
 #endif
 
 std::filesystem::path utils::binary_directory() {

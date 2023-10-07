@@ -5,12 +5,12 @@
 
 #include "state_holder.hpp"
 
-int actual_main(std::vector<std::string> &);
+int actual_main(std::vector<std::string> &args);
 
 #ifdef USE_WINMAIN
-#	include <shellapi.h>
-#	include <tchar.h>
-#	include <windows.h>
+#include <shellapi.h>
+#include <tchar.h>
+#include <windows.h>
 
 INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, INT) {
 
@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
 int actual_main([[maybe_unused]] std::vector<std::string> &args) {
 	spdlog::default_logger()->set_level(spdlog::level::trace);
 
-    state::holder game{"resources/autorun.ncs"};
-    game.run();
-    game.wait();
+	state::holder game{"resources/autorun.ncs"};
+	game.run();
+	game.wait();
 
 	return 0;
 

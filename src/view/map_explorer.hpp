@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <cassert>
+#include <utility>
 
 namespace utils {
 class resource_manager;

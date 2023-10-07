@@ -1,4 +1,4 @@
-#include <cpptoml.h>
+#include <cpptoml/cpptoml.h>
 #include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 

@@ -17,8 +17,8 @@
 #include "utils/resource_manager.hpp"
 #include "utils/utils.hpp"
 #include "utils/visitor.hpp"
-#include "view/view.hpp"
 #include "view/game_viewer.hpp"
+#include "view/view.hpp"
 
 using fmt::literals::operator""_a;
 

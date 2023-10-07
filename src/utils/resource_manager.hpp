@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <SFML/Graphics/Texture.hpp>
-#include <cpptoml.h>
+#include <cpptoml/cpptoml.h>
 
 #include "terminal_ids.hpp"
 #include "utils/optional.hpp"

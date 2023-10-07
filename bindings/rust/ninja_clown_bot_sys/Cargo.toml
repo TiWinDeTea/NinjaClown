@@ -5,4 +5,4 @@ authors = ["Benoît CORTIER <benoit.cortier@fried-world.eu>"]
 edition = "2018"
 
 [build-dependencies]
-bindgen = "0.54"
+bindgen = "0.68"
