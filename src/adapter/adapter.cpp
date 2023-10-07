@@ -168,8 +168,30 @@ const std::vector<std::size_t> &adapter::adapter::entities_changed_since_last_up
 	return m_entities_changed_since_last_update;
 }
 
-void adapter::adapter::dll_log(const char *log) {
-	spdlog::info("BOT LOG: {}", log);
+void adapter::adapter::bot_log(bot_log_level level, const char *text) {
+	switch (level) {
+		case bot_log_level::TRACE:
+			spdlog::trace("[BOT] {}", text);
+			break;
+		case bot_log_level::DEBUG:
+			spdlog::debug("[BOT] {}", text);
+			break;
+		case bot_log_level::INFO:
+			spdlog::info("[BOT] {}", text);
+			break;
+		case bot_log_level::WARN:
+			spdlog::warn("[BOT] {}", text);
+			break;
+		case bot_log_level::ERROR:
+			spdlog::error("[BOT] {}", text);
+			break;
+		case bot_log_level::CRITICAL:
+			spdlog::critical("[BOT] {}", text);
+			break;
+		default:
+			spdlog::info("[BOT] {}", text);
+			break;
+	}
 }
 
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {

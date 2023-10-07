@@ -31,6 +31,15 @@ class resource_manager;
 
 namespace adapter {
 
+enum class bot_log_level {
+	TRACE    = 0,
+	DEBUG    = 1,
+	INFO     = 2,
+	WARN     = 3,
+	ERROR    = 4,
+	CRITICAL = 5,
+};
+
 struct model_handle {
 	enum type_t {
 		ACTIVATOR  = 1,
@@ -92,9 +101,15 @@ public:
 	explicit adapter(state::holder *state_holder) noexcept
 	    : m_state{*state_holder} { }
 
+	// -- Used by view -- //
+
 	bool load_map(const std::filesystem::path &path) noexcept;
 
 	bool map_is_loaded() noexcept;
+
+	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
+
+	// -- Used by model -- //
 
 	void fire_activator(model_handle handle) noexcept;
 
@@ -103,20 +118,21 @@ public:
 
 	void update_map(const model::grid_point &target, model::cell_type new_cell) noexcept;
 	void clear_cells_changed_since_last_update() noexcept;
-	const std::vector<model::grid_point> &cells_changed_since_last_update() noexcept;
 
 	void move_entity(model_handle entity, float new_x, float new_y) noexcept;
 	void hide_entity(model_handle entity) noexcept;
 	void rotate_entity(model_handle entity, float new_rad) noexcept;
-	void mark_entity_as_dirty(model::handle_t) noexcept;
+	void mark_entity_as_dirty(model::handle_t) noexcept; // QUESTION: what’s the purpose of this?
 	void clear_entities_changed_since_last_update() noexcept;
-	const std::vector<std::size_t> &entities_changed_since_last_update() noexcept;
-
-	void dll_log(const char *log);
-
-	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
 
 	[[nodiscard]] utils::resource_manager &resources();
+
+	// -- Used by bot / dll -- //
+
+	const std::vector<model::grid_point> &cells_changed_since_last_update() noexcept;
+	const std::vector<std::size_t> &entities_changed_since_last_update() noexcept;
+
+	void bot_log(bot_log_level level, const char *text);
 
 private:
 	friend terminal_commands;

@@ -129,7 +129,7 @@ struct nnj_decision_commit {
 struct nnj_api {
 	void *ninja_descriptor;
 
-	void(NINJACLOWN_CALLCONV *log)(enum nnj_log_level level, const char *text);
+	void(NINJACLOWN_CALLCONV *log)(void *ninja_data, enum nnj_log_level level, const char *text);
 
 	size_t(NINJACLOWN_CALLCONV *map_width)(void *ninja_data);
 	size_t(NINJACLOWN_CALLCONV *map_height)(void *ninja_data);

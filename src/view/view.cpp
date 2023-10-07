@@ -78,9 +78,6 @@ void view::view::do_run(state::holder &state) {
 	sf::Clock clock{};
 
 	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map");
-	//state::access<::view::view>::model(state).load_dll("ninja-clown-basic-bot.dll");
-	//state::access<::view::view>::model(state).load_dll("libninja-clown-basic-bot.so");
-	//state::access<::view::view>::model(state).run();
 
 	while (m_running.test_and_set() && window.isOpen()) {
 		ImGui::SFML::Update(window, clock.restart());

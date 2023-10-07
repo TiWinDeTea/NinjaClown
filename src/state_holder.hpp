@@ -70,7 +70,7 @@ public:
 	const std::filesystem::path &current_map_path() noexcept;
 
 private:
-    void set_current_map_path(const std::filesystem::path&);
+	void set_current_map_path(const std::filesystem::path&);
 
 	std::unique_ptr<pimpl> m_pimpl;
 
@@ -82,8 +82,8 @@ private:
 	friend terminal_commands;
 	friend access<view::game_viewer>;
 	friend access<view::view>;
-    friend access<view::map_viewer>;
-    friend access<view::menu>;
+	friend access<view::map_viewer>;
+	friend access<view::menu>;
 	friend access<adapter::adapter>;
 	friend access<model::model>;
 	friend access<bot::ffi>;
@@ -217,10 +217,6 @@ class access<view::view> {
     static adapter::adapter &adapter(holder& holder) noexcept {
         return holder.adapter();
     }
-
-	static model::model &model(holder& holder) noexcept {
-		return holder.model(); // FIXME REMOVE (TEMP CODE)
-	}
 
     friend view::view;
 };

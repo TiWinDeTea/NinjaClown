@@ -1,4 +1,4 @@
-use crate::{decision::DecisionCommit, Entities, LogLevel, Map, RawApi, map::CellPos};
+use crate::{decision::DecisionCommit, map::CellPos, Entities, LogLevel, Map, RawApi};
 use ninja_clown_bot_sys::{nnj_decision_commit, nnj_log_level};
 use std::ffi::CString;
 
@@ -20,7 +20,7 @@ impl Api {
 
     pub fn log<S: Into<String>>(&self, level: LogLevel, s: S) {
         let s = CString::new(s.into()).expect("CString::new failed");
-        unsafe { (self.raw.log.unwrap())(nnj_log_level::from(level), s.as_ptr()) };
+        unsafe { (self.raw.log.unwrap())(self.raw.ninja_descriptor, nnj_log_level::from(level), s.as_ptr()) };
     }
 
     pub fn log_trace<S: Into<String>>(&self, s: S) {

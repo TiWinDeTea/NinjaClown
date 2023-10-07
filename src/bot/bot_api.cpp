@@ -67,30 +67,19 @@ ffi::operator ninja_api::nnj_api() noexcept {
 	return api;
 }
 
-void NINJACLOWN_CALLCONV ffi::log(ninja_api::nnj_log_level level, const char *text) {
-	switch (level) {
-		case ninja_api::LL_TRACE:
-			spdlog::trace("[BOT] {}", text);
-			break;
-		case ninja_api::LL_DEBUG:
-			spdlog::debug("[BOT] {}", text);
-			break;
-		case ninja_api::LL_INFO:
-			spdlog::info("[BOT] {}", text);
-			break;
-		case ninja_api::LL_WARN:
-			spdlog::warn("[BOT] {}", text);
-			break;
-		case ninja_api::LL_ERROR:
-			spdlog::error("[BOT] {}", text);
-			break;
-		case ninja_api::LL_CRITICAL:
-			spdlog::critical("[BOT] {}", text);
-			break;
-		default:
-			spdlog::info("[BOT] {}", text);
-			break;
-	}
+void NINJACLOWN_CALLCONV ffi::log(void *ninja_data, ninja_api::nnj_log_level level, const char *text) {
+	// Sanity check
+	static_assert(ninja_api::LL_TRACE == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::TRACE));
+	static_assert(ninja_api::LL_DEBUG == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::DEBUG));
+	static_assert(ninja_api::LL_INFO == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::INFO));
+	static_assert(ninja_api::LL_WARN == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::WARN));
+	static_assert(ninja_api::LL_ERROR == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::ERROR));
+	static_assert(ninja_api::LL_CRITICAL == static_cast<ninja_api::nnj_log_level>(adapter::bot_log_level::CRITICAL));
+
+	auto adapter_level = static_cast<adapter::bot_log_level>(level);
+
+	adapter::adapter *adapter = get_adapter(ninja_data);
+	adapter->bot_log(adapter_level, text);
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_width(void *ninja_data) {
