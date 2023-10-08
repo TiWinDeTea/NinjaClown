@@ -15,6 +15,7 @@ class terminal_commands;
 
 namespace model {
 enum class cell_type;
+struct components;
 }
 
 namespace state {
@@ -108,6 +109,26 @@ public:
 	bool map_is_loaded() noexcept;
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
+	/**
+	 * Generates a tooltip for an actionable (door, ...), given its handle
+	 * @param actionable Model handle to the actionable
+	 * @param view_actionable View handle to the actionable
+	 * @return Draw request for the actionable's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_actionable(model_handle actionable, view_handle view_actionable) noexcept;
+	/**
+	 * Generates a tooltip for an activator (button, ...), given its handle
+	 * @param activator Model handle to the activator
+	 * @return Draw request for the activator's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_activator(model_handle activator) noexcept;
+	/**
+	 * Generates a tooltip for a mob, given its handle
+	 * @param mob Model handle to the mob
+	 * @param components Model components
+	 * @return Draw request for the mob's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_mob(model_handle mob, const model::components& components) noexcept;
 
 	// -- Used by model -- //
 
@@ -144,7 +165,7 @@ private:
 
 	state::holder &m_state;
 
-	std::optional<view_handle> m_target_handle{};
+	std::optional<view_handle> m_target_handle{}; //! handle to the objective (end of level) block
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
