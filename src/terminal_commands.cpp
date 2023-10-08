@@ -4,7 +4,6 @@
 #include <filesystem>
 
 #include <model/event.hpp>
-#include <ninja_clown/api.h>
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
@@ -23,13 +22,60 @@
 using fmt::literals::operator""_a;
 
 namespace {
+/**
+ * Replaces all '\' with '/'
+ */
+std::string escape(std::string str) {
+	std::string::size_type pos = str.find('\\');
+	while (pos != std::string::npos) {
+		str[pos] = '/';
+		pos      = str.find('\\', pos);
+	}
+	return std::move(str);
+}
+
+/**
+ * Separates a path into director (.first) and file (.second)
+ */
+std::pair<std::string_view, std::string_view> split_path(std::string_view path) {
+	std::string_view file;
+	std::string_view directory;
+
+	if (auto last_dir_sep = path.find_last_of("/\\"); last_dir_sep != std::string_view::npos) {
+		file        = path.substr(last_dir_sep + 1);
+		directory   = path.substr(0, last_dir_sep);
+		if (directory.empty()) {
+			directory = "/";
+		}
+	}
+	else {
+		directory   = ".";
+		file        = path;
+	}
+
+	return {directory, file};
+}
+
+/**
+ * Fetches for the localized logging text corresponding to the key
+ * @param arg argument_type, for access to resources
+ * @param key key associated to the logging text
+ */
 std::string_view log_get(const terminal_commands::argument_type &arg, std::string_view key) {
 	return arg.val.resources().log_for(key);
 }
 
+/**
+ * Logs a localized message to the terminal [colorless]
+ * @param arg argument_type, for access to resources
+ * @param key key associated to the logging text
+ * @param args arguments of the logging text, forwarded to fmt
+ *
+ * @see log_formatted_err
+ */
 template <typename... Args>
 void log_formatted(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
-	std::string_view fmt = log_get(arg, key);
+	const std::string_view fmt = log_get(arg, key);
 	try {
 		arg.term.add_formatted(fmt.data(), std::forward<Args>(args)...);
 	}
@@ -38,9 +84,18 @@ void log_formatted(terminal_commands::argument_type &arg, std::string_view key, 
 	}
 }
 
+
+/**
+ * Logs a localized message as an error to the terminal (severity : warn) [colorless]
+ * @param arg argument_type, for access to resources
+ * @param key key associated to the logging text
+ * @param args arguments of the logging text, forwarded to fmt
+ *
+ * @see log_formatted
+ */
 template <typename... Args>
 void log_formatted_err(terminal_commands::argument_type &arg, std::string_view key, Args &&... args) {
-	std::string_view fmt = log_get(arg, key);
+	const std::string_view fmt = log_get(arg, key);
 	try {
 		arg.term.add_formatted_err(fmt.data(), std::forward<Args>(args)...);
 	}
@@ -49,24 +104,40 @@ void log_formatted_err(terminal_commands::argument_type &arg, std::string_view k
 	}
 }
 
+/**
+ * @param arg path prefix
+ * @return a list of files ending by ".so" or ".dll" corresponding to prefix, and a list of folders corresponding to prefix
+ */
 std::vector<std::string> autocomplete_library_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".so", ".dll"});
 }
 
+/**
+ * @param arg path prefix
+ * @return a list of files ending by ".map" corresponding to prefix, and a list of folders corresponding to prefix
+ */
 std::vector<std::string> autocomplete_map_path(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".map"});
 }
 
+/**
+ * @param arg path prefix
+ * @return a list of files ending by ".toml" corresponding to prefix, and a list of folders corresponding to prefix
+ */
 std::vector<std::string> autocomplete_config(terminal_commands::argument_type &arg) {
 	return terminal_commands::autocomplete_path(arg, {".toml"});
 }
 
+//! used to store the list of available commands
 struct cmd {
-	command_id cmd;
-	void (*cmd_ptr)(terminal_commands::argument_type &);
-	std::vector<std::string> (*complete_ptr)(terminal_commands::argument_type &);
+	command_id cmd; //! used to access localized resources
+	void (*cmd_ptr)(terminal_commands::argument_type &); //! pointer to the function that will execute the command
+	std::vector<std::string> (*complete_ptr)(terminal_commands::argument_type &); //! pointer to the autocompletion function for this command
 };
 
+/**
+ * List of all the commands
+ */
 constexpr std::array local_command_list{
   cmd{command_id::clear, &terminal_commands::clear, terminal_commands::no_completion},
   cmd{command_id::echo, terminal_commands::echo, terminal_commands::no_completion},
@@ -83,33 +154,34 @@ constexpr std::array local_command_list{
   cmd{command_id::fire_actionable, terminal_commands::fire_actionable, terminal_commands::no_completion},
   cmd{command_id::fire_activator, terminal_commands::fire_activator, terminal_commands::no_completion}};
 
+/**
+ * Converts a string_view to a boolean. Converts to true if numeric and != 0, or if it compares equal to "true".
+ */
 bool as_bool(std::string_view str) {
 	std::optional<int> int_val = utils::from_chars<int>(str);
 	if (int_val) {
 		return *int_val != 0;
 	}
-	else {
-		return str == "true";
-	}
+	return str == "true";
 }
 } // namespace
 
 void terminal_commands::load_commands(const utils::resource_manager &resources) noexcept {
-	cmd_list_.clear();
-	for (const auto &cmd : local_command_list) {
+	cmd_list_.clear(); // add_command_ will fill this list
 
+	for (const auto &cmd : local_command_list) {
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
 			utils::log::warn(resources, "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
-			// continue;
+			continue;
 		}
 
-		auto [name, desc] = *maybe_command;
+		auto [name, description] = *maybe_command;
 
 		command_type command;
 		command.call        = cmd.cmd_ptr;
 		command.complete    = cmd.complete_ptr;
-		command.description = desc;
+		command.description = description;
 		command.name        = name;
 		add_command_(command);
 	}
@@ -136,7 +208,7 @@ void terminal_commands::sink_it_(const spdlog::details::log_msg &msg) {
 		terminal_->add_message(std::move(imsg));
 	}
 	else {
-		m_pre_logged_messages.emplace_back(std::move(imsg));
+		m_pre_logged_messages.emplace_back(std::move(imsg)); // FIXME data race with terminal_commands::set_terminal ?
 	}
 }
 
@@ -149,21 +221,11 @@ void terminal_commands::echo(argument_type &arg) {
 		arg.term.add_text("");
 		return;
 	}
+
 	std::string str{};
-	auto it = std::next(arg.command_line.begin(), 1);
-	while (it != arg.command_line.end() && it->empty()) {
-		++it;
-	}
-	if (it != arg.command_line.end()) {
-		str = *it;
-		for (++it; it != arg.command_line.end(); ++it) {
-			if (it->empty()) {
-				continue;
-			}
-			str.reserve(str.size() + it->size() + 1);
-			str += ' ';
-			str += *it;
-		}
+	for (auto it = std::next(arg.command_line.begin(), 1); it != arg.command_line.end(); ++it) {
+		str += *it;
+		str += ' ';
 	}
 	arg.term.add_text(str);
 }
@@ -180,30 +242,26 @@ void terminal_commands::help(argument_type &arg) {
 			utils::log::warn(arg.val.resources(), "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
 			continue;
 		}
-		auto [name, desc] = *opt;
-		commands.emplace_back(name, desc);
+		commands.emplace_back(*opt);
 	}
 
 	const unsigned int element_max_name_size = misc::max_size(commands.begin(), commands.end(), [](const auto &str) {
 		return str.first.size();
 	});
 
-	auto add_cmd = [&arg, &element_max_name_size](std::string_view command_name, std::string_view description) {
-		std::string str;
-		str.reserve(12 + element_max_name_size + description.size());
-		str = "        ";
-		for (unsigned int i = element_max_name_size; i > command_name.size(); --i) {
-			str += ' ';
-		}
-		str += command_name;
-		str += " | ";
-		str += description;
-		arg.term.add_text(str);
-	};
-
 	arg.term.add_text(log_get(arg, "terminal_commands.general.help").data());
 	for (const auto &cmd : commands) {
-		add_cmd(cmd.first, cmd.second);
+		constexpr unsigned int raw_chars_count = 10;
+
+		std::string str;
+		str.reserve(raw_chars_count + element_max_name_size + cmd.second.size());
+		str = "      ";
+		str.append( element_max_name_size - cmd.first.size(), ' ');
+		str += cmd.first;
+		str += " | ";
+		str += cmd.second;
+		arg.term.add_text(str);
+
 	}
 	arg.term.add_text("");
 }
@@ -330,7 +388,7 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		return;
 	}
 
-	if (!arg.val.resources().reload(/*arg.command_line.back()*/)) { // FIXME
+	if (!arg.val.resources().reload(/*arg.command_line.back()*/)) { // FIXME : path to config is ignored
 		log_formatted(arg, "terminal_commands.reload.fail", "file_path"_a = arg.command_line.back());
 	}
 	else {
@@ -393,56 +451,37 @@ void terminal_commands::fire_actionable(argument_type &arg) {
 
 std::vector<std::string> terminal_commands::autocomplete_path(argument_type &arg,
                                                               const std::initializer_list<std::string_view> &extensions) {
-	auto escape = [](std::string &&str) -> std::string && {
-		std::string::size_type pos = str.find('\\');
-		while (pos != std::string::npos) {
-			str[pos] = '/';
-			pos      = str.find('\\', pos);
-		}
-		return std::move(str);
-	};
-
 	std::vector<std::string> paths;
 
-	if (arg.command_line.size() == 2) {
-		std::string_view current = arg.command_line[1];
-		std::string_view file_prefix;
-		std::string_view directory;
+	if (arg.command_line.size() != 2) {
+		return paths;
+	}
 
-		if (auto last_dir_sep = current.find_last_of("/\\"); last_dir_sep != std::string_view::npos) {
-			file_prefix = current.substr(last_dir_sep + 1);
-			directory   = current.substr(0, last_dir_sep);
-			if (directory.empty()) {
-				directory = "/";
-			}
+	const std::string_view current = arg.command_line[1];
+	auto [directory, file_prefix] = split_path(current);
+
+	std::error_code ec;
+	const std::filesystem::directory_iterator d_it(directory, ec);
+	if (ec) {
+		return paths;
+	}
+
+	unsigned int simple_file_count{0};
+	for (const auto &entry : d_it) {
+		if (!utils::starts_with(entry.path().filename().string(), file_prefix)) {
+			continue;
 		}
-		else {
-			directory   = ".";
-			file_prefix = current;
+
+		if (entry.is_directory()) {
+			paths.emplace_back(escape(entry.path().string() + "/"));
+			continue;
 		}
 
-		std::error_code ec;
-		std::filesystem::directory_iterator d_it(directory, ec);
-		if (!ec) {
-			unsigned int simple_file_count{0};
-			for (const auto &entry : d_it) {
-				if (utils::starts_with(entry.path().filename().string(), file_prefix)) {
-
-					const auto &ext = entry.path().extension();
-					if (entry.is_directory()) {
-						paths.emplace_back(escape(entry.path().string() + "/"));
-					}
-					else {
-						for (const std::string_view &str : extensions) {
-							if (ext == str) {
-								paths.emplace_back(escape(entry.path().string()));
-								std::swap(paths[simple_file_count++], paths.back());
-								break;
-							}
-						}
-					}
-				}
-			}
+		const auto &ext = entry.path().extension();
+		if (utils::contains(extensions, ext)) {
+			paths.emplace_back(escape(entry.path().string()));
+			std::swap(paths[simple_file_count++], paths.back());
+			break;
 		}
 	}
 	return paths;

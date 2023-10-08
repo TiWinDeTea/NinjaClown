@@ -16,6 +16,19 @@ inline bool starts_with(std::string_view str, std::string_view prefix) {
 	return std::mismatch(str.begin(), str.end(), prefix.begin(), prefix.end()).second == prefix.end();
 }
 
+/**
+ * Returns ture if val is in collection, false otherwise
+ */
+template <typename T, typename U>
+bool contains(const T& collection, const U& val) {
+	for (const auto& item : collection) {
+		if (item == val) {
+			return true;
+		}
+	}
+	return false;
+}
+
 template <typename T>
 struct add_const_s {
 	using type = T const;
