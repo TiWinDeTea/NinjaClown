@@ -144,6 +144,7 @@ view::menu::user_request view::menu::show() {
 							ImGui::EndPopup();
 							return user_request::load_dll;
 						case substate::loading_map:
+							ImGui::EndPopup();
 							return user_request::load_map;
 					}
 					m_current_state = state::none;
