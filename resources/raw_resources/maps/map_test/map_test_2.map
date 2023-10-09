@@ -26,11 +26,11 @@
 
 [actors]
 	[[actors.spawn]]
-	    name = "gate1"
+	    name = "Le BOSS"
 	    type = "gate"
 	    pos.x = 4
 	    pos.y = 11
-	    closed = false
+	    closed = true
 
 	[[actors.spawn]]
 	    name = "gate2"
@@ -44,14 +44,14 @@
 	    type = "gate"
 	    pos.x = 9
 	    pos.y = 4
-	    closed = false
+	    closed = true
 
 	[[actors.spawn]]
 	    name = "gate4"
 	    type = "gate"
 	    pos.x = 7
 	    pos.y = 3
-	    closed = false
+	    closed = true
 
 	[[actors.spawn]]
 	    name = "gate5"
@@ -75,10 +75,17 @@
 	    closed = false
 
 	[[actors.spawn]]
+		name = "gate8"
+		type = "gate"
+		pos.x = 7
+		pos.y = 2
+		closed = true
+
+	[[actors.spawn]]
 		type = "button"
-		pos.x = 6
+		pos.x = 5
 		pos.y = 1
-		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7"]
+		acts_on = ["Le BOSS", "gate2", "gate3", "gate5", "gate6", "gate7", "gate8"]
 
 [map]
 	layout = [

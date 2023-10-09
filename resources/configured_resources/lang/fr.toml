@@ -289,6 +289,23 @@
         id = "adapter.unknown_view_entity"
         fmt = "L'entité vue {view_handle} est introuvable. La logique et la vue n'ont peut-être pas été synchronisés correctement (erreur interne)"
 
+    [[log.entry]]
+        id = "resource_manager.commands_texts.reload_failed"
+        fmt = "Échec lors du rechargement du nom des commandes"
+    [[log.entry]]
+        id = "resource_manager.gui_texts.reload_failed"
+        fmt = "Échec lors du rechargement des textes de l’interface"
+    [[log.entry]]
+        id = "resource_manger.log_texts.reload_failed"
+        fmt = "Échec lors du rechargement des textes de log"
+    [[log.entry]]
+        id = "resource_manager.resource_pack.reload_failed"
+        fmt = "Échec lors du rechargement des textures"
+
+    [[log.entry]]
+        id = "view.view.menu.unknown_request"
+        fmt = "Requête inconnue reçue depuis le menu : {id}"
+
 [tooltip]
     [[tooltip.entry]]
         id = "adapter.objective"
@@ -320,20 +337,6 @@
     [[tooltip.entry]]
         id = "adapter.nameless_gate"
         fmt = "Portail: {handle}"
-
-    [[log.entry]]
-        id = "resource_manager.commands_texts.reload_failed"
-        fmt = "Échec lors du rechargement du nom des commandes"
-    [[log.entry]]
-        id = "resource_manager.gui_texts.reload_failed"
-        fmt = "Échec lors du rechargement des textes de l’interface"
-    [[log.entry]]
-        id = "resource_manger.log_texts.reload_failed"
-        fmt = "Échec lors du rechargement des textes de log"
-    [[log.entry]]
-        id = "resource_manager.resource_pack.reload_failed"
-        fmt = "Échec lors du rechargement des textures"
-
 
 [gui]
     [[gui.entry]]

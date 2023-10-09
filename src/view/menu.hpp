@@ -19,6 +19,7 @@ class menu {
 	enum class substate {
 		na,
 		loading_dll,
+		loading_map,
 	};
 
 public:
@@ -28,6 +29,7 @@ public:
 		close_window,
 		restart,
 		load_dll,
+		load_map
 	};
 
 

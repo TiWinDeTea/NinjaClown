@@ -302,6 +302,10 @@
         id = "resource_manager.resource_pack.reload_failed"
         fmt = "Failed to reload user interface textures"
 
+    [[log.entry]]
+        id = "view.view.menu.unknown_request"
+        fmt = "unknown request from menu: {id}"
+
 [tooltip]
     [[tooltip.entry]]
         id = "adapter.objective"

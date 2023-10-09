@@ -1,19 +1,24 @@
-#include "view/view.hpp"
 #include "adapter/adapter.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
+#include "utils/resource_manager.hpp"
 #include "view/game_viewer.hpp"
 #include "view/menu.hpp"
+#include "view/view.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Event.hpp>
 
+#include <SFML/Window/Event.hpp>
 #include <imgui-SFML.h>
 #include <imterm/terminal.hpp>
 #include <memory>
+
 #include <thread>
+#include <spdlog/spdlog.h>
+
+using fmt::operator""_a;
 
 namespace {
 void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int x_size, unsigned int y_size) {
@@ -59,6 +64,7 @@ void view::view::exec(state::holder &state) {
 }
 
 void view::view::do_run(state::holder &state) {
+	const auto& resources = state.resources();
 
 	constexpr unsigned int x_window_size = 1600;
 	constexpr unsigned int y_window_size = 900;
@@ -108,11 +114,22 @@ void view::view::do_run(state::holder &state) {
 					game.restart();
 					menu.close();
 					break;
-				case menu::user_request::load_dll:
+				case menu::user_request::load_dll: {
 					terminal_commands::argument_type arg{state, terminal, {}};
 					arg.command_line.emplace_back();
 					arg.command_line.push_back(menu.path().generic_string());
 					terminal_commands::load_shared_library(arg);
+					break;
+				}
+				case menu::user_request::load_map: {
+					terminal_commands::argument_type arg{state, terminal, {}};
+					arg.command_line.emplace_back();
+					arg.command_line.push_back(menu.path().generic_string());
+					terminal_commands::load_map(arg);
+					break;
+				}
+				default:
+					spdlog::error(resources.log_for("view.view.menu.unknown_request"), "id"_a=static_cast<int>(request));
 					break;
 			}
 		}

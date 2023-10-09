@@ -198,7 +198,7 @@ void view::file_explorer::open(with_extensions exts) noexcept {
 		m_current = *glob_last_explored_folder;
 	}
 	else {
-		m_current = utils::binary_directory().parent_path();
+		m_current = utils::binary_directory();
 	}
 }
 
