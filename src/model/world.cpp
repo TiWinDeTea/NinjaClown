@@ -24,7 +24,7 @@ void model::world::update(adapter::adapter &adapter) {
 }
 
 void model::world::reset() {
-	grid.resize(0, 0);
+	map.resize(0, 0);
 	interactions.clear();
 	activators.clear();
 	actionables.clear();
@@ -64,7 +64,7 @@ void model::world::single_entity_action_update(adapter::adapter &adapter, handle
 
 	utils::visitor visitor{
 	  [&](ninja_api::nnj_activate_request &activate_req) {
-		  const cell &cell = grid[activate_req.column][activate_req.line];
+		  const cell &cell = map[activate_req.column][activate_req.line];
 		  if (cell.interaction_handle) {
 			  interaction &interaction = interactions[*cell.interaction_handle];
 			  if (interaction.kind == interaction_kind::LIGHT_MANUAL || interaction.kind == interaction_kind::HEAVY_MANUAL) {
@@ -150,7 +150,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 		  }
 	  },
 	  [&](ninja_api::nnj_activate_request &activate_req) {
-		  const cell &c = grid[activate_req.column][activate_req.line];
+		  const cell &c = map[activate_req.column][activate_req.line];
 		  if (c.interaction_handle) {
 			  interaction &i = interactions[*c.interaction_handle];
 			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
@@ -225,7 +225,7 @@ bool model::world::entity_check_collision(handle_t handle) {
 
 	// with map
 	bounding_circle circle{*components.hitbox[handle]};
-	for (const cell_view &c : grid.subgrid(box)) {
+	for (const cell_view &c : map.subgrid(box)) {
 		if (c.type != cell_type::GROUND) {
 			aabb cell_box{c.pos};
 			if (circle_aabb_test(circle, cell_box)) {

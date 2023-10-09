@@ -471,7 +471,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		model::world &world = state::access<adapter>::model(m_state).world;
 
 		std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
-		world.grid.resize(map_width, map_height);
+		world.map.resize(map_width, map_height);
 
 		unsigned int line_idx{0};
 		for (const std::string &line : *map_layout_toml) {
@@ -484,19 +484,19 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			for (size_t column_idx = 0; column_idx < map_width; ++column_idx) {
 				switch (line[column_idx]) {
 					case '#':
-						world.grid[column_idx][line_idx].type = model::cell_type::CHASM;
+						world.map[column_idx][line_idx].type = model::cell_type::CHASM;
 						view_map[column_idx][line_idx]        = view::map::cell::abyss;
 						break;
 					case ' ':
-						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
 						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
 						break;
 					case '~':
-						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
 						view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
 						break;
 					case 'T': {
-						world.grid[column_idx][line_idx].type = model::cell_type::GROUND;
+						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
 						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
 						world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 
@@ -580,7 +580,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cst::cell_width;
 				  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cst::cell_height;
 
-				  world.grid[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
+				  world.map[(size_t)activator.pos.x][(size_t)activator.pos.y].interaction_handle = {world.interactions.size()};
 
 				  view::object o{};
 				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
@@ -635,7 +635,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_model2view[model_handle] = view_handle;
 				  m_view2model[view_handle]  = model_handle;
 				  if (gate.closed) {
-					  world.grid[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
+					  world.map[(size_t)gate.pos.x][(size_t)gate.pos.y].type = model::cell_type::CHASM;
 				  }
 				  else {
 					  map_viewer_omap->hide(view_handle);

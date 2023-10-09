@@ -25,7 +25,7 @@ struct world {
 	void reset();
 	void reset_entity(handle_t);
 
-	grid grid{};
+	grid map{};
 
 	::model::components components{};
 

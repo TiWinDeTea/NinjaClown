@@ -83,11 +83,11 @@ void NINJACLOWN_CALLCONV ffi::log(void *ninja_data, ninja_api::nnj_log_level lev
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_width(void *ninja_data) {
-	return get_world(ninja_data)->grid.width();
+	return get_world(ninja_data)->map.width();
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
-	return get_world(ninja_data)->grid.height();
+	return get_world(ninja_data)->map.height();
 }
 
 ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV ffi::target_position(void *ninja_data) {
@@ -97,7 +97,7 @@ ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV ffi::target_position(void *ninja_dat
 
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, ninja_api::nnj_cell *map_view) {
 	model::world *world = get_world(ninja_data);
-	model::grid &grid = world->grid;
+	model::grid &grid = world->map;
 	for (const auto &cell : grid.subgrid({0, 0}, {static_cast<utils::ssize_t>(grid.width()), static_cast<utils::ssize_t>(grid.height())})) {
 		map_view->kind = static_cast<ninja_api::nnj_cell_kind>(cell.type);
 		if (cell.interaction_handle) {
@@ -111,7 +111,7 @@ size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, ninja_api::nnj_cell
                                            size_t changed_size) {
 	adapter::adapter *adapter = get_adapter(ninja_data);
 	model::world *world       = get_world(ninja_data);
-	model::grid &grid       = world->grid;
+	model::grid &grid       = world->map;
 	size_t changed_count      = 0;
 
 	for (const auto &changed : adapter->cells_changed_since_last_update()) {

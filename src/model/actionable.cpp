@@ -16,21 +16,21 @@ void behaviours_namespace::none(const instance_data &data, const argument_type &
 }
 
 void behaviours_namespace::gate(const instance_data &data, const argument_type &arg) noexcept {
-	assert(data.pos.x >= 0 && static_cast<std::size_t>(data.pos.x) < arg.world.grid.width()); // NOLINT
-	assert(data.pos.y >= 0 && static_cast<std::size_t>(data.pos.y) < arg.world.grid.height()); // NOLINT
+	assert(data.pos.x >= 0 && static_cast<std::size_t>(data.pos.x) < arg.world.map.width()); // NOLINT
+	assert(data.pos.y >= 0 && static_cast<std::size_t>(data.pos.y) < arg.world.map.height()); // NOLINT
 
-	switch (arg.world.grid[data.pos.x][data.pos.y].type) {
+	switch (arg.world.map[data.pos.x][data.pos.y].type) {
 		case cell_type::CHASM:
 		case cell_type::WALL:
 			utils::log::info("actionable.gate.open", "x"_a = data.pos.x, "y"_a = data.pos.y);
-			arg.world.grid[data.pos.x][data.pos.y].type = cell_type::GROUND;
+			arg.world.map[data.pos.x][data.pos.y].type = cell_type::GROUND;
 			arg.adapter.open_gate(adapter::model_handle{data.handle, adapter::model_handle::ACTIONABLE});
 			arg.adapter.update_map(data.pos, cell_type::GROUND);
 			break;
 		case cell_type::GROUND:
 			utils::log::info("actionable.gate.close", "x"_a = data.pos.x, "y"_a = data.pos.y);
 			arg.adapter.close_gate(adapter::model_handle{data.handle, adapter::model_handle::ACTIONABLE});
-			arg.world.grid[data.pos.x][data.pos.y].type = cell_type::WALL;
+			arg.world.map[data.pos.x][data.pos.y].type = cell_type::WALL;
 			arg.adapter.update_map(data.pos, cell_type::WALL);
 			break;
 	}
