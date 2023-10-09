@@ -170,22 +170,22 @@ const std::vector<std::size_t> &adapter::adapter::entities_changed_since_last_up
 
 void adapter::adapter::bot_log(bot_log_level level, const char *text) {
 	switch (level) {
-		case bot_log_level::TRACE:
+		case bot_log_level::BTRACE:
 			spdlog::trace("[BOT] {}", text);
 			break;
-		case bot_log_level::DEBUG:
+		case bot_log_level::BDEBUG:
 			spdlog::debug("[BOT] {}", text);
 			break;
-		case bot_log_level::INFO:
+		case bot_log_level::BINFO:
 			spdlog::info("[BOT] {}", text);
 			break;
-		case bot_log_level::WARN:
+		case bot_log_level::BWARN:
 			spdlog::warn("[BOT] {}", text);
 			break;
-		case bot_log_level::ERROR:
+		case bot_log_level::BERROR:
 			spdlog::error("[BOT] {}", text);
 			break;
-		case bot_log_level::CRITICAL:
+		case bot_log_level::BCRITICAL:
 			spdlog::critical("[BOT] {}", text);
 			break;
 		default:

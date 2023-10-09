@@ -33,12 +33,12 @@ class resource_manager;
 namespace adapter {
 
 enum class bot_log_level {
-	TRACE    = 0,
-	DEBUG    = 1,
-	INFO     = 2,
-	WARN     = 3,
-	ERROR    = 4,
-	CRITICAL = 5,
+	BTRACE    = 0,
+	BDEBUG   = 1,
+	BINFO    = 2,
+	BWARN    = 3,
+	BERROR   = 4,
+	BCRITICAL = 5,
 };
 
 struct model_handle {
