@@ -3,11 +3,11 @@
 
 #include <algorithm>
 #include <charconv>
+#include <cstddef>
 #include <functional>
 #include <optional>
 #include <string_view>
 #include <type_traits>
-#include <cstddef>
 
 namespace utils {
 using ssize_t = std::make_signed_t<std::size_t>;
@@ -77,22 +77,23 @@ namespace detail {
 	template <typename T, typename Type, typename T1, typename... Args>
 	constexpr decltype(auto) do_invoke(Type T::*f, T1 &&t1, Args &&... args) {
 		if constexpr (std::is_member_function_pointer_v<decltype(f)>) {
-			if constexpr (std::is_base_of_v<T, std::decay_t<T1>>)
+			if constexpr (std::is_base_of_v<T, std::decay_t<T1>>) {
 				return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
-			else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>)
+			} else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>) {
 				return (t1.get().*f)(std::forward<Args>(args)...);
-			else
+			} else {
 				return ((*std::forward<T1>(t1)).*f)(std::forward<Args>(args)...);
-		}
-		else {
+			}
+		} else {
 			static_assert(std::is_member_object_pointer_v<decltype(f)>);
 			static_assert(sizeof...(args) == 0);
-			if constexpr (std::is_base_of_v<T, std::decay_t<T1>>)
+			if constexpr (std::is_base_of_v<T, std::decay_t<T1>>) {
 				return std::forward<T1>(t1).*f;
-			else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>)
+			} else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>) {
 				return t1.get().*f;
-			else
+			} else {
 				return (*std::forward<T1>(t1)).*f;
+			}
 		}
 	}
 
