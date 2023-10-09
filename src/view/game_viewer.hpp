@@ -66,7 +66,7 @@ private:
 	sf::RenderWindow &m_window;
     state::holder& m_state;
     map_viewer m_map;
-	terminal_commands::argument_type m_fake_arg;
+	terminal_commands::argument_type m_fake_arg; //! Mostly valid argument passed to the terminal by the view, instead of by ImTerm
 
 	// events related
 	sf::Vector2i m_mouse_pos{};
@@ -75,7 +75,6 @@ private:
 	std::optional<sf::Vector2i> m_right_click_pos{};
 
 	bool m_autostep_bot{false};
-	bool m_resized_once{false}; // TODO useless ?
 };
 } // namespace view
 

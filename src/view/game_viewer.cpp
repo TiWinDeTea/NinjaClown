@@ -7,28 +7,28 @@
 
 namespace {
 const sf::Event::KeyEvent &key(const sf::Event &event) {
-	assert(event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased); // NOLINT
-	return event.key; // NOLINT
+	assert(event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased);
+	return event.key;
 }
 
 const sf::Event::SizeEvent &size(const sf::Event &event) {
-	assert(event.type == sf::Event::Resized); // NOLINT
-	return event.size; // NOLINT
+	assert(event.type == sf::Event::Resized);
+	return event.size;
 }
 
 const sf::Event::MouseWheelScrollEvent &mouse_wheel_scroll(const sf::Event &event) {
-	assert(event.type == sf::Event::MouseWheelScrolled); // NOLINT
-	return event.mouseWheelScroll; // NOLINT
+	assert(event.type == sf::Event::MouseWheelScrolled);
+	return event.mouseWheelScroll;
 }
 
 const sf::Event::MouseMoveEvent &mouse_move(const sf::Event &event) {
-	assert(event.type == sf::Event::MouseMoved); // NOLINT
-	return event.mouseMove; // NOLINT
+	assert(event.type == sf::Event::MouseMoved);
+	return event.mouseMove;
 }
 
 const sf::Event::MouseButtonEvent &mouse_button(const sf::Event &event) {
-	assert(event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::MouseButtonReleased); // NOLINT
-	return event.mouseButton; // NOLINT
+	assert(event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::MouseButtonReleased);
+	return event.mouseButton;
 }
 } // namespace
 
@@ -40,7 +40,6 @@ view::game_viewer::game_viewer(sf::RenderWindow &window, state::holder &state) n
 	m_map.set_render_window(window);
 }
 
-
 void view::game_viewer::pause() noexcept {
 	if (m_autostep_bot) {
 		terminal_commands::stop_model(m_fake_arg);
@@ -48,23 +47,24 @@ void view::game_viewer::pause() noexcept {
 }
 
 void view::game_viewer::resume() noexcept {
-    if (m_autostep_bot) {
-        terminal_commands::run_model(m_fake_arg);
-    }
+	if (m_autostep_bot) {
+		terminal_commands::run_model(m_fake_arg);
+	}
 }
 
 void view::game_viewer::restart() noexcept {
-    m_autostep_bot = false;
+	m_autostep_bot = false;
 }
 
-
 void view::game_viewer::show(bool show_debug_data) {
-    m_window_size = m_window.getSize();
+	m_window_size = m_window.getSize();
 	m_map.print(show_debug_data);
 }
 
+// todo split
 void view::game_viewer::event(const sf::Event &event) {
 	switch (event.type) {
+
 		case sf::Event::KeyPressed:
 			switch (key(event).code) {
 				case sf::Keyboard::F5:
@@ -84,6 +84,7 @@ void view::game_viewer::event(const sf::Event &event) {
 					break;
 			}
 			break;
+
 		case sf::Event::Resized: {
 			if (m_window_size.x == 0 || m_window_size.y == 0) {
 				m_window_size.x = size(event).width;
@@ -93,33 +94,30 @@ void view::game_viewer::event(const sf::Event &event) {
 
 			auto &terminal = state::access<game_viewer>::terminal(m_state);
 			terminal.set_width(m_window.getSize().x);
-			if (m_resized_once) {
-				terminal.set_height(std::min(m_window.getSize().y, static_cast<unsigned>(terminal.get_size().y)));
-			}
-            m_resized_once = true;
 
-            sf::Event::SizeEvent sz = size(event);
-            const float x_ratio     = static_cast<float>(sz.width) / m_window_size.x;
-            const float y_ratio     = static_cast<float>(sz.height) / m_window_size.y;
+			const sf::Event::SizeEvent sz = size(event);
+			const float x_ratio           = static_cast<float>(sz.width) / static_cast<float>(m_window_size.x);
+			const float y_ratio           = static_cast<float>(sz.height) / static_cast<float>(m_window_size.y);
 
-            sf::View view = m_window.getView();
-            sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f;
+			sf::View view               = m_window.getView();
+			const sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f;
 			view.setSize(view.getSize().x * x_ratio, view.getSize().y * y_ratio);
 			view.setCenter(top_left + view.getSize() / 2.f);
 
-            m_window_size.x = sz.width;
-            m_window_size.y = sz.height;
-            m_window.setView(view);
+			m_window_size.x = sz.width;
+			m_window_size.y = sz.height;
+			m_window.setView(view);
 
 			break;
 		}
+
 		case sf::Event::MouseWheelScrolled: {
-			sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
+			const sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
 			if (wheel_scroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
-                sf::View view     = m_window.getView();
+				sf::View view = m_window.getView();
 
 				const float delta = 1.1f;
-				float transform;
+				float transform{};
 				if (wheel_scroll.delta < 0) {
 					transform = delta;
 				}
@@ -127,55 +125,62 @@ void view::game_viewer::event(const sf::Event &event) {
 					transform = 1 / delta;
 				}
 
-				const float vp2win_ratio_x = view.getSize().x / m_window_size.x;
-				const float vp2win_ratio_y = view.getSize().y / m_window_size.y;
+				const float vp2win_ratio_x = view.getSize().x / static_cast<float>(m_window_size.x);
+				const float vp2win_ratio_y = view.getSize().y / static_cast<float>(m_window_size.y);
 				const auto wheel_x         = static_cast<float>(wheel_scroll.x);
 				const auto wheel_y         = static_cast<float>(wheel_scroll.y);
 
-				sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f + sf::Vector2f{wheel_x * (1 - transform) * vp2win_ratio_x, wheel_y * (1 - transform) * vp2win_ratio_y};
-                view.zoom(transform);
-                view.setCenter(top_left + view.getSize() / 2.f);
+				const sf::Vector2f top_left
+				  = view.getCenter() - view.getSize() / 2.f
+				    + sf::Vector2f{wheel_x * (1 - transform) * vp2win_ratio_x, wheel_y * (1 - transform) * vp2win_ratio_y};
+				view.zoom(transform);
+				view.setCenter(top_left + view.getSize() / 2.f);
 
 				m_window.setView(view);
 			}
-		} break;
-		case sf::Event::MouseMoved:
-			{
-				sf::Event::MouseMoveEvent move = mouse_move(event);
-				if (m_left_click_pos) {
-				    sf::View view = m_window.getView();
-					const float zoom_factor = m_window.getSize().x / view.getSize().x;
+			break;
+		}
 
-				    view.move(static_cast<float>(m_mouse_pos.x - move.x) / zoom_factor, static_cast<float>(m_mouse_pos.y - move.y) / zoom_factor);
-                    m_window.setView(view);
-				}
-                m_mouse_pos        = {move.x, move.y};
-				break;
+		case sf::Event::MouseMoved: {
+			const sf::Event::MouseMoveEvent move = mouse_move(event);
+			if (m_left_click_pos) {
+				sf::View view           = m_window.getView();
+				const float zoom_factor = static_cast<float>(m_window.getSize().x) / view.getSize().x;
+
+				view.move(static_cast<float>(m_mouse_pos.x - move.x) / zoom_factor,
+				          static_cast<float>(m_mouse_pos.y - move.y) / zoom_factor);
+				m_window.setView(view);
 			}
+			m_mouse_pos = {move.x, move.y};
+			break;
+		}
+
 		case sf::Event::MouseButtonReleased:
-			switch (sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
+			switch (const sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
 				case sf::Mouse::Button::Left:
-                    m_left_click_pos.reset();
+					m_left_click_pos.reset();
 					break;
 				case sf::Mouse::Button::Right:
-                    m_right_click_pos.reset();
+					m_right_click_pos.reset();
 					break;
 				default:
 					break;
 			}
 			break;
+
 		case sf::Event::MouseButtonPressed:
-			switch (sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
+			switch (const sf::Event::MouseButtonEvent button = mouse_button(event); button.button) {
 				case sf::Mouse::Button::Left:
-                    m_left_click_pos = {button.x, button.y};
+					m_left_click_pos = {button.x, button.y};
 					break;
 				case sf::Mouse::Button::Right:
-                    m_right_click_pos = {button.x, button.y};
+					m_right_click_pos = {button.x, button.y};
 					break;
 				default:
 					break;
 			}
 			break;
+
 		default:
 			break;
 	}
