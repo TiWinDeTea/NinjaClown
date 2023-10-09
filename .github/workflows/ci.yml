@@ -12,6 +12,10 @@ defaults:
   run:
     shell: bash
 
+env:
+  DISPLAY: ":99" # Display number to use for the X server
+  GALLIUM_DRIVER: llvmpipe # Use Mesa 3D software OpenGL renderer
+
 jobs:
   # TODO: check formatting
   #format:
@@ -19,23 +23,28 @@ jobs:
   #  runs-on: ubuntu-22.04
 
   build:
-    name: Build [${{ matrix.os }}]
+    name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ win, osx, linux ]
+        name: [ Windows (msvc), Linux (clang), Linux (gcc) ]
         include:
-          - os: win
+          - name: Windows (msvc)
             runner: windows-2022
-          - os: osx
-            runner: macos-12
-          - os: linux
+            cmake_flags: -GNinja -DCMAKE_BUILD_TYPE=Debug -DSFML_USE_MESA3D=TRUE
+          - name: Linux (clang)
             runner: ubuntu-22.04
+            cmake_flags: -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug
+          - name: Linux (gcc)
+            runner: ubuntu-22.04
+            cmake_flags: -GNinja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
 
       - name: Get CMake and Ninja
         uses: lukka/get-cmake@latest
@@ -43,51 +52,54 @@ jobs:
           cmakeVersion: '3.22'
           ninjaVersion: latest
 
+      # From https://github.com/SFML/SFML/blob/67c9019edad10bc57e2204f75ebf96a1f1ca743a/.github/workflows/ci.yml#L93
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install xorg-dev libxrandr-dev libxcursor-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev xvfb fluxbox
+
+      # SFML assumes the libraries are in "${PROJECT_SOURCE_DIR}/extlibs"
+      # https://github.com/SFML/SFML/blob/67c9019edad10bc57e2204f75ebf96a1f1ca743a/src/SFML/Audio/CMakeLists.txt#L60-L68
+      # This doesn’t play well with our build configuration.
+      - name: Prepare Windows runner
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -Type Directory extlibs
+          Copy-Item -Recurse "${{ github.workspace }}/external/SFML/extlibs/libs-msvc-universal" "${{ github.workspace }}/extlibs/"
+
       - name: Configure CMake
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+          cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.cmake_flags}}
 
       - name: Build
         run: cmake --build ./build --target ninja-clown
 
-  # TODO:
-  #format:
-  #  name: Formatting
-  #  runs-on: ubuntu-22.04
-
-  # TODO:
-  #tidy:
-  #  name: Tidy
-  #  runs-on: ubuntu-22.04
-
-  tests:
-    name: Tests
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Get CMake and Ninja
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: '3.22'
-          ninjaVersion: latest
-
-      - name: Configure CMake
-        run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-
       - name: Build tests
+        if: runner.os == 'Linux'
         run: cmake --build ./build --target ninja-clown-tests
 
-      - name: Run tests
-        run: ./build/ninja-clown-tests
+      - name: Prepare tests
+        if: runner.os == 'Linux'
+        run: |
+          set -e
 
-  # TODO: check clang-tidy
+          # Start up Xvfb and fluxbox to host display tests
+          Xvfb $DISPLAY -screen 0 1920x1080x24 &
+          sleep 5
+          fluxbox > /dev/null 2>&1 &
+          sleep 5
+
+      - name: Run tests
+        if: runner.os == 'Linux'
+        run: |
+          cd ./build
+          ./ninja-clown-tests
+
+  # TODO:
   #tidy:
   #  name: Tidy
   #  runs-on: ubuntu-22.04
@@ -95,6 +107,19 @@ jobs:
   check-rust:
     name: Rust example bot
     runs-on: ubuntu-22.04
+
+    env:
+      # Disable incremental compilation. CI builds are often closer to from-scratch builds, as changes
+      # are typically bigger than from a local edit-compile cycle.
+      # Incremental compilation also significantly increases the amount of IO and the size of ./target
+      # folder.
+      CARGO_INCREMENTAL: 0
+      CARGO_NET_RETRY: 10
+      RUSTUP_MAX_RETRIES: 10
+      RUST_BACKTRACE: short
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+      # Disabling debug info so compilation is faster and ./target folder is smaller.
+      CARGO_PROFILE_DEV_DEBUG: 0
 
     steps:
       - uses: actions/checkout@v3
