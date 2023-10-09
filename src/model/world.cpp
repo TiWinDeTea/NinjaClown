@@ -9,7 +9,7 @@
 #include "model/world.hpp"
 #include "utils/visitor.hpp"
 
-const float significant_rotation_epsilon = 0.001f;
+const float SIGNIFICANT_ROTATION_EPSILON = 0.001f;
 
 float slowdown_factor(float r) {
 	return -(0.3 * r * r) / 2 - 0.1 * std::pow(std::cos(1.1 * r), 2) + 1.1 - 0.03 * r * r * std::cos(r); // NOLINT
@@ -64,13 +64,13 @@ void model::world::single_entity_action_update(adapter::adapter &adapter, handle
 
 	utils::visitor visitor{
 	  [&](ninja_api::nnj_activate_request &activate_req) {
-		  const cell &c = grid[activate_req.column][activate_req.line];
-		  if (c.interaction_handle) {
-			  interaction &i = interactions[*c.interaction_handle];
-			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
+		  const cell &cell = grid[activate_req.column][activate_req.line];
+		  if (cell.interaction_handle) {
+			  interaction &interaction = interactions[*cell.interaction_handle];
+			  if (interaction.kind == interaction_kind::LIGHT_MANUAL || interaction.kind == interaction_kind::HEAVY_MANUAL) {
 				  vec2 cell_center{activate_req.column, activate_req.line};
 				  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
-					  fire_activator(adapter, i.interactable_handler, event_reason::NONE);
+					  fire_activator(adapter, interaction.interactable_handler, event_reason::NONE);
 				  }
 			  }
 		  }
@@ -116,7 +116,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 	utils::visitor visitor_with_a_very_long_name_for_clang_format{
 	  [&](ninja_api::nnj_movement_request &mov_req) {
 		  float rotation = std::clamp(mov_req.rotation, -properties.rotation_speed, properties.rotation_speed);
-		  if (std::abs(rotation) > significant_rotation_epsilon) {
+		  if (std::abs(rotation) > SIGNIFICANT_ROTATION_EPSILON) {
 			  rotate_entity(adapter, handle, rotation);
 		  }
 
@@ -145,6 +145,7 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 			                     .norm();
 			  if (distance < components.hitbox[handle]->height() && distance < components.hitbox[handle]->width()) {
 				  spdlog::info("You win."); // TODO
+
 			  }
 		  }
 	  },

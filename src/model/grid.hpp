@@ -26,9 +26,9 @@ class grid_iterator {
 
 public:
 	/**
-     * @param start  top left corner
-     * @param target bottom right corner
-     */
+   * @param start  top left corner
+   * @param target bottom right corner
+   */
 	grid_iterator(std::vector<std::vector<cell>> &grid, grid_point start, grid_point target)
 	    : m_grid{grid}
 	    , m_start{start}
@@ -60,8 +60,8 @@ public:
 	}
 
 	reference operator*() {
-		cell &c = m_grid[m_current.x][m_current.y];
-		return cell_view{m_current.x, m_current.y, c.type, c.interaction_handle};
+		cell &cell = m_grid[m_current.x][m_current.y];
+		return cell_view{m_current.x, m_current.y, cell.type, cell.interaction_handle};
 	}
 
 private:
@@ -135,6 +135,14 @@ public:
 		}
 		m_width  = width;
 		m_height = height;
+	}
+
+	[[nodiscard]] std::vector<cell> &operator[](size_t column) {
+		return m_inner[column];
+	}
+
+	[[nodiscard]] const std::vector<cell> &operator[](size_t column) const {
+		return m_inner[column];
 	}
 
 	[[nodiscard]] std::vector<cell> &operator[](utils::ssize_t column) {
