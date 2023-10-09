@@ -20,17 +20,19 @@ std::string bot::bot_dll::error() const {
 	return m_dll.error();
 }
 
-bool bot::bot_dll::load(const utils::resource_manager &res, const std::string &dll_path) noexcept {
+bool bot::bot_dll::load(const std::string &dll_path) noexcept {
 	m_dll_path = {dll_path};
-	return reload(res);
+	return reload();
 }
 
-bool bot::bot_dll::load(const utils::resource_manager &res, std::string &&dll_path) noexcept {
+bool bot::bot_dll::load(std::string &&dll_path) noexcept {
 	m_dll_path = {std::move(dll_path)};
-	return reload(res);
+	return reload();
 }
 
-bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
+bool bot::bot_dll::reload() noexcept {
+	const auto& res = utils::resource_manager::instance();
+
 	m_good = false;
 	reset();
 
@@ -44,7 +46,7 @@ bool bot::bot_dll::reload(const utils::resource_manager &res) noexcept {
 		return false;
 	}
 
-	if (!load_all_api_functions(res)) {
+	if (!load_all_api_functions()) {
 		spdlog::error(res.log_for("bot_dll.load.bad_abi"), "file"_a = *m_dll_path);
 		return false;
 	}
@@ -82,15 +84,15 @@ void bot::bot_dll::bot_end_level() noexcept {
 	}
 }
 
-bool bot::bot_dll::load_all_api_functions(const utils::resource_manager &res) {
+bool bot::bot_dll::load_all_api_functions() {
 	bool good;
 
-	good = try_load_function(res, m_start_level_fn, "bot_start_level", true);
-	good = try_load_function(res, m_think_fn, "bot_think", true) && good;
+	good = try_load_function(m_start_level_fn, "bot_start_level", true);
+	good = try_load_function(m_think_fn, "bot_think", true) && good;
 
-	try_load_function(res, m_init_fn, "bot_init", false);
-	try_load_function(res, m_end_level_fn, "bot_end_level", false);
-	try_load_function(res, m_destroy_fn, "bot_destroy", false);
+	try_load_function(m_init_fn, "bot_init", false);
+	try_load_function( m_end_level_fn, "bot_end_level", false);
+	try_load_function(m_destroy_fn, "bot_destroy", false);
 
 	if (!good) {
 		reset();
@@ -100,20 +102,20 @@ bool bot::bot_dll::load_all_api_functions(const utils::resource_manager &res) {
 }
 
 template <typename FuncPtr>
-bool bot::bot_dll::try_load_function(const utils::resource_manager &res, FuncPtr &ptr, const char *func_name, bool required) {
+bool bot::bot_dll::try_load_function(FuncPtr &ptr, const char *func_name, bool required) {
 	ptr = m_dll.get_address<FuncPtr>(func_name);
 	if (ptr == nullptr) {
 		if (required) {
-			utils::log::error(res, "bot_dll.required_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
+			utils::log::error("bot_dll.required_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		else {
-			utils::log::info(res, "bot_dll.optional_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
+			utils::log::info("bot_dll.optional_load_failed", "func_name"_a = func_name, "file"_a = *m_dll_path);
 		}
 		return false;
 	}
 
 	if (!required) {
-		utils::log::info(res, "bot_dll.optional_load_success", "func_name"_a = func_name, "file"_a = *m_dll_path);
+		utils::log::info("bot_dll.optional_load_success", "func_name"_a = func_name, "file"_a = *m_dll_path);
 	}
 
 	return true;

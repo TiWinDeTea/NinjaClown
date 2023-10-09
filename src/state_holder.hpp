@@ -63,8 +63,6 @@ public:
 
 	void wait() noexcept;
 
-	[[nodiscard]] utils::resource_manager &resources() noexcept;
-
 	std::map<std::string, property> &properties() noexcept;
 
 	const std::filesystem::path &current_map_path() noexcept;

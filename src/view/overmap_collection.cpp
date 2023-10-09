@@ -12,12 +12,12 @@
 
 using fmt::literals::operator""_a;
 
-void view::overmap_collection::reload_sprites(const utils::resource_manager &res) noexcept {
+void view::overmap_collection::reload_sprites() noexcept {
 	for (mob &mob : m_mobs) {
-		mob.reload_sprites(res);
+		mob.reload_sprites();
 	}
 	for (object &object : m_objects) {
-		object.reload_sprites(res);
+		object.reload_sprites();
 	}
 }
 
@@ -33,8 +33,8 @@ void view::overmap_collection::print_all(view::map_viewer &viewer) const noexcep
 	}
 }
 
-std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::map_viewer &viewer, adapter::adapter &adapter,
-                                                                          utils::resource_manager &resources) const noexcept {
+std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::map_viewer &viewer,
+                                                                          adapter::adapter &adapter) const noexcept {
 
 	std::vector<std::string> local_info;
 	utils::visitor request_visitor{[&](const adapter::request::hitbox &hitbox) {
@@ -88,13 +88,15 @@ adapter::view_handle view::overmap_collection::add_mob(mob &&mb) noexcept {
 	return handle;
 }
 
-void view::overmap_collection::move_entity(utils::resource_manager &res, adapter::view_handle handle, float newx, float newy) {
+void view::overmap_collection::move_entity(adapter::view_handle handle, float newx, float newy) {
+	const auto& res = utils::resource_manager::instance();
+
 	auto it = std::find_if(m_ordered_displayable.begin(), m_ordered_displayable.end(), [handle](const auto &entity) {
 		return entity.second == handle;
 	});
 
 	if (it == m_ordered_displayable.end()) {
-		utils::log::error(res, "overmap_collection.unknown_entity_move", "is_mob"_a = handle.is_mob, "handle"_a = handle.handle);
+		utils::log::error("overmap_collection.unknown_entity_move", "is_mob"_a = handle.is_mob, "handle"_a = handle.handle);
 		spdlog::error("Tried to move unknown view entity {{{} {}}}", handle.is_mob, handle.handle);
 		return;
 	}
@@ -102,21 +104,21 @@ void view::overmap_collection::move_entity(utils::resource_manager &res, adapter
 	m_ordered_displayable.erase(it);
 	auto target = std::next(m_mobs.begin(), handle.handle);
 	if (handle.is_mob) {
-		utils::log::trace(res, "overmap_collection.moving_mob", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
+		utils::log::trace( "overmap_collection.moving_mob", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
 		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 	else {
-		utils::log::trace(res, "overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
+		utils::log::trace("overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
 		target->set_pos(newx, newy);
 		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
 
-void view::overmap_collection::rotate_entity(utils::resource_manager &res, adapter::view_handle handle,
+void view::overmap_collection::rotate_entity(adapter::view_handle handle,
                                              view::facing_direction::type new_direction) noexcept {
 	if (!handle.is_mob) {
-		utils::log::error(res, "overmap_collection.incompatible_rotate", "handle"_a = handle.handle);
+		utils::log::error("overmap_collection.incompatible_rotate", "handle"_a = handle.handle);
 		return;
 	}
 

@@ -26,19 +26,18 @@ class overmap_collection {
 	};
 
 public:
-	void reload_sprites(const utils::resource_manager &res) noexcept;
+	void reload_sprites() noexcept;
 
 	void print_all(map_viewer &) const noexcept;
 
-	[[nodiscard]] std::vector<std::vector<std::string>> print_all(map_viewer &, adapter::adapter &,
-	                                                              utils::resource_manager &) const noexcept;
+	[[nodiscard]] std::vector<std::vector<std::string>> print_all(map_viewer &, adapter::adapter &) const noexcept;
 
 	adapter::view_handle add_object(object &&) noexcept;
 	adapter::view_handle add_mob(mob &&) noexcept;
 
-	void move_entity(utils::resource_manager &, adapter::view_handle handle, float newx, float newy);
+	void move_entity(adapter::view_handle handle, float newx, float newy);
 
-	void rotate_entity(utils::resource_manager &, adapter::view_handle handle, facing_direction::type new_direction) noexcept;
+	void rotate_entity(adapter::view_handle handle, facing_direction::type new_direction) noexcept;
 
 	void hide(adapter::view_handle handle);
 	void reveal(adapter::view_handle handle);

@@ -26,9 +26,9 @@ public:
 		p_posy = y + m_yshift;
 	}
 
-	void set_id(utils::resources_type::object_id id, const utils::resource_manager &res);
+	void set_id(utils::resources_type::object_id id);
 
-	void reload_sprites(const utils::resource_manager &res);
+	void reload_sprites();
 
 private:
 	void vprint(map_viewer &view) const override;

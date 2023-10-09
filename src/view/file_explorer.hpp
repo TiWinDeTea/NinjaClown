@@ -22,7 +22,7 @@ struct with_extensions {
 class file_explorer {
 
 public:
-	void give_control(const utils::resource_manager& resources) noexcept;
+	void give_control() noexcept;
 
 	void open(with_extensions = {}) noexcept;
 	void open(std::filesystem::path path, with_extensions = {}) noexcept;

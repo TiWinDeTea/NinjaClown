@@ -36,11 +36,11 @@ public:
 
 	[[nodiscard]] sf::Vector2u level_size() const noexcept;
 
-	void print(map_viewer& view, utils::resource_manager& resources) const noexcept;
+	void print(map_viewer& view) const noexcept;
 
-	void highlight_tile(map_viewer& view, std::size_t x, std::size_t y, utils::resource_manager& resources) const noexcept;
+	void highlight_tile(map_viewer& view, std::size_t x, std::size_t y) const noexcept;
 
-	void frame_tile(map_viewer& view, std::size_t x, std::size_t y, utils::resource_manager& resources) const noexcept;
+	void frame_tile(map_viewer& view, std::size_t x, std::size_t y) const noexcept;
 
 	[[nodiscard]] bool empty() const noexcept {
 		return m_cells.empty();

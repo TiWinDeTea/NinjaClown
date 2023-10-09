@@ -10,13 +10,13 @@
 view::mob::~mob() = default;
 view::object::~object() = default;
 
-void view::mob::set_mob_id(utils::resources_type::mob_id id, const utils::resource_manager &resources) {
+void view::mob::set_mob_id(utils::resources_type::mob_id id) {
 	m_mob_id = id;
-	reload_sprites(resources);
+	reload_sprites();
 }
 
-void view::mob::reload_sprites(const utils::resource_manager &resources) {
-	auto anim = resources.mob_animations(m_mob_id);
+void view::mob::reload_sprites() {
+	auto anim = utils::resource_manager::instance().mob_animations(m_mob_id);
 	assert(anim);
     m_animations = std::make_unique<view::mob_animations>(*anim);
 }
@@ -37,14 +37,14 @@ bool view::mob::vis_hovered(view::map_viewer &view) const noexcept {
 	return anim->is_hovered(view);
 }
 
-void view::object::set_id(utils::resources_type::object_id id, const utils::resource_manager &res) {
+void view::object::set_id(utils::resources_type::object_id id) {
 	m_object_id = id;
-	reload_sprites(res);
+	reload_sprites();
 }
 
-void view::object::reload_sprites(const utils::resource_manager &res) {
-	utils::optional<const shifted_animation &> animation = res.object_animation(m_object_id);
-	assert(animation); // NOLINT
+void view::object::reload_sprites() {
+	utils::optional<const shifted_animation &> animation = utils::resource_manager::instance().object_animation(m_object_id);
+	assert(animation);
 	m_animation = std::make_unique<view::shifted_animation>(*animation);
 }
 

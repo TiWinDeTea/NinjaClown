@@ -13,10 +13,11 @@ sf::Vector2u view::map::level_size() const noexcept {
 	return {static_cast<unsigned int>(m_cells.size()), static_cast<unsigned int>(m_cells.front().size())};
 }
 
-void view::map::print(view::map_viewer &view, utils::resource_manager &resources) const noexcept {
+void view::map::print(view::map_viewer &view) const noexcept {
 	static_assert(static_cast<int>(cell::iron_tile) == 0);
 	static_assert(static_cast<int>(cell::concrete_tile) == 1);
 	static_assert(static_cast<int>(cell::abyss) == 2);
+	const auto& resources = utils::resource_manager::instance();
 
 	std::array<utils::optional<const view::animation &>, 4> animations{resources.tile_animation(utils::resources_type::tile_id::iron),
 	                                                                   resources.tile_animation(utils::resources_type::tile_id::concrete),
@@ -31,7 +32,9 @@ void view::map::print(view::map_viewer &view, utils::resource_manager &resources
 	}
 }
 
-void view::map::highlight_tile(view::map_viewer &view, size_t x, size_t y, utils::resource_manager &resources) const noexcept {
+void view::map::highlight_tile(view::map_viewer &view, size_t x, size_t y) const noexcept {
+	const auto& resources = utils::resource_manager::instance();
+
 	utils::optional<const view::animation &> anim;
 	switch (m_cells[x][y]) {
 		case cell::iron_tile:
@@ -47,11 +50,11 @@ void view::map::highlight_tile(view::map_viewer &view, size_t x, size_t y, utils
 	if (anim) {
 		anim->highlight(view, static_cast<float>(x), static_cast<float>(y));
 	}
-	frame_tile(view, x, y, resources);
+	frame_tile(view, x, y);
 }
 
-void view::map::frame_tile(view::map_viewer &view, size_t x, size_t y, utils::resource_manager &resources) const noexcept {
-	auto animation = resources.tile_animation(utils::resources_type::tile_id::frame);
+void view::map::frame_tile(view::map_viewer &view, size_t x, size_t y) const noexcept {
+	auto animation = utils::resource_manager::instance().tile_animation(utils::resources_type::tile_id::frame);
 	if (animation) {
 		animation->print(view, static_cast<float>(x), static_cast<float>(y));
 	}

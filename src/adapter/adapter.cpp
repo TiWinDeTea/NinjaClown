@@ -20,14 +20,14 @@ using fmt::literals::operator""_a;
 
 namespace {
 template <typename... Args>
-[[nodiscard]] std::string tooltip_text_prefix(const utils::resource_manager &res, std::string_view key, char const *prefix, Args &&... args) {
-	std::string_view fmt = res.tooltip_for(key);
+[[nodiscard]] std::string tooltip_text_prefix(std::string_view key, char const *prefix, Args &&... args) {
+	std::string_view fmt = utils::resource_manager::instance().tooltip_for(key);
 	return prefix + fmt::format(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-[[nodiscard]] std::string tooltip_text(const utils::resource_manager &res, std::string_view key, Args &&... args) {
-	return tooltip_text_prefix(res, key, "", std::forward<Args>(args)...);
+[[nodiscard]] std::string tooltip_text(std::string_view key, Args &&... args) {
+	return tooltip_text_prefix(key, "", std::forward<Args>(args)...);
 }
 } // namespace
 
@@ -55,13 +55,13 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 		map_file = cpptoml::parse_file(string_path);
 	}
 	catch (const cpptoml::parse_exception &parse_exception) {
-		utils::log::error(m_state.resources(), "adapter.map_load_failure", "path"_a = string_path, "reason"_a = parse_exception.what());
+		utils::log::error("adapter.map_load_failure", "path"_a = string_path, "reason"_a = parse_exception.what());
 		return false;
 	}
 
 	auto version = map_file->get_qualified_as<std::string>("file.version");
 	if (!version) {
-		utils::log::error(m_state.resources(), "adapter.map_load_failure", "path"_a = string_path,
+		utils::log::error("adapter.map_load_failure", "path"_a = string_path,
 		                  "reason"_a = "unknown file format (missing [file].version)");
 		return false;
 	}
@@ -72,7 +72,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 	}
 
 	if (!success) {
-		utils::log::error(m_state.resources(), "adapter.unsupported_version", "path"_a = string_path, "version"_a = *version);
+		utils::log::error("adapter.unsupported_version", "path"_a = string_path, "version"_a = *version);
 		clear();
 		state::access<adapter>::set_current_map_path(m_state, "");
 	}
@@ -95,7 +95,7 @@ void adapter::adapter::fire_activator(model_handle handle) noexcept {
 void adapter::adapter::close_gate(model_handle gate) noexcept {
 	auto it = m_model2view.find(gate);
 	if (it == m_model2view.end()) {
-		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = gate.handle,
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = gate.handle,
 		                  "operation"_a = "close gate");
 	}
 	else {
@@ -106,7 +106,7 @@ void adapter::adapter::close_gate(model_handle gate) noexcept {
 void adapter::adapter::open_gate(model_handle gate) noexcept {
 	auto it = m_model2view.find(gate);
 	if (it == m_model2view.end()) {
-		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = gate.handle, "operation"_a = "open gate");
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = gate.handle, "operation"_a = "open gate");
 	}
 	else {
 		state::access<adapter>::view(m_state).game().hide(it->second);
@@ -125,7 +125,7 @@ void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
-		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle,
 		                  "operation"_a = "move entity");
 	}
 }
@@ -133,7 +133,7 @@ void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y
 void adapter::adapter::hide_entity(model_handle entity) noexcept {
 	auto it = m_model2view.find(entity);
 	if (it == m_model2view.end()) {
-		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle,
 		                  "operation"_a = "hide entity");
 	}
 	else {
@@ -146,12 +146,12 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 	view::view &view = state::access<adapter>::view(m_state);
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
-		utils::log::trace(m_state.resources(), "adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
+		utils::log::trace("adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
 		view.game().rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
-		utils::log::error(m_state.resources(), "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
+		utils::log::error( "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
 		                  "operation"_a = "rotate entity");
 	}
 }
@@ -204,7 +204,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 
 	// Tooltip for the objective (end of level) block
 	if (entity == m_target_handle) {
-		info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.objective"));
+		info_req.lines.emplace_back(tooltip_text("adapter.objective"));
 		list.emplace_back(std::move(info_req));
 		return list;
 	}
@@ -212,7 +212,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	// Retrieving model's handle
 	auto it = m_view2model.find(entity);
 	if (it == m_view2model.end()) {
-		utils::log::warn(m_state.resources(), "adapter.unknown_view_entity", "view_handle"_a = entity.handle);
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = entity.handle);
 		return list;
 	}
 
@@ -228,7 +228,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 			return tooltip_for_actionable(it->second, entity);
 		}
 		case model_handle::ENTITY:
-			utils::log::warn(m_state.resources(), "adapter.non_coherent_entity", "handle"_a = it->second.handle);
+			utils::log::warn("adapter.non_coherent_entity", "handle"_a = it->second.handle);
 			break;
 	}
 
@@ -241,13 +241,13 @@ adapter::draw_request adapter::adapter::tooltip_for_actionable(model_handle acti
 	request::info info_req;
 	auto target_name = m_view2name.find(view_actionable);
 	if (target_name != m_view2name.end()) {
-		info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.named_gate", "handle"_a = actionable.handle,
+		info_req.lines.emplace_back(tooltip_text("adapter.named_gate", "handle"_a = actionable.handle,
 		                                         "name"_a = target_name->second));
 	}
 	else {
 		info_req.lines.emplace_back(
-		  tooltip_text(m_state.resources(), "adapter.nameless_gate", "handle"_a = actionable.handle));
-		utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = actionable.handle,
+		  tooltip_text( "adapter.nameless_gate", "handle"_a = actionable.handle));
+		utils::log::warn("adapter.name_not_found", "handle"_a = actionable.handle,
 		                 "kind"_a = "actionable");
 	}
 
@@ -262,7 +262,7 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 	request::info info_req;
 	draw_request list;
 
-	info_req.lines.emplace_back(tooltip_text(m_state.resources(), "adapter.activator", "handle"_a = activator.handle));
+	info_req.lines.emplace_back(tooltip_text("adapter.activator", "handle"_a = activator.handle));
 
 	auto targets = world.activators[activator.handle].targets;
 	for (size_t target : targets) {
@@ -276,13 +276,13 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 		}
 
 		if (!target_name.empty()) {
-			info_req.lines.emplace_back(tooltip_text_prefix(m_state.resources(), "adapter.named_target", "\t",
+			info_req.lines.emplace_back(tooltip_text_prefix("adapter.named_target", "\t",
 			                                                "handle"_a = target, "name"_a = target_name));
 		}
 		else {
 			info_req.lines.emplace_back(
-			  tooltip_text_prefix(m_state.resources(), "adapter.nameless_target", "\t", "handle"_a = target));
-			utils::log::warn(m_state.resources(), "adapter.name_not_found", "handle"_a = target,
+			  tooltip_text_prefix( "adapter.nameless_target", "\t", "handle"_a = target));
+			utils::log::warn( "adapter.name_not_found", "handle"_a = target,
 			                 "kind"_a = "activator target");
 		}
 
@@ -301,7 +301,7 @@ adapter::draw_request adapter::adapter::tooltip_for_mob(model_handle mob, const 
 
 	if (components.health[mob.handle]) {
 		info_req.lines.emplace_back(
-		  tooltip_text( m_state.resources(), "adapter.hp", "hp"_a = components.health[mob.handle]->points));
+		  tooltip_text(  "adapter.hp", "hp"_a = components.health[mob.handle]->points));
 	}
 
 	if (components.hitbox[mob.handle]) {
@@ -309,13 +309,13 @@ adapter::draw_request adapter::adapter::tooltip_for_mob(model_handle mob, const 
 		model::vec2 top_left                   = hitbox.top_left();
 		model::vec2 bottom_right               = hitbox.bottom_right();
 
-		info_req.lines.emplace_back(tooltip_text( m_state.resources(), "adapter.hitbox", "top_left_x"_a = top_left.x,
+		info_req.lines.emplace_back(tooltip_text( "adapter.hitbox", "top_left_x"_a = top_left.x,
 		                                         "top_left_y"_a = top_left.y, "bottom_right_x"_a = bottom_right.x,
 		                                         "bottom_right_y"_a = bottom_right.y));
 		info_req.lines.emplace_back(
-		  tooltip_text( m_state.resources(), "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
+		  tooltip_text(  "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
 		info_req.lines.emplace_back(
-		  tooltip_text( m_state.resources(), "adapter.angle", "angle"_a = hitbox.rad));
+		  tooltip_text( "adapter.angle", "angle"_a = hitbox.rad));
 	}
 
 	if (!info_req.lines.empty()) {
@@ -332,9 +332,7 @@ void adapter::adapter::clear_cells_changed_since_last_update() noexcept {
 const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last_update() noexcept {
 	return m_cells_changed_since_last_update;
 }
-utils::resource_manager &adapter::adapter::resources() {
-	return m_state.resources();
-}
+
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
 	if (h.is_mob) {
 		return h.handle;

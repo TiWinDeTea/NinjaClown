@@ -16,13 +16,6 @@
 using fmt::literals::operator""_a;
 
 namespace {
-utils::resource_manager configure_resources() {
-	utils::resource_manager rm{};
-	if (!rm.load_config()) {
-		utils::log::warn(rm, "state_holder.configure.config_load_failed", "file"_a = (utils::config_directory() / "config.toml").generic_string());
-	}
-	return rm;
-}
 
 std::shared_ptr<terminal_commands> build_commands_manager() {
 	auto manager = std::make_shared<terminal_commands>();
@@ -35,14 +28,12 @@ namespace state {
 struct pimpl {
 	pimpl(holder *holder, const std::filesystem::path &autorun_script) noexcept
 	    : command_manager{build_commands_manager()}
-	    , resources{configure_resources()}
 	    , terminal{*holder, "Terminal", 0, 0, command_manager}
 	    , model{holder}
 	    , view{}
 	    , adapter{holder} { }
 
 	std::shared_ptr<terminal_commands> command_manager;
-	utils::resource_manager resources;
 	ImTerm::terminal<terminal_commands> terminal;
 	model::model model;
 	view::view view;
@@ -67,7 +58,7 @@ state::holder::holder(const std::filesystem::path &autorun_script) noexcept
 
 	m_pimpl->properties.emplace("display_debug_data", property{&view::show_debug_data, m_pimpl->view}); // TODO translations
 
-	m_pimpl->command_manager->load_commands(m_pimpl->resources);
+	m_pimpl->command_manager->load_commands();
 	if (is_regular_file(autorun_script)) {
 		std::ifstream autorun{autorun_script};
 		std::string command_line;
@@ -85,9 +76,6 @@ void state::holder::run() noexcept {
 void state::holder::wait() noexcept {
 	m_pimpl->view.wait();
     // todo : attendre le thread logique ici ? c.f. state_holder::run, terminal_commands::quit
-}
-utils::resource_manager &state::holder::resources() noexcept {
-	return m_pimpl->resources;
 }
 std::map<std::string, state::property> &state::holder::properties() noexcept {
 	return m_pimpl->properties;

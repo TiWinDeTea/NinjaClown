@@ -27,9 +27,9 @@ public:
 		p_posy = y;
 	}
 
-	void set_mob_id(utils::resources_type::mob_id id, const utils::resource_manager &resources);
+	void set_mob_id(utils::resources_type::mob_id id);
 
-	void reload_sprites(const utils::resource_manager &resources);
+	void reload_sprites();
 
 	void set_direction(facing_direction::type dir);
 

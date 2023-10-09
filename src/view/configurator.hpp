@@ -9,7 +9,7 @@ namespace view {
 
 class configurator {
 public:
-	explicit configurator(utils::resource_manager &resources) noexcept : m_resources{resources} {}
+	explicit configurator() noexcept {}
 
 	void give_control() noexcept;
 
@@ -30,7 +30,6 @@ public:
 	}
 
 private:
-	utils::resource_manager &m_resources;
 	bool m_popup_open{false};
 	bool m_showing{false};
 

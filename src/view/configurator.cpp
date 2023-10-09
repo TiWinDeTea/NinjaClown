@@ -68,10 +68,10 @@ const T *combo(std::string_view label, const std::vector<T> &choices, const lang
 }
 } // namespace
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC" // false positive
-#pragma ide diagnostic ignored "UnreachableCode" // false positive
+
 void view::configurator::give_control() noexcept {
+	auto& resources = utils::resource_manager::instance();
+
 	m_graphics_changed = false;
 	if (!m_showing) {
 		if (m_popup_open) {
@@ -82,7 +82,7 @@ void view::configurator::give_control() noexcept {
 			}
 
 			if (m_config_must_be_saved) {
-				m_resources.save_user_config();
+				resources.save_user_config();
 				m_config_must_be_saved = false;
 			}
 		}
@@ -91,8 +91,8 @@ void view::configurator::give_control() noexcept {
 	if (!m_popup_open) {
 		ImGui::OpenPopup(window_name);
 		m_popup_open = true;
-		m_resources.refresh_language_list();
-		m_resources.refresh_resource_pack_list();
+		resources.refresh_language_list();
+		resources.refresh_resource_pack_list();
 	}
 
 	if (!ImGui::BeginPopupModal(window_name, nullptr,
@@ -104,11 +104,11 @@ void view::configurator::give_control() noexcept {
 	const ImGuiStyle &style = ImGui::GetStyle();
 
 	std::array<std::string_view, idx::MAX> labels;
-	labels[idx::general_lang]  = m_resources.gui_text_for("configurator.general_lang");
-	labels[idx::command_lang]  = m_resources.gui_text_for("configurator.command_lang");
-	labels[idx::gui_lang]      = m_resources.gui_text_for("configurator.gui_lang");
-	labels[idx::log_lang]      = m_resources.gui_text_for("configurator.log_lang");
-	labels[idx::resource_pack] = m_resources.gui_text_for("configurator.resource_pack");
+	labels[idx::general_lang]  = resources.gui_text_for("configurator.general_lang");
+	labels[idx::command_lang]  = resources.gui_text_for("configurator.command_lang");
+	labels[idx::gui_lang]      = resources.gui_text_for("configurator.gui_lang");
+	labels[idx::log_lang]      = resources.gui_text_for("configurator.log_lang");
+	labels[idx::resource_pack] = resources.gui_text_for("configurator.resource_pack");
 
 	float labels_width{0};
 	for (const std::string_view str : labels) {
@@ -119,7 +119,7 @@ void view::configurator::give_control() noexcept {
 	// langs
 	{
 
-		const auto &langs = m_resources.get_language_list();
+		const auto &langs = resources.get_language_list();
 		float combo_width{0};
 		for (const auto &lang : langs) {
 			combo_width = std::max(ImGui::CalcTextSize(display_name(lang).c_str()).x, combo_width);
@@ -127,26 +127,26 @@ void view::configurator::give_control() noexcept {
 		combo_width += style.ItemInnerSpacing.x;
 
 		const lang_info *selection = nullptr;
-		if (selection = combo(labels[idx::general_lang], langs, m_resources.user_general_lang(), labels_width, combo_width);
+		if (selection = combo(labels[idx::general_lang], langs, resources.user_general_lang(), labels_width, combo_width);
 		    selection != nullptr) {
-			m_resources.set_user_general_lang(*selection);
+			resources.set_user_general_lang(*selection);
 			m_config_must_be_saved = true;
 		}
-		if (selection = combo(labels[idx::command_lang], langs, m_resources.user_commands_lang(), labels_width, combo_width);
+		if (selection = combo(labels[idx::command_lang], langs, resources.user_commands_lang(), labels_width, combo_width);
 		    selection != nullptr) {
-			m_resources.set_user_command_lang(*selection);
+			resources.set_user_command_lang(*selection);
 			m_config_must_be_saved = true;
 		}
-		if (selection = combo(labels[idx::gui_lang], langs, m_resources.user_gui_lang(), labels_width, combo_width); selection != nullptr) {
-			m_resources.set_user_gui_lang(*selection);
+		if (selection = combo(labels[idx::gui_lang], langs, resources.user_gui_lang(), labels_width, combo_width); selection != nullptr) {
+			resources.set_user_gui_lang(*selection);
 			m_config_must_be_saved = true;
 		}
-		if (selection = combo(labels[idx::log_lang], langs, m_resources.user_log_lang(), labels_width, combo_width); selection != nullptr) {
-			m_resources.set_user_log_lang(*selection);
+		if (selection = combo(labels[idx::log_lang], langs, resources.user_log_lang(), labels_width, combo_width); selection != nullptr) {
+			resources.set_user_log_lang(*selection);
 			m_config_must_be_saved = true;
 		}
 
-		std::string_view import_lang = m_resources.gui_text_for("configurator.import_lang");
+		std::string_view import_lang = resources.gui_text_for("configurator.import_lang");
 		using_style(disabled_button) {
 			if (ImGui::Button(import_lang.data(), {ImGui::GetContentRegionAvail().x, 0})) {
 
@@ -158,18 +158,18 @@ void view::configurator::give_control() noexcept {
 
 	// resource pack
 	{
-		const std::vector<utils::resource_manager::resource_pack_info> &resource_packs = m_resources.get_resource_pack_list();
+		const std::vector<utils::resource_manager::resource_pack_info> &resource_packs = resources.get_resource_pack_list();
 
 		ImGui::TextUnformatted(labels[idx::resource_pack].data(), labels[idx::resource_pack].data() + labels[idx::resource_pack].size());
 		ImGui::SameLine(labels_width);
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::BeginCombo("##configurator.resource_pack",
-		                      display_name(m_resources.user_resource_pack(), m_resources.user_gui_lang()).c_str(),
+		                      display_name(resources.user_resource_pack(), resources.user_gui_lang()).c_str(),
 		                      ImGuiComboFlags_NoArrowButton)) {
 			for (const auto &res_pack : resource_packs) {
-				bool is_selected = (res_pack.file == m_resources.user_gui_lang().file);
-				if (ImGui::Selectable(display_name(res_pack, m_resources.user_gui_lang()).c_str(), is_selected)) {
-					m_resources.set_user_resource_pack(res_pack);
+				bool is_selected = (res_pack.file == resources.user_gui_lang().file);
+				if (ImGui::Selectable(display_name(res_pack, resources.user_gui_lang()).c_str(), is_selected)) {
+					resources.set_user_resource_pack(res_pack);
 					m_graphics_changed = true;
 				}
 				if (is_selected) {
@@ -179,7 +179,7 @@ void view::configurator::give_control() noexcept {
 			ImGui::EndCombo();
 		}
 
-		std::string_view import_respack = m_resources.gui_text_for("configurator.import_respack");
+		std::string_view import_respack = resources.gui_text_for("configurator.import_respack");
         using_style(disabled_button) {
             if (ImGui::Button(import_respack.data(), {ImGui::GetContentRegionAvail().x, 0})) {
 
@@ -191,4 +191,3 @@ void view::configurator::give_control() noexcept {
 
 	// TODO: bouton pour quitter le menu de configuration
 }
-#pragma clang diagnostic pop

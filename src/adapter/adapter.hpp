@@ -149,8 +149,6 @@ public:
 	void mark_entity_as_dirty(model::handle_t) noexcept;
 	void clear_entities_changed_since_last_update() noexcept;
 
-	[[nodiscard]] utils::resource_manager &resources();
-
 	// -- Used by bot / dll -- //
 
 	const std::vector<model::grid_point> &cells_changed_since_last_update() noexcept;

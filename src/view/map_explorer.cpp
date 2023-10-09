@@ -7,7 +7,7 @@ namespace {
 constexpr const char window_name[] = "##map explorer";
 }
 
-void view::map_explorer::give_control(const utils::resource_manager &resources) noexcept {
+void view::map_explorer::give_control() noexcept {
 	if (!m_showing) {
 		if (m_was_showing) {
 			m_was_showing = false;

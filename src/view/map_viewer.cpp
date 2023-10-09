@@ -15,9 +15,10 @@ view::map_viewer::map_viewer(state::holder &state) noexcept
 void view::map_viewer::print(bool show_debug_data) {
 	assert(m_window);
 	assert(m_state);
+	const auto& resources = utils::resource_manager::instance();
 
 	++m_current_frame;
-	m_map.acquire()->print(*this, m_state->resources());
+	m_map.acquire()->print(*this);
 
 	if (!show_debug_data) {
 		m_overmap.acquire()->print_all(*this);
@@ -27,9 +28,9 @@ void view::map_viewer::print(bool show_debug_data) {
 	const sf::Vector2u window_size = m_window->getSize();
 
 	std::vector<std::vector<std::string>> printable_info
-	  = m_overmap.acquire()->print_all(*this, state::access<map_viewer>::adapter(*m_state), m_state->resources());
+	  = m_overmap.acquire()->print_all(*this, state::access<map_viewer>::adapter(*m_state));
 
-	const auto &tiles_infos = m_state->resources().tiles_infos();
+	const auto &tiles_infos = resources.tiles_infos();
 	sf::Vector2f mouse_pos  = get_mouse_pos();
 	mouse_pos.y /= static_cast<float>(tiles_infos.yspacing);
 	mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * static_cast<float>(tiles_infos.y_xshift)) / static_cast<float>(tiles_infos.xspacing);
@@ -92,11 +93,11 @@ void view::map_viewer::draw(sf::RectangleShape &d) {
 }
 
 void view::map_viewer::highlight_tile(sf::Vector2i tile_coord) {
-	m_map.acquire()->highlight_tile(*this, tile_coord.x, tile_coord.y, m_state->resources());
+	m_map.acquire()->highlight_tile(*this, tile_coord.x, tile_coord.y);
 }
 
 void view::map_viewer::reload_sprites() {
-	m_overmap.acquire()->reload_sprites(m_state->resources());
+	m_overmap.acquire()->reload_sprites();
 }
 
 // conversions necessary to account for the viewport
@@ -113,7 +114,7 @@ sf::Vector2f view::map_viewer::get_mouse_pos() const noexcept {
 }
 
 sf::Vector2f view::map_viewer::to_screen_coords(float x, float y) const noexcept {
-	const auto &tiles = m_state->resources().tiles_infos();
+	const auto &tiles = utils::resource_manager::instance().tiles_infos();
 	sf::Vector2f screen;
 
 	screen.x = x * static_cast<float>(tiles.xspacing) + y * static_cast<float>(tiles.y_xshift);

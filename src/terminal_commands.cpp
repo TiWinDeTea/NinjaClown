@@ -61,8 +61,8 @@ std::pair<std::string_view, std::string_view> split_path(std::string_view path) 
  * @param arg argument_type, for access to resources
  * @param key key associated to the logging text
  */
-std::string_view log_get(const terminal_commands::argument_type &arg, std::string_view key) {
-	return arg.val.resources().log_for(key);
+std::string_view log_get(const terminal_commands::argument_type &, std::string_view key) {
+	return utils::resource_manager::instance().log_for(key);
 }
 
 /**
@@ -166,13 +166,14 @@ bool as_bool(std::string_view str) {
 }
 } // namespace
 
-void terminal_commands::load_commands(const utils::resource_manager &resources) noexcept {
+void terminal_commands::load_commands() noexcept {
+	auto& resources = utils::resource_manager::instance();
 	cmd_list_.clear(); // add_command_ will fill this list
 
 	for (const auto &cmd : local_command_list) {
 		auto maybe_command = resources.text_for(cmd.cmd);
 		if (!maybe_command) {
-			utils::log::warn(resources, "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
+			utils::log::warn("terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
 			continue;
 		}
 
@@ -237,9 +238,9 @@ void terminal_commands::exit(argument_type &arg) {
 void terminal_commands::help(argument_type &arg) {
 	std::vector<std::pair<std::string_view, std::string_view>> commands; // name, description
 	for (const auto &cmd : local_command_list) {
-		auto opt = arg.val.resources().text_for(cmd.cmd);
+		auto opt = utils::resource_manager::instance().text_for(cmd.cmd);
 		if (!opt) {
-			utils::log::warn(arg.val.resources(), "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
+			utils::log::warn( "terminal_commands.command_missing_name", "cmd_id"_a = static_cast<int>(cmd.cmd));
 			continue;
 		}
 		commands.emplace_back(*opt);
@@ -388,13 +389,13 @@ void terminal_commands::reconfigure(argument_type &arg) {
 		return;
 	}
 
-	if (!arg.val.resources().reload(/*arg.command_line.back()*/)) { // FIXME : path to config is ignored
+	if (!utils::resource_manager::instance().reload(/*arg.command_line.back()*/)) { // FIXME : path to config is ignored
 		log_formatted(arg, "terminal_commands.reload.fail", "file_path"_a = arg.command_line.back());
 	}
 	else {
 		log_formatted(arg, "terminal_commands.reload.success", "file_path"_a = arg.command_line.back());
 		arg.val.view().game().reload_sprites();
-		arg.val.terminal().get_terminal_helper()->load_commands(arg.val.resources());
+		arg.val.terminal().get_terminal_helper()->load_commands();
 	}
 }
 

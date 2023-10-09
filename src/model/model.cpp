@@ -20,7 +20,7 @@ model::model::~model() noexcept {
 }
 
 [[nodiscard]] bool model::model::load_dll(std::string dll_path) noexcept {
-	if (m_dll.load(m_state_holder.resources(), std::move(dll_path))) {
+	if (m_dll.load(std::move(dll_path))) {
 		m_dll.bot_init();
 		return true;
 	}
@@ -76,7 +76,7 @@ void model::model::do_run() noexcept {
 	while (m_state != thread_state::stopping) {
 		if (m_dll_await_load.load()) {
 			std::scoped_lock sl{m_async_load_dll};
-			if (m_dll.load(m_state_holder.resources(), std::move(*m_tmp_dll_path))) {
+			if (m_dll.load(std::move(*m_tmp_dll_path))) {
 				m_dll.bot_init();
 			}
 			m_tmp_dll_path = {};

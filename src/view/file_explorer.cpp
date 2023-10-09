@@ -16,7 +16,9 @@ constexpr const char window_name[] = "##file explorer";
 std::optional<std::filesystem::path> glob_last_explored_folder{}; // TODO : si la classe est statique, cette variable est superflue (par rapport aux variables déjà présentes dans la classe)
 } // namespace
 
-void view::file_explorer::give_control(const utils::resource_manager &res) noexcept {
+void view::file_explorer::give_control() noexcept {
+	const auto& res= utils::resource_manager::instance();
+
 
 	if (!m_showing) {
 		if (m_was_showing) {

@@ -64,7 +64,7 @@ void view::view::exec(state::holder &state) {
 }
 
 void view::view::do_run(state::holder &state) {
-	const auto& resources = state.resources();
+	const auto& resources = utils::resource_manager::instance();
 
 	constexpr unsigned int x_window_size = 1600;
 	constexpr unsigned int y_window_size = 900;

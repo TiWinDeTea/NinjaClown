@@ -161,7 +161,7 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 
 #define SANITIZE(x)                                                                                                                        \
 	if (std::isinf((x)) || std::isnan((x))) {                                                                                              \
-		utils::log::warn(*get_resources(ninja_data), "bot_api.commit.sanitize", "value"_a = (x), "parameter"_a = #x);                      \
+		utils::log::warn("bot_api.commit.sanitize", "value"_a = (x), "parameter"_a = #x);                      \
 		(x) = 0.0f;                                                                                                                        \
 	}
 
@@ -170,7 +170,7 @@ void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_
 	for (size_t i = 0; i < num_commits; ++i) {
 		ninja_api::nnj_decision_commit const &commit = commits[i]; // NOLINT
 		if (commit.target_handle > model::cst::max_entities) {
-			utils::log::warn(*get_resources(ninja_data), "bot_api.commit.invalid_handle", "handle"_a = commit.target_handle,
+			utils::log::warn("bot_api.commit.invalid_handle", "handle"_a = commit.target_handle,
 			                 "decision"_a = i);
 		}
 		else if (world->components.metadata[commit.target_handle].kind == ninja_api::EK_DLL) {
@@ -205,10 +205,6 @@ void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_
 
 model::model *ffi::get_model(void *ninja_data) {
 	return &state::access<bot::ffi>::model(*reinterpret_cast<state::holder *>(ninja_data)); // NOLINT
-}
-
-utils::resource_manager *ffi::get_resources(void *ninja_data) {
-	return &reinterpret_cast<state::holder *>(ninja_data)->resources(); // NOLINT
 }
 
 model::world *ffi::get_world(void *ninja_data) {

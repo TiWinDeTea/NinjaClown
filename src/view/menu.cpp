@@ -12,14 +12,14 @@ constexpr const char *menu_window_name = "##in game menu popup";
 
 view::menu::menu(::state::holder &state) noexcept
     : m_state{state}
-    , m_configurator{state.resources()} { }
+    , m_configurator{} { }
 
 void view::menu::close() {
 	if (m_currently_open) {
 		m_currently_open = false;
 		if (ImGui::BeginPopupModal(menu_window_name, nullptr, ImGuiWindowFlags_NoTitleBar)) {
 			m_explorer.close();
-			m_explorer.give_control(m_state.resources());
+			m_explorer.give_control();
 			m_configurator.close();
 			m_configurator.give_control();
 			ImGui::CloseCurrentPopup();
@@ -34,7 +34,7 @@ view::menu::user_request view::menu::show() {
 		m_currently_open = true;
 	}
 
-	const auto &res   = m_state.resources();
+	const auto &res   = utils::resource_manager::instance();
 	const auto &style = ImGui::GetStyle();
 
 	const std::string_view resume          = res.gui_text_for("view.in_game_menu.resume");
@@ -130,11 +130,11 @@ view::menu::user_request view::menu::show() {
 				m_configurator.give_control();
 				break;
 			case state::filesystem:
-				m_explorer.give_control(m_state.resources());
+				m_explorer.give_control();
 				if (m_explorer.path_ready()) {
 					m_path = m_explorer.selected_path();
 					m_explorer.close();
-					m_explorer.give_control(m_state.resources());
+					m_explorer.give_control();
 
 					switch (m_current_substate) {
 						case substate::na:

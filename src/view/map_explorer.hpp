@@ -12,7 +12,7 @@ class resource_manager;
 namespace view {
 class map_explorer {
 public:
-    void give_control(const utils::resource_manager& resources) noexcept;
+    void give_control() noexcept;
 
     void open() noexcept {
         m_showing = true;

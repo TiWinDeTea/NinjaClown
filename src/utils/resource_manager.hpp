@@ -58,13 +58,15 @@ class resource_manager {
 
 public:
 
+	static resource_manager& instance() noexcept;
+
 	struct resource_pack_info {
 		std::string default_name;
 		std::unordered_map<std::string, std::string> names_by_shorthand_lang;
 		std::filesystem::path file;
 	};
 
-	[[nodiscard]] bool load_config() noexcept;
+	bool load_config() noexcept;
 
 	[[nodiscard]] bool reload() noexcept {
 		resource_manager new_config{};
@@ -139,7 +141,7 @@ public:
 	void set_user_log_lang(const lang_info&) noexcept;
 	void set_user_resource_pack(const resource_pack_info&) noexcept;
 
-	bool save_user_config() const noexcept;
+	[[nodiscard]] bool save_user_config() const noexcept;
 
 private:
 	[[nodiscard]] bool load_graphics(std::shared_ptr<cpptoml::table> config, const std::filesystem::path &resourcepack_directory) noexcept;
@@ -181,7 +183,7 @@ private:
 	std::vector<lang_info> m_available_langs;
 	std::vector<resource_pack_info> m_resource_packs;
 
-	// user config (saved by "save_user_config"
+	// user config (saved by "save_user_config")
 	lang_info m_user_general_lang{};
 	lang_info m_user_command_lang{};
 	lang_info m_user_gui_lang{};

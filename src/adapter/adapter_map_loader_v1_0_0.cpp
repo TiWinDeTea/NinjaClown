@@ -138,7 +138,7 @@ bool try_get_silent(const std::shared_ptr<cpptoml::table> &table, const char *ke
 }
 
 template <typename T, typename... Args>
-bool try_get(const std::shared_ptr<cpptoml::table> &table, const char *key, T &value, std::string_view fmt, Args &&... error_args) {
+bool try_get(const std::shared_ptr<cpptoml::table> &table, const char *key, T &value, std::string_view fmt, Args &&...error_args) {
 	if (!try_get_silent(table, key, value)) {
 		spdlog::error(fmt, std::forward<Args>(error_args)...);
 		return false;
@@ -160,13 +160,12 @@ void init_maps() {
 	}
 }
 
-[[nodiscard]] usmap<mob_definition> load_mobs_defs(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables,
-                                                   std::string_view map) {
+[[nodiscard]] usmap<mob_definition> load_mobs_defs(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
 	assert(!globstr_to_behaviour.empty()); // NOLINT
 	assert(!globstr_to_mob_sprite.empty()); // NOLINT
 
-	auto error = [&map, &res](const char *key, auto &&... vals) {
-		utils::log::error(res, std::string("adapter_map_loader_v1_0_0.") + key, std::forward<decltype(vals)>(vals)..., "map"_a = map);
+	auto error = [&map](const char *key, auto &&...vals) {
+		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, std::forward<decltype(vals)>(vals)..., "map"_a = map);
 	};
 
 	usmap<mob_definition> mobs_definitions;
@@ -227,7 +226,7 @@ void init_maps() {
 	return mobs_definitions;
 }
 
-[[nodiscard]] std::vector<mob> load_mobs_spawns(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables,
+[[nodiscard]] std::vector<mob> load_mobs_spawns(const std::shared_ptr<cpptoml::table_array> &tables,
                                                 const usmap<mob_definition> &definitions, std::string_view map) {
 	std::vector<mob> loaded_mobs;
 	for (const auto &mob : *tables) {
@@ -235,16 +234,17 @@ void init_maps() {
 		cpptoml::option<std::string> type = mob->get_as<std::string>(keys::type);
 		auto parsed_type                  = definitions.find(type.value_or(""));
 		if (!type || parsed_type == definitions.end()) {
-			utils::log::error(res, "adapter_map_loader_v1_0_0.mob_with_unknown_type", "map"_a = map, "key"_a = keys::type);
+			utils::log::error("adapter_map_loader_v1_0_0.mob_with_unknown_type", "map"_a = map, "key"_a = keys::type);
 			if (type) {
-				utils::log::error(res, "adapter_map_loader_v1_0_0.mob_type_not_recognized", "type"_a = *type);
+				utils::log::error("adapter_map_loader_v1_0_0.mob_type_not_recognized", "type"_a = *type);
 			}
 			return {};
 		}
 
-		auto try_get = [&res, &map, &mob, &type](const char *key, auto &value) -> bool {
-			return ::try_get(mob, key, value, res.log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"), "map"_a = map,
-			                 "type"_a = *type, "key"_a = key);
+		auto try_get = [&map, &mob, &type](const char *key, auto &value) -> bool {
+			return ::try_get(mob, key, value,
+			                 utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
+			                 "map"_a = map, "type"_a = *type, "key"_a = key);
 		};
 
 		int x_pos{};
@@ -268,11 +268,11 @@ void init_maps() {
 }
 
 [[nodiscard]] std::optional<std::vector<std::variant<activator, gate, autoshooter>>>
-load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
+load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
 	assert(!globstr_to_activator_type.empty()); // NOLINT
 
-	auto error = [&map, &res](const char *key, auto &&... vals) {
-		utils::log::error(res, std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map, std::forward<decltype(vals)>(vals)...);
+	auto error = [&map](const char *key, auto &&...vals) {
+		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map, std::forward<decltype(vals)>(vals)...);
 	};
 
 	std::vector<std::variant<activator, gate, autoshooter>> actors;
@@ -286,12 +286,12 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 			return {};
 		}
 
-		auto try_get = [&map, &res, &actor, &type](const char *key, auto &value, bool silent = false) -> bool {
+		auto try_get = [&actor, &type](const char *key, auto &value, bool silent = false) -> bool {
 			if (silent) {
 				return try_get_silent(actor, key, value);
 			}
 			else {
-				return ::try_get(actor, key, value, res.log_for("adapter_map_loader_v1_0_0.actor_missing_component"), "key"_a = key,
+				return ::try_get(actor, key, value, utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.actor_missing_component"), "key"_a = key,
 				                 "type"_a = *type);
 			}
 		};
@@ -324,7 +324,7 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 
 			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
 			if (!insert_result.second) {
-				utils::log::warn(res, "adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
+				utils::log::warn("adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
 			}
 			actors.emplace_back(autoshooter{name, point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
 		}
@@ -342,7 +342,7 @@ load_actors(const utils::resource_manager &res, const std::shared_ptr<cpptoml::t
 
 			auto insert_result = actionable_handles.insert_or_assign(name, actors.size());
 			if (!insert_result.second) {
-				utils::log::warn(res, "adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
+				utils::log::warn("adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
 			}
 			actors.emplace_back(gate{name, point{x_pos, y_pos}, closed});
 		}
@@ -403,8 +403,8 @@ void test(const class maclasse &tes) { }
 bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &map_file, std::string_view map) noexcept {
 	init_maps();
 
-	auto error = [&map, this](const char *key, auto &&... vals) {
-		utils::log::error(m_state.resources(), std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
+	auto error = [&map, this](const char *key, auto &&...vals) {
+		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
 		                  std::forward<decltype(vals)>(vals)...);
 	};
 
@@ -417,10 +417,10 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
 		auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
 
-        if (!mobs_defs_toml || !mobs_spawns_toml || !map_layout_toml) {
-            if (!mobs_defs_toml) {
-                error("missing_mob_def");
-            }
+		if (!mobs_defs_toml || !mobs_spawns_toml || !map_layout_toml) {
+			if (!mobs_defs_toml) {
+				error("missing_mob_def");
+			}
 			if (!mobs_spawns_toml) {
 				error("missing_mob_placings");
 			}
@@ -430,13 +430,13 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			return false;
 		}
 
-		usmap<mob_definition> mobs_defs = load_mobs_defs(m_state.resources(), mobs_defs_toml, map);
+		usmap<mob_definition> mobs_defs = load_mobs_defs(mobs_defs_toml, map);
 		if (mobs_defs.empty()) {
 			error("bad_mob_defs", "map"_a = map);
 			return false;
 		}
 
-		std::vector<mob> mobs = load_mobs_spawns(m_state.resources(), mobs_spawns_toml, mobs_defs, map);
+		std::vector<mob> mobs = load_mobs_spawns(mobs_spawns_toml, mobs_defs, map);
 		if (mobs.empty()) {
 			error("bad_mob_spawns", "map"_a = map);
 			return false;
@@ -448,7 +448,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		std::vector<std::variant<activator, gate, autoshooter>> actors;
 		if (actors_toml) {
-			auto maybe_actors = load_actors(m_state.resources(), actors_toml, map);
+			auto maybe_actors = load_actors(actors_toml, map);
 			if (!maybe_actors) {
 				return false;
 			}
@@ -477,7 +477,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		for (const std::string &line : *map_layout_toml) {
 
 			if (line.size() != map_width) {
-				utils::log::error(m_state.resources(), "adapter_map_loader_v1_0_0.bad_map_size", "map"_a = map, "line"_a = line_idx + 1);
+				utils::log::error("adapter_map_loader_v1_0_0.bad_map_size", "map"_a = map, "line"_a = line_idx + 1);
 				return false;
 			}
 
@@ -501,7 +501,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 						world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
 
 						view::object obj;
-						obj.set_id(utils::resources_type::object_id::target, m_state.resources());
+						obj.set_id(utils::resources_type::object_id::target);
 						obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
 						obj.reveal();
 						m_target_handle = map_viewer_omap->add_object(std::move(obj));
@@ -561,7 +561,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
 
 			view::mob m{};
-			m.set_mob_id(resource_id, m_state.resources());
+			m.set_mob_id(resource_id);
 			m.set_direction(view::facing_direction::from_angle(mob.facing));
 			m.set_pos(hitbox.center.x, hitbox.center.y);
 
@@ -590,17 +590,17 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					  case activator_type::BUTTON:
 						  world.interactions.push_back(
 						    {model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
-						  o.set_id(utils::resources_type::object_id::button, m_state.resources());
+						  o.set_id(utils::resources_type::object_id::button);
 						  break;
 					  case activator_type::INDUCTION_LOOP:
 						  world.interactions.push_back(
 						    {model::interaction_kind::LIGHT_MIDAIR, model::interactable_kind::INDUCTION_LOOP, world.activators.size()});
-						  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
+						  o.set_id(utils::resources_type::object_id::gate); // TODO
 						  break;
 					  case activator_type::INFRARED_LASER:
 						  world.interactions.push_back(
 						    {model::interaction_kind::HEAVY_MIDAIR, model::interactable_kind::INFRARED_LASER, world.activators.size()});
-						  o.set_id(utils::resources_type::object_id::gate, m_state.resources()); // TODO
+						  o.set_id(utils::resources_type::object_id::gate); // TODO
 						  break;
 					  case activator_type::NONE:
 						  [[fallthrough]];
@@ -629,7 +629,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 				  view::object o{};
 				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-				  o.set_id(utils::resources_type::object_id::gate, m_state.resources());
+				  o.set_id(utils::resources_type::object_id::gate);
 				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
 				  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
 				  m_model2view[model_handle] = view_handle;
@@ -654,7 +654,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 				  view::object o{};
 				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-				  o.set_id(utils::resources_type::object_id::autoshooter, m_state.resources());
+				  o.set_id(utils::resources_type::object_id::autoshooter);
 				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
 				  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
 				  m_model2view[model_handle] = view_handle;
@@ -670,6 +670,6 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 	state::access<adapter>::view(m_state).game().set_map(std::move(map_viewer));
 
-	utils::log::info(m_state.resources(), "adapter_map_loader_v1_0_0.map_loaded", "map"_a = map);
+	utils::log::info("adapter_map_loader_v1_0_0.map_loaded", "map"_a = map);
 	return true;
 }

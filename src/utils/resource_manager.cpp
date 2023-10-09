@@ -2,6 +2,7 @@
 #pragma ide diagnostic ignored "cppcoreguidelines-avoid-c-arrays"
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-bounds-array-to-pointer-decay"
 #include <cpptoml/cpptoml.h>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 #include <iterator>
@@ -16,6 +17,12 @@ using utils::optional;
 using utils::resource_manager;
 
 namespace {
+resource_manager create_and_load_resource_manager() {
+	resource_manager rm;
+	rm.load_config();
+	return rm;
+}
+
 std::shared_ptr<cpptoml::table> parse_file(const std::string &path) {
 	try {
 		return cpptoml::parse_file(path);
@@ -288,24 +295,45 @@ resource_manager::resource_pack_info parse_resource_pack_info(const std::filesys
 
 } // namespace
 
+static resource_manager static_resource_manager_instance{create_and_load_resource_manager()};
+
+resource_manager &resource_manager::instance() noexcept {
+	return static_resource_manager_instance;
+}
+
 bool resource_manager::load_config() noexcept {
+
+	auto log_warn = [this]() {
+		spdlog::warn("State holder failed to load resource resources from file \"{}\".", CONFIG_FILE);
+	};
+
 	auto config = parse_file(utils::config_directory() / CONFIG_FILE);
 	if (!config) {
+		log_warn();
 		return false;
 	}
 
 	auto resource_pack = config->get_qualified_as<std::string>(config_keys::graphics_resource_file);
 	if (!resource_pack) {
 		spdlog::error("No resource pack specified in config file");
+		log_warn();
 		return false;
 	}
 
 	auto graphics = parse_file(*resource_pack);
 	if (!graphics) {
+		spdlog::error("Failed to load graphics from config file");
+		log_warn();
 		return false;
 	}
 	m_user_resource_pack = parse_resource_pack_info(*resource_pack);
-	return load_graphics(graphics, std::filesystem::path{*resource_pack}.parent_path()) && load_texts(config);
+	if (!(load_graphics(graphics, std::filesystem::path{*resource_pack}.parent_path()) && load_texts(config))) {
+		spdlog::error("Failed to load graphics from resource pack or texts from translation files");
+		log_warn();
+		return false;
+	}
+
+	return true;
 }
 
 optional<const view::animation &> resource_manager::tile_animation(resources_type::tile_id tile) const noexcept {
@@ -954,7 +982,8 @@ void resource_manager::refresh_resource_pack_list() {
 				m_resource_packs.emplace_back(parse_resource_pack_info(toml_path));
 			}
 		}
-	} catch (const std::filesystem::filesystem_error& e) {
+	}
+	catch (const std::filesystem::filesystem_error &e) {
 		spdlog::error("{}", e.what());
 	}
 }
@@ -1050,16 +1079,16 @@ void resource_manager::set_user_resource_pack(const resource_pack_info &res_pack
 
 bool resource_manager::save_user_config() const noexcept {
 	using namespace fmt::literals;
-	namespace uk = config_keys::user;
+	namespace uk   = config_keys::user;
 	namespace uknq = config_keys::user::non_qualified;
 
 	std::filesystem::path config_file = utils::config_directory() / CONFIG_FILE;
 
-    std::shared_ptr<cpptoml::table> lang_config = cpptoml::make_table();
-    lang_config->insert(uknq::general_lang, m_user_general_lang.file.generic_string());
-    lang_config->insert(uknq::commands_lang, m_user_command_lang.file.generic_string());
-    lang_config->insert(uknq::gui_lang, m_user_gui_lang.file.generic_string());
-    lang_config->insert(uknq::log_lang, m_user_log_lang.file.generic_string());
+	std::shared_ptr<cpptoml::table> lang_config = cpptoml::make_table();
+	lang_config->insert(uknq::general_lang, m_user_general_lang.file.generic_string());
+	lang_config->insert(uknq::commands_lang, m_user_command_lang.file.generic_string());
+	lang_config->insert(uknq::gui_lang, m_user_gui_lang.file.generic_string());
+	lang_config->insert(uknq::log_lang, m_user_log_lang.file.generic_string());
 
 	std::shared_ptr<cpptoml::table> config = cpptoml::make_table();
 	config->insert(uk::lang_table, lang_config);

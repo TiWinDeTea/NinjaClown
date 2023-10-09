@@ -24,9 +24,8 @@ class terminal_commands: public ImTerm::basic_spdlog_terminal_helper<terminal_co
 public:
 	/**
 	 * Loads commands into ImTerm, based on static variable local_command_list
-	 * @param resources Used for localized logging
 	 */
-	void load_commands(const utils::resource_manager &resources) noexcept;
+	void load_commands() noexcept;
 
 	/**
 	 * Automatically called by ImTerm when setting up.
