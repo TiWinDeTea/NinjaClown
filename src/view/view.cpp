@@ -1,5 +1,6 @@
 #include "view/view.hpp"
 #include "adapter/adapter.hpp"
+#include "model/model.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
 #include "view/game_viewer.hpp"
@@ -15,6 +16,16 @@
 #include <thread>
 
 namespace {
+void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int x_size, unsigned int y_size) {
+	terminal.set_width(x_size);
+	terminal.set_height(y_size);
+	terminal.theme() = ImTerm::themes::cherry;
+	terminal.log_level(ImTerm::message::severity::info);
+	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
+	terminal.disallow_x_resize();
+	terminal.filter_hint() = "regex filter..."; // TODO traduction
+}
+
 bool mouse_type_event(sf::Event::EventType et) {
 	switch (et) {
 		case sf::Event::MouseWheelMoved:
@@ -47,25 +58,19 @@ void view::view::exec(state::holder &state) {
 	});
 }
 
-#include "model/model.hpp"
-
 void view::view::do_run(state::holder &state) {
 
-	sf::RenderWindow window{sf::VideoMode{1600, 900}, "Ninja clown !"};
+	constexpr unsigned int x_window_size = 1600;
+	constexpr unsigned int y_window_size = 900;
+
+	sf::RenderWindow window{sf::VideoMode{x_window_size, y_window_size}, "Ninja clown !"};
 	window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
 	window.clear();
 
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
-	terminal.set_width(1600);
-	terminal.set_height(400);
-	terminal.theme() = ImTerm::themes::cherry;
-	terminal.log_level(ImTerm::message::severity::info);
-	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
-	terminal.disallow_x_resize();
-	terminal.filter_hint() = "regex filter..."; // TODO traduiction
+	setup_terminal(terminal, x_window_size, y_window_size / 3);
 
 	menu menu{state};
-
 	game_viewer game{window, state};
 
 	m_game = &game;
@@ -77,46 +82,12 @@ void view::view::do_run(state::holder &state) {
 	m_fps_limiter.start_now();
 	sf::Clock clock{};
 
-	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map");
+	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map"); // TODO remove at some point
 
 	while (m_running.test_and_set() && window.isOpen()) {
 		ImGui::SFML::Update(window, clock.restart());
-
-		sf::Event event{};
-		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::F11) {
-					m_showing_term = !m_showing_term;
-				}
-				else if (event.key.code == sf::Keyboard::Escape) {
-					if (m_showing == window::menu) {
-						m_showing = window::game;
-						menu.close();
-						game.resume();
-					}
-					else {
-						m_showing = window::menu;
-						game.pause();
-					}
-				}
-			}
-
-			if (event.type == sf::Event::Closed) {
-				window.close();
-			}
-
-			const bool is_mouse_event = mouse_type_event(event.type);
-			if (m_showing != window::menu
-			    && (!is_mouse_event || sf::Mouse::getPosition(window).y > terminal.get_size().y + 2 || !m_showing_term)) {
-				game.event(event);
-			}
-
-			if (m_showing_term || m_showing == window::menu) {
-				ImGui::SFML::ProcessEvent(event);
-			}
-		}
-
-		auto view_fixmyub = window.getView();
+		manage_events(window, static_cast<unsigned int>(terminal.get_size().y));
+		auto restore_view = window.getView();
 
 		if (m_showing == window::menu) {
 			auto request = menu.show();
@@ -152,15 +123,16 @@ void view::view::do_run(state::holder &state) {
 		}
 
 		game.show(show_debug_data);
-        ImGui::SFML::Render();
+		ImGui::SFML::Render();
 
 		{ // Fixxy doo fix, fixes linux display bug somehow
 			sf::RectangleShape rect;
 			rect.setFillColor(sf::Color::Transparent);
+			rect.setPosition(-10.f, -10.f);
 			window.draw(rect);
-			window.setView(view_fixmyub);
 		}
 
+		window.setView(restore_view);
 		window.display();
 		m_fps_limiter.wait();
 		window.clear();
@@ -168,6 +140,39 @@ void view::view::do_run(state::holder &state) {
 
 	m_game = nullptr;
 	m_menu = nullptr;
+}
+
+void view::view::manage_events(sf::RenderWindow &window, unsigned int terminal_height) noexcept {
+	sf::Event event{};
+	while (window.pollEvent(event)) {
+		if (event.type == sf::Event::KeyPressed) {
+			if (event.key.code == sf::Keyboard::F11) {
+				m_showing_term = !m_showing_term;
+			}
+			else if (event.key.code == sf::Keyboard::Escape) {
+				if (m_showing == window::menu) {
+					m_showing = window::game;
+					m_menu->close();
+					m_game->resume();
+				}
+				else {
+					m_showing = window::menu;
+					m_game->pause();
+				}
+			}
+		}
+
+		if (event.type == sf::Event::Closed) {
+			window.close();
+		}
+
+		if (m_showing != window::menu
+		    && (!mouse_type_event(event.type) || sf::Mouse::getPosition(window).y > terminal_height + 2 || !m_showing_term)) {
+			m_game->event(event);
+		}
+
+		ImGui::SFML::ProcessEvent(event);
+	}
 }
 
 bool view::view::has_map() const noexcept {

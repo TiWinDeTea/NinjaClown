@@ -9,6 +9,10 @@
 #include <memory>
 #include <thread>
 
+namespace sf {
+class RenderWindow;
+}
+
 namespace state {
 class holder;
 }
@@ -62,6 +66,11 @@ public:
 
 private:
 	void do_run(state::holder&);
+
+	/**
+	 * Polls through SFML events and manages them. Called while running
+	 */
+	void manage_events(sf::RenderWindow& window, unsigned int terminal_height) noexcept;
 
 	::view::menu* m_menu{nullptr}; // allowing external access (data within *do_run*)
 	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
