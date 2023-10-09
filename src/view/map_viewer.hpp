@@ -53,7 +53,14 @@ public:
 		m_drawing_region_viewport = viewport;
 	}
 
+	/**
+	 * Prints the map plus some tooltip infos
+	 */
 	void print(bool show_debug_data);
+	/**
+	 * Prints some tooltip infos
+	 */
+	void print_tile_info(bool show_debug_data);
 
     // converts world grid coords to on-screen coords
     sf::Vector2f to_screen_coords(float x, float y) const noexcept;
