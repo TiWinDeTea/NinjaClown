@@ -79,7 +79,7 @@ struct view_hhash {
 
 namespace request {
 	struct coords {
-		utils::ssize_t x, y;
+		std::size_t x, y;
 	};
 
 	struct hitbox {

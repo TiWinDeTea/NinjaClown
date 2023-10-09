@@ -87,7 +87,7 @@ public:
 	using iterator        = grid_iterator<cell_view>;
 	using const_iterator  = grid_iterator<const cell_view>;
 	using difference_type = std::pair<std::int64_t, std::int64_t>;
-	using size_type       = std::pair<size_t, size_t>;
+	using size_type       = std::pair<std::size_t, std::size_t>;
 
 	/**
 	 * @param begin top left corner
@@ -140,11 +140,11 @@ class grid {
 public:
 	grid() noexcept = default;
 
-	grid(size_t width, size_t height) noexcept {
+	grid(std::size_t width, std::size_t height) noexcept {
 		resize(width, height);
 	}
 
-	void resize(size_t width, size_t height) {
+	void resize(std::size_t width, std::size_t height) {
 		m_inner.resize(width);
 		for (auto &column : m_inner) {
 			column.resize(height);
@@ -153,29 +153,19 @@ public:
 		m_height = height;
 	}
 
-	[[nodiscard]] std::vector<cell> &operator[](size_t column) {
+	[[nodiscard]] std::vector<cell> &operator[](std::size_t column) {
 		return m_inner[column];
 	}
 
-	[[nodiscard]] const std::vector<cell> &operator[](size_t column) const {
+	[[nodiscard]] const std::vector<cell> &operator[](std::size_t column) const {
 		return m_inner[column];
 	}
 
-	[[nodiscard]] std::vector<cell> &operator[](utils::ssize_t column) {
-		assert(column >= 0 && static_cast<std::size_t>(column) < m_inner.size()); // NOLINT
-		return m_inner[column];
-	}
-
-	[[nodiscard]] const std::vector<cell> &operator[](utils::ssize_t column) const {
-		assert(column >= 0 && static_cast<std::size_t>(column) < m_inner.size()); // NOLINT
-		return m_inner[column];
-	}
-
-	[[nodiscard]] size_t width() const {
+	[[nodiscard]] std::size_t width() const {
 		return m_width;
 	}
 
-	[[nodiscard]] size_t height() const {
+	[[nodiscard]] std::size_t height() const {
 		return m_height;
 	}
 
@@ -187,30 +177,30 @@ public:
 		assert(begin.x < end.x); // NOLINT
 		assert(begin.y < end.y); // NOLINT
 		return grid_view{m_inner,
-                         {std::max<utils::ssize_t>(begin.x, 0), std::max<utils::ssize_t>(begin.y, 0)},
-		                 {std::min(static_cast<utils::ssize_t>(m_inner.size()), end.x),
-		                  std::min(static_cast<utils::ssize_t>(m_inner[0].size()), end.y)}};
+                         {std::max<std::size_t>(begin.x, 0), std::max<std::size_t>(begin.y, 0)},
+		                 {std::min(m_inner.size(), end.x),
+		                  std::min(m_inner[0].size(), end.y)}};
 	}
 
 	[[nodiscard]] grid_view subgrid(const obb &box) {
 		auto [min_x, max_x] = std::minmax({box.tl.x, box.br.x, box.bl.x, box.tr.x});
 		auto [min_y, max_y] = std::minmax({box.tl.y, box.br.y, box.bl.y, box.tr.y});
-		return subgrid({static_cast<utils::ssize_t>(min_x), static_cast<utils::ssize_t>(min_y)},
-		               {static_cast<utils::ssize_t>(max_x) + 1, static_cast<utils::ssize_t>(max_y) + 1});
+		return subgrid({static_cast<std::size_t>(min_x), static_cast<std::size_t>(min_y)},
+		               {static_cast<std::size_t>(max_x) + 1, static_cast<std::size_t>(max_y) + 1});
 	}
 
 	[[nodiscard]] grid_view radius(float center_x, float center_y, float radius) {
-		auto start_x  = static_cast<utils::ssize_t>(std::max(0.5f, center_x - radius));
-		auto start_y  = static_cast<utils::ssize_t>(std::max(0.5f, center_y - radius));
-		auto target_x = static_cast<utils::ssize_t>(std::min(m_inner.size() - 1, static_cast<size_t>(center_x + radius) + 1));
-		auto target_y = static_cast<utils::ssize_t>(std::min(m_inner[0].size() - 1, static_cast<size_t>(center_y + radius) + 1));
+		auto start_x  = static_cast<std::size_t>(std::max(0.5f, center_x - radius));
+		auto start_y  = static_cast<std::size_t>(std::max(0.5f, center_y - radius));
+		auto target_x = static_cast<std::size_t>(std::min(m_inner.size() - 1, static_cast<std::size_t>(center_x + radius) + 1));
+		auto target_y = static_cast<std::size_t>(std::min(m_inner[0].size() - 1, static_cast<std::size_t>(center_y + radius) + 1));
 
 		return subgrid({start_x, start_y}, {target_x, target_y});
 	}
 
 private:
-	size_t m_width{0};
-	size_t m_height{0};
+	std::size_t m_width{0};
+	std::size_t m_height{0};
 	std::vector<std::vector<cell>> m_inner{};
 };
 

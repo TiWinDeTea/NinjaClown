@@ -92,13 +92,13 @@ size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
 
 ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV ffi::target_position(void *ninja_data) {
 	model::grid_point &target = get_world(ninja_data)->target_tile;
-	return ninja_api::nnj_cell_pos { static_cast<size_t>(target.x), static_cast<size_t>(target.y) };
+	return ninja_api::nnj_cell_pos { target.x, target.y };
 }
 
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, ninja_api::nnj_cell *map_view) {
 	model::world *world = get_world(ninja_data);
 	model::grid &grid = world->map;
-	for (const auto &cell : grid.subgrid({0, 0}, {static_cast<utils::ssize_t>(grid.width()), static_cast<utils::ssize_t>(grid.height())})) {
+	for (const auto &cell : grid.subgrid({0, 0}, {grid.width(), grid.height()})) {
 		map_view->kind = static_cast<ninja_api::nnj_cell_kind>(cell.type);
 		if (cell.interaction_handle) {
 			map_view->interaction = static_cast<ninja_api::nnj_interaction_kind>(world->interactions[*cell.interaction_handle].kind);

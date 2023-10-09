@@ -7,6 +7,8 @@
 #include "utils/spinlock.hpp"
 #include "utils/synchronized.hpp"
 
+// TODO: move to utils
+
 namespace view {
 class fps_limiter {
 public:

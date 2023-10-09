@@ -26,7 +26,7 @@ template <typename T>
 using usmap = std::unordered_map<std::string, T>;
 
 struct point {
-	int x, y;
+	std::size_t x, y;
 };
 
 enum class mob_behaviour {
@@ -247,12 +247,12 @@ void init_maps() {
 			                 "map"_a = map, "type"_a = *type, "key"_a = key);
 		};
 
-		int x_pos{};
+		std::size_t x_pos{};
 		if (!try_get(keys::x_pos, x_pos)) {
 			return {};
 		}
 
-		int y_pos{};
+		std::size_t y_pos{};
 		if (!try_get(keys::y_pos, y_pos)) {
 			return {};
 		}
@@ -296,12 +296,12 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			}
 		};
 
-		int x_pos{};
+		std::size_t x_pos{};
 		if (!try_get(keys::x_pos, x_pos)) {
 			return {};
 		}
 
-		int y_pos{};
+		std::size_t y_pos{};
 		if (!try_get(keys::y_pos, y_pos)) {
 			return {};
 		}
@@ -498,7 +498,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					case 'T': {
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
 						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-						world.target_tile = {static_cast<utils::ssize_t>(column_idx), static_cast<utils::ssize_t>(line_idx)};
+						world.target_tile = {column_idx, line_idx};
 
 						view::object obj;
 						obj.set_id(utils::resources_type::object_id::target);
@@ -580,7 +580,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  const float TOPLEFT_X = static_cast<float>(activator.pos.x) * model::cst::cell_width;
 				  const float TOPLEFT_Y = static_cast<float>(activator.pos.y) * model::cst::cell_height;
 
-				  world.map[(size_t)activator.pos.x][(size_t)activator.pos.y].interaction_handle = {world.interactions.size()};
+				  world.map[activator.pos.x][activator.pos.y].interaction_handle = {world.interactions.size()};
 
 				  view::object o{};
 				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
@@ -635,9 +635,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_model2view[model_handle] = view_handle;
 				  m_view2model[view_handle]  = model_handle;
 				  if (gate.closed) {
-					  world.map[(size_t)gate.pos.x][(size_t)gate.pos.y].type = model::cell_type::CHASM;
-				  }
-				  else {
+					  world.map[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
+				  } else {
 					  map_viewer_omap->hide(view_handle);
 				  }
 

@@ -9,8 +9,6 @@
 using behaviours_namespace = model::actionable::behaviours_ns;
 using fmt::literals::operator""_a;
 
-// TODO externalize logs
-
 void behaviours_namespace::none(const instance_data &data, const argument_type &arg) noexcept {
 	utils::log::info("actionable.none", "x"_a = data.pos.x, "y"_a = data.pos.y);
 }

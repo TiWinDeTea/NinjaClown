@@ -150,14 +150,14 @@ void model::world::single_entity_decision_update(adapter::adapter &adapter, hand
 		  }
 	  },
 	  [&](ninja_api::nnj_activate_request &activate_req) {
-		  const cell &c = map[activate_req.column][activate_req.line];
-		  if (c.interaction_handle) {
-			  interaction &i = interactions[*c.interaction_handle];
-			  if (i.kind == interaction_kind::LIGHT_MANUAL || i.kind == interaction_kind::HEAVY_MANUAL) {
+		  const cell &cell = map[activate_req.column][activate_req.line];
+		  if (cell.interaction_handle) {
+			  interaction &interaction = interactions[*cell.interaction_handle];
+			  if (interaction.kind == interaction_kind::LIGHT_MANUAL || interaction.kind == interaction_kind::HEAVY_MANUAL) {
 				  vec2 cell_center{activate_req.column, activate_req.line};
 				  if (hitbox.center.to(cell_center).norm() <= components.properties[handle].activate_range) {
 					  state.preparing_action   = {activate_req};
-					  state.ticks_before_ready = this->activators[i.interactable_handler].activation_difficulty;
+					  state.ticks_before_ready = this->activators[interaction.interactable_handler].activation_difficulty;
 				  }
 			  }
 		  }
@@ -259,8 +259,7 @@ void model::world::fire_activator(adapter::adapter &adapter, handle_t handle, ev
 		if (activator.activation_delay != 0 && reason != event_reason::DELAY) {
 			m_event_queue.add_event(handle, activator.activation_delay, event_reason::DELAY);
 			activator.enabled = true;
-		}
-		else {
+		} else {
 			activator.enabled = false;
 			for (handle_t target : activators[handle].targets) {
 				fire_actionable(adapter, target);
