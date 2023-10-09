@@ -35,6 +35,14 @@ public:
 	    , m_current{start}
 	    , m_end{target} { }
 
+	grid_iterator(grid_iterator&&) = delete;
+
+	grid_iterator(grid_iterator&) = delete;
+
+	grid_iterator& operator=(grid_iterator&) = delete;
+
+	grid_iterator& operator=(grid_iterator&&) = delete;
+
 	grid_iterator &operator++() {
 		++m_current.x;
 		if (m_current.x == m_end.x) {
@@ -90,6 +98,14 @@ public:
 	    , m_start{begin}
 	    , m_end{end} { }
 
+	grid_view(grid_view&&) = delete;
+
+	grid_view(grid_view&) = delete;
+
+	grid_view& operator=(grid_view&) = delete;
+
+	grid_view& operator=(grid_view&&) = delete;
+
 	iterator begin() {
 		return grid_iterator<cell_view>{m_grid, m_start, m_end};
 	}
@@ -120,11 +136,11 @@ private:
 	grid_point m_end;
 };
 
-class grid_t {
+class grid {
 public:
-	grid_t() noexcept = default;
+	grid() noexcept = default;
 
-	grid_t(size_t width, size_t height) noexcept {
+	grid(size_t width, size_t height) noexcept {
 		resize(width, height);
 	}
 
@@ -164,9 +180,9 @@ public:
 	}
 
 	/**
-     * @param begin top left corner
-     * @param end   bottom right corner
-     */
+	 * @param begin top left corner
+	 * @param end   bottom right corner
+	 */
 	[[nodiscard]] grid_view subgrid(grid_point begin, grid_point end) {
 		assert(begin.x < end.x); // NOLINT
 		assert(begin.y < end.y); // NOLINT

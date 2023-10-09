@@ -5,6 +5,7 @@
 
 namespace model {
 struct grid_point {
+	// QUESTION/FIXME: see commit bd104f56a5a9; why signed?
 	utils::ssize_t x;
 	utils::ssize_t y;
 
