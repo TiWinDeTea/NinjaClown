@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # TODO: check formatting
+  #format:
+  #  name: Formatting
+  #  runs-on: ubuntu-22.04
+
+  build:
+    name: Build [${{ matrix.os }}]
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ win, osx, linux ]
+        include:
+          - os: win
+            runner: windows-2022
+          - os: osx
+            runner: macos-12
+          - os: linux
+            runner: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get CMake and Ninja
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: '3.22'
+          ninjaVersion: latest
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+
+      - name: Build
+        run: cmake --build ./build --target ninja-clown
+
+  # TODO:
+  #format:
+  #  name: Formatting
+  #  runs-on: ubuntu-22.04
+
+  # TODO:
+  #tidy:
+  #  name: Tidy
+  #  runs-on: ubuntu-22.04
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get CMake and Ninja
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: '3.22'
+          ninjaVersion: latest
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+
+      - name: Build tests
+        run: cmake --build ./build --target ninja-clown-tests
+
+      - name: Run tests
+        run: ./build/ninja-clown-tests
+
+  # TODO: check clang-tidy
+  #tidy:
+  #  name: Tidy
+  #  runs-on: ubuntu-22.04
+
+  check-rust:
+    name: Rust example bot
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build example
+        env:
+          RUSTFLAGS: -D warnings
+        run: cargo build --manifest-path=examples/rust-bot/Cargo.toml
