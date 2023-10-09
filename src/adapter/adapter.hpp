@@ -26,10 +26,6 @@ namespace cpptoml {
 class table;
 }
 
-namespace utils {
-class resource_manager;
-}
-
 namespace adapter {
 
 enum class bot_log_level {
