@@ -69,6 +69,10 @@ jobs:
           New-Item -Type Directory extlibs
           Copy-Item -Recurse "${{ github.workspace }}/external/SFML/extlibs/libs-msvc-universal" "${{ github.workspace }}/extlibs/"
 
+      - name: Use MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake
         run: |
           mkdir build
