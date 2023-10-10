@@ -11,7 +11,6 @@ endif()
 set(OPENGL_INCLUDE_DIR   ${OPENGL_INCLUDE_DIRS})
 set(OPENGL_LIBRARIES       ${OPENGL_gl_LIBRARY})
 
-# Message
 message(STATUS "Configuring OpenGL - Done")
 
 message(STATUS "Configuring SFML")
