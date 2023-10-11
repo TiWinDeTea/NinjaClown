@@ -203,6 +203,10 @@ class access<view::game_menu> {
         return holder.adapter();
     }
 
+	static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
+		return holder.terminal();
+	}
+
     friend view::game_menu;
 };
 

@@ -37,16 +37,17 @@ view::game_menu::user_request view::game_menu::show() {
 	const auto &res   = utils::resource_manager::instance();
 	const auto &style = ImGui::GetStyle();
 
-	const std::string_view resume          = res.gui_text_for("view.in_game_menu.resume");
-	const std::string_view load_dll        = res.gui_text_for("view.in_game_menu.dll");
-	const std::string_view restart         = res.gui_text_for("view.in_game_menu.restart");
-	const std::string_view settings        = res.gui_text_for("view.in_game_menu.settings");
-	const std::string_view load_map        = res.gui_text_for("view.in_game_menu.load_map");
-	const std::string_view import          = res.gui_text_for("view.in_game_menu.import_maps");
-	const std::string_view credits         = res.gui_text_for("view.in_game_menu.credits");
-	const std::string_view map_editor      = res.gui_text_for("view.in_game_menu.map_editor");
-	const std::string_view campaign_editor = res.gui_text_for("view.in_game_menu.campaign_editor");
-	const std::string_view quit            = res.gui_text_for("view.in_game_menu.quit");
+	const std::string_view resume            = res.gui_text_for("view.in_game_menu.resume");
+	const std::string_view load_dll          = res.gui_text_for("view.in_game_menu.dll");
+	const std::string_view restart           = res.gui_text_for("view.in_game_menu.restart");
+	const std::string_view settings          = res.gui_text_for("view.in_game_menu.settings");
+	const std::string_view load_map          = res.gui_text_for("view.in_game_menu.load_map");
+	const std::string_view import            = res.gui_text_for("view.in_game_menu.import_maps");
+	const std::string_view credits           = res.gui_text_for("view.in_game_menu.credits");
+	const std::string_view map_editor        = res.gui_text_for("view.in_game_menu.map_editor");
+	const std::string_view campaign_editor   = res.gui_text_for("view.in_game_menu.campaign_editor");
+	const std::string_view back_to_main_menu = res.gui_text_for("view.in_game_menu.return_to_main_menu");
+	const std::string_view quit              = res.gui_text_for("view.in_game_menu.quit");
 
 	ImVec2 max_text_size{0.f, 0.f};
 	auto update_sz = [&max_text_size](std::string_view str) {
@@ -63,12 +64,14 @@ view::game_menu::user_request view::game_menu::show() {
 	update_sz(credits);
 	update_sz(map_editor);
 	update_sz(campaign_editor);
+	update_sz(back_to_main_menu);
 	update_sz(quit);
 
 	float text_width = max_text_size.x + style.ItemInnerSpacing.x * 2;
 	ImGui::SetNextWindowSize(ImVec2{text_width + style.WindowPadding.x * 2, 0.f});
 	if (ImGui::BeginPopupModal(menu_window_name, nullptr,
-	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) { // NOLINT(hicpp-signed-bitwise)
+	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove
+	                             | ImGuiWindowFlags_NoResize)) { // NOLINT(hicpp-signed-bitwise)
 
 		if (!::state::access<game_menu>::adapter(m_state).map_is_loaded()) {
 			using_style(disabled_button) {
@@ -115,7 +118,13 @@ view::game_menu::user_request view::game_menu::show() {
 			ImGui::Button(credits.data(), ImVec2{text_width, 0.f}); // TODO
 			ImGui::Button(map_editor.data(), ImVec2{text_width, 0.f}); // TODO
 			ImGui::Button(campaign_editor.data(), ImVec2{text_width, 0.f}); // TODO
-		};
+		}; // todo : move to main menu
+
+		if (ImGui::Button(back_to_main_menu.data(), ImVec2{text_width, 0.f})) {
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return user_request::back_to_main_menu;
+		}
 
 		if (ImGui::Button(quit.data(), ImVec2{text_width, 0.f})) {
 			ImGui::CloseCurrentPopup();

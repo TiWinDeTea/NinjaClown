@@ -2,6 +2,7 @@
 #define NINJACLOWN_VIEW_GAME_VIEWER_HPP
 
 #include "map_viewer.hpp"
+#include "game_menu.hpp"
 
 #include "terminal_commands.hpp"
 
@@ -36,7 +37,10 @@ public:
 
 	void restart() noexcept;
 
-	void show(bool show_debug_data);
+	/**
+	 * Returns false if return to main menu was requested.
+	 */
+	bool show(bool show_debug_data);
 
 	void reload_sprites() {
 		m_map.reload_sprites();
@@ -62,10 +66,24 @@ public:
         m_map.acquire_overmap()->hide(handle);
     }
 
+	/**
+	 * Displays the rightmost bar (play, pause, step, ... buttons).
+	 */
+	void show_rightmost_bar() noexcept;
+
+	/**
+	 * Shows the escape menu.
+	 */
+	void display_menu() noexcept;
+
 private:
 	sf::RenderWindow &m_window;
     state::holder& m_state;
     map_viewer m_map;
+	game_menu m_menu;
+	bool m_showing_menu{false};
+	bool m_stay_in_game{true};
+
 	terminal_commands::argument_type m_fake_arg; //! Mostly valid argument passed to the terminal by the view, instead of by ImTerm
 
 	// events related

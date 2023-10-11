@@ -309,6 +309,13 @@
         id = "view.view.bad_state"
         fmt = "État de la vue inconnu : {state}"
     [[log.entry]]
+        id = "view.view.FA_load_failed"
+        fmt = "Échec de chargement de Font Awesome depuis \"{folder}\""
+    [[log.entry]]
+        id = "view.view.FA_load_success"
+        fmt = "Font Awesome chargée avec succès"
+
+    [[log.entry]]
         id = "view.configurator.config_save_failed"
         fmt = "Échec de sauvegarde de la configuration"
 
@@ -375,6 +382,9 @@
     [[gui.entry]]
         id = "view.in_game_menu.campaign_editor"
         fmt = "Éditeur de campagne"
+    [[gui.entry]]
+        id = "view.in_game_menu.return_to_main_menu"
+        fmt = "Menu principal"
 
     [[gui.entry]]
         id = "file_explorer.ok_button"

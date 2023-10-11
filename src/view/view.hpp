@@ -20,12 +20,12 @@ class holder;
 namespace view {
 
 class game_viewer;
-class game_menu;
 
 class view {
 	enum class window {
 		game,
 		menu,
+		map_editor,
 	};
 
 public:
@@ -70,14 +70,13 @@ private:
 	/**
 	 * Polls through SFML events and manages them. Called while running
 	 */
-	void manage_events(sf::RenderWindow& window, unsigned int terminal_height) noexcept;
+	void manage_events(sf::RenderWindow& window, state::holder&) noexcept;
 
 	/**
 	 * Defers display to menu and treats its requests
 	 */
 	 void display_menu(state::holder&) noexcept;
 
-	::view::game_menu * m_menu{nullptr}; // allowing external access (data within *do_run*)
 	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
 
 	std::unique_ptr<std::thread> m_thread{};
@@ -85,7 +84,7 @@ private:
     std::atomic_flag m_running{};
 
 	utils::loop_per_sec_limit m_fps_limiter{};
-	window m_showing{window::game}; // FIXME : devrait être window::menu
+	window m_show_state{window::game}; // FIXME : devrait être window::menu
 	bool m_showing_term{false};
 };
 } // namespace view

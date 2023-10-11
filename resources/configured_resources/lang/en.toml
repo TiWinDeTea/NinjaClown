@@ -309,6 +309,13 @@
         id = "view.view.bad_state"
         fmt = "unknown view state: {state}"
     [[log.entry]]
+        id = "view.view.FA_load_failed"
+        fmt = "failed to load font awesome from folder \"{folder}\""
+    [[log.entry]]
+        id = "view.view.FA_load_success"
+        fmt = "successfully loaded font awesome"
+
+    [[log.entry]]
         id = "view.configurator.config_save_failed"
         fmt = "Could not save the new configuration"
 
@@ -376,6 +383,19 @@
     [[gui.entry]]
         id = "view.in_game_menu.campaign_editor"
         fmt = "Campaign editor"
+    [[gui.entry]]
+        id = "view.in_game_menu.return_to_main_menu"
+        fmt = "Return to main menu"
+
+    [[gui.entry]]
+        id = "view.game_viewer.play"
+        fmt = ""
+    [[gui.entry]]
+        id = "view.game_viewer.pause"
+        fmt = ""
+    [[gui.entry]]
+        id = "view.game_viewer.step"
+        fmt = ""
 
     [[gui.entry]]
         id = "file_explorer.ok_button"

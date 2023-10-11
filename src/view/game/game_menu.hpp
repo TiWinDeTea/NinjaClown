@@ -29,7 +29,8 @@ public:
 		close_window,
 		restart,
 		load_dll,
-		load_map
+		load_map,
+		back_to_main_menu
 	};
 
 

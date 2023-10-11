@@ -5,7 +5,7 @@
 #include "terminal_commands.hpp"
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/game/game_menu.hpp"
+#include "utils/system.hpp"
 #include "view/game/game_viewer.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -16,12 +16,15 @@
 #include <imterm/terminal.hpp>
 #include <memory>
 
+#include <IconFontCppHeaders/IconsFontAwesome5.h>
 #include <spdlog/spdlog.h>
 #include <thread>
 
 using fmt::operator""_a;
 
 namespace {
+constexpr const auto fontawesome_path = "fonts/fontawesome-free-5.4.0-desktop/" FONT_ICON_FILE_NAME_FAS;
+
 void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int x_size, unsigned int y_size) {
 	terminal.set_width(x_size);
 	terminal.set_height(y_size);
@@ -65,8 +68,6 @@ void view::view::exec(state::holder &state) {
 }
 
 void view::view::do_run(state::holder &state) {
-	const auto &resources = utils::resource_manager::instance();
-
 	constexpr unsigned int x_window_size = 1600;
 	constexpr unsigned int y_window_size = 900;
 
@@ -76,12 +77,9 @@ void view::view::do_run(state::holder &state) {
 
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
 	setup_terminal(terminal, x_window_size, y_window_size / 3);
-
-	game_menu menu{state};
 	game_viewer game{window, state};
 
 	m_game = &game;
-	m_menu = &menu;
 
 	ImGui::SFML::Init(window);
 	ImGui::GetIO().IniFilename = nullptr;
@@ -91,21 +89,45 @@ void view::view::do_run(state::holder &state) {
 
 	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map"); // TODO remove at some point
 
+	constexpr std::array<ImWchar, 3> fontawesome_icons_ranges = {ICON_MIN_FA, ICON_MAX_FA, 0};
+	ImFontConfig fontawesome_icons_config{};
+	fontawesome_icons_config.MergeMode        = true;
+	fontawesome_icons_config.PixelSnapH       = true;
+	fontawesome_icons_config.GlyphMinAdvanceX = 13.5f;
+
+	ImGuiIO &io = ImGui::GetIO();
+	io.Fonts->AddFontDefault(&fontawesome_icons_config);
+
+	auto *fontawesome = io.Fonts->AddFontFromFileTTF(
+	  (utils::resources_directory() / fontawesome_path).generic_string().c_str(), 13.5f,
+	  &fontawesome_icons_config, fontawesome_icons_ranges.data());
+
+	if (fontawesome == nullptr) {
+		utils::log::warn("view.view.FA_load_failed");
+	}
+	else {
+		utils::log::debug("view.view.FA_load_success");
+		ImGui::SFML::UpdateFontTexture();
+	}
+
 	while (m_running.test_and_set() && window.isOpen()) {
 		ImGui::SFML::Update(window, clock.restart());
-		manage_events(window, static_cast<unsigned int>(terminal.get_size().y));
+		manage_events(window, state);
 		auto restore_view = window.getView();
 
-		switch (m_showing) {
+		switch (m_show_state) {
 			case window::game:
-				game.show(show_debug_data);
+				if (!game.show(show_debug_data)) {
+					m_show_state = window::menu;
+				}
 				break;
-			case window::menu: // FIXME : this menu should be part of game.show()
-				game.show(show_debug_data);
-				display_menu(state);
+			case window::menu:
+				// TODO : show main menu
 				break;
+			case window::map_editor:
+				// TODO : show map editor
 			default:
-				utils::log::warn("view.view.bad_state", "state"_a=static_cast<int>(m_showing));
+				utils::log::warn("view.view.bad_state", "state"_a = static_cast<int>(m_show_state));
 		}
 
 		if (m_showing_term) {
@@ -129,68 +151,14 @@ void view::view::do_run(state::holder &state) {
 	}
 
 	m_game = nullptr;
-	m_menu = nullptr;
 }
 
-void view::view::display_menu(state::holder &state) noexcept {
-
-	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
-	auto request                                  = m_menu->show();
-	switch (request) {
-		case game_menu::user_request::none:
-			break;
-		case game_menu::user_request::close_menu:
-			m_showing = window::game;
-			m_game->resume();
-			m_menu->close();
-			break;
-		case game_menu::user_request::close_window:
-			m_running.clear();
-			break;
-		case game_menu::user_request::restart:
-			state::access<view>::adapter(state).load_map(state.current_map_path());
-			m_showing = window::game;
-			m_game->restart();
-			m_menu->close();
-			break;
-		case game_menu::user_request::load_dll: {
-			terminal_commands::argument_type arg{state, terminal, {}};
-			arg.command_line.emplace_back();
-			arg.command_line.push_back(m_menu->path().generic_string());
-			terminal_commands::load_shared_library(arg);
-			break;
-		}
-		case game_menu::user_request::load_map: {
-			terminal_commands::argument_type arg{state, terminal, {}};
-			arg.command_line.emplace_back();
-			arg.command_line.push_back(m_menu->path().generic_string());
-			terminal_commands::load_map(arg);
-			break;
-		}
-		default:
-			spdlog::error(utils::resource_manager::instance().log_for("view.view.menu.unknown_request"),
-			              "id"_a = static_cast<int>(request));
-			break;
-	}
-}
-
-void view::view::manage_events(sf::RenderWindow &window, unsigned int terminal_height) noexcept {
+void view::view::manage_events(sf::RenderWindow &window, state::holder &state) noexcept {
 	sf::Event event{};
 	while (window.pollEvent(event)) {
 		if (event.type == sf::Event::KeyPressed) {
 			if (event.key.code == sf::Keyboard::F11) {
 				m_showing_term = !m_showing_term;
-			}
-			else if (event.key.code == sf::Keyboard::Escape) {
-				if (m_showing == window::menu) {
-					m_showing = window::game;
-					m_menu->close();
-					m_game->resume();
-				}
-				else {
-					m_showing = window::menu;
-					m_game->pause();
-				}
 			}
 		}
 
@@ -198,9 +166,20 @@ void view::view::manage_events(sf::RenderWindow &window, unsigned int terminal_h
 			window.close();
 		}
 
-		if (m_showing != window::menu
-		    && (!mouse_type_event(event.type) || sf::Mouse::getPosition(window).y > terminal_height + 2 || !m_showing_term)) {
-			m_game->event(event);
+		if (event.type == sf::Event::Resized) {
+			state::access<view>::terminal(state).set_width(window.getSize().x);
+		}
+
+		switch (m_show_state) {
+			case window::game:
+				m_game->event(event);
+				break;
+			case window::menu:
+				// TODO : pass events to main menu once it’s developped
+				break;
+			case window::map_editor:
+				// TODO : pass events to map editor once it’s developped
+				break;
 		}
 
 		ImGui::SFML::ProcessEvent(event);
