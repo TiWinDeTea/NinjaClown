@@ -51,9 +51,9 @@ state::holder::holder(const std::filesystem::path &autorun_script) noexcept
 
 	using view::view;
 
-	m_pimpl->properties.emplace("average_fps", property{&view::average_fps, m_pimpl->view}); // TODO translations
+	m_pimpl->properties.emplace("average_lps", property{&view::average_fps, m_pimpl->view}); // TODO translations
 
-	m_pimpl->properties.emplace("target_fps", property::proxy<unsigned int>::from_accessor<view>(
+	m_pimpl->properties.emplace("target_lps", property::proxy<unsigned int>::from_accessor<view>(
 	                                            m_pimpl->view, &view::target_fps, &view::target_fps)); // TODO translations
 
 	m_pimpl->properties.emplace("display_debug_data", property{&view::show_debug_data, m_pimpl->view}); // TODO translations

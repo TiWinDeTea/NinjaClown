@@ -2,13 +2,14 @@
 #define NINJACLOWN_VIEW_MAP_VIEWER_HPP
 
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include "utils/synchronized.hpp"
 #include "utils/spinlock.hpp"
 
-#include "view/map.hpp"
-#include "view/overmap_collection.hpp"
+#include "map.hpp"
+#include "overmap_collection.hpp"
 
 namespace sf {
 class RenderWindow;
@@ -22,9 +23,6 @@ struct view_handle;
 namespace state {
 class holder;
 }
-
-
-#include <SFML/Graphics/RenderWindow.hpp>
 
 namespace view {
 class map_viewer {

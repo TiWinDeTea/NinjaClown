@@ -16,6 +16,7 @@ set(NINJA_CLOWN_SOURCES
 
         src/adapter/adapter.cpp
         src/adapter/adapter_map_loader_v1_0_0.cpp
+        src/adapter/facing_dir.cpp
 
         src/bot/bot_api.cpp
         src/bot/bot_dll.cpp
@@ -29,23 +30,21 @@ set(NINJA_CLOWN_SOURCES
 
         src/utils/dll.cpp
         src/utils/logging.cpp
+        src/utils/loop_per_sec_limit.cpp
         src/utils/resource_manager.cpp
         src/utils/system.cpp
 
-        src/view/animation.cpp
-        src/view/configurator.cpp
-        src/view/facing_dir.cpp
-        src/view/file_explorer.cpp
-        src/view/fps_limiter.cpp
-        src/view/game_viewer.cpp
-        src/view/imgui_styles.cpp
-        src/view/map.cpp
-        src/view/map_explorer.cpp
-        src/view/map_viewer.cpp
-        src/view/menu.cpp
-        src/view/mob_object.cpp
-        src/view/mob_animations.cpp
-        src/view/overmap_collection.cpp
+        src/view/assets/animation.cpp
+        src/view/game/game_viewer.cpp
+        src/view/game/game_menu.cpp
+        src/view/game/map.cpp
+        src/view/game/map_viewer.cpp
+        src/view/game/mob.cpp
+        src/view/game/object.cpp
+        src/view/game/overmap_collection.cpp
+        src/view/standalones/configurator.cpp
+        src/view/standalones/file_explorer.cpp
+        src/view/standalones/imgui_styles.cpp
         src/view/view.cpp
 )
 

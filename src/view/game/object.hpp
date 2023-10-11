@@ -1,13 +1,10 @@
 #ifndef NINJACLOWN_VIEW_OBJECTS_HPP
 #define NINJACLOWN_VIEW_OBJECTS_HPP
 
-#include "view/overmap_displayable.hpp"
+#include "utils/resources_type.hpp"
+#include "view/game/overmap_displayable.hpp"
 
 #include <memory>
-
-namespace utils {
-class resource_manager;
-}
 
 namespace view {
 class shifted_animation;
@@ -36,7 +33,6 @@ private:
 	bool vis_hovered(map_viewer &view) const noexcept override;
 
 	utils::resources_type::object_id m_object_id;
-
 
     std::unique_ptr<shifted_animation> m_animation;
 	float m_xshift{0.f};

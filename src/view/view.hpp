@@ -1,7 +1,7 @@
 #ifndef NINJACLOWN_VIEW_VIEW_HPP
 #define NINJACLOWN_VIEW_VIEW_HPP
 
-#include "view/fps_limiter.hpp"
+#include "utils/loop_per_sec_limit.hpp"
 
 #include <cassert>
 
@@ -20,7 +20,7 @@ class holder;
 namespace view {
 
 class game_viewer;
-class menu;
+class game_menu;
 
 class view {
 	enum class window {
@@ -51,15 +51,15 @@ public:
     }
 
     float average_fps() const noexcept {
-        return m_fps_limiter.average_fps();
+        return m_fps_limiter.average_lps();
     }
 
     unsigned int target_fps() const noexcept {
-        return m_fps_limiter.target_fps();
+        return m_fps_limiter.target_lps();
     }
 
     void target_fps(unsigned int target) noexcept {
-        m_fps_limiter.target_fps(target);
+		m_fps_limiter.target_lps(target);
     }
 
     std::atomic_bool show_debug_data{true};
@@ -72,14 +72,19 @@ private:
 	 */
 	void manage_events(sf::RenderWindow& window, unsigned int terminal_height) noexcept;
 
-	::view::menu* m_menu{nullptr}; // allowing external access (data within *do_run*)
+	/**
+	 * Defers display to menu and treats its requests
+	 */
+	 void display_menu(state::holder&) noexcept;
+
+	::view::game_menu * m_menu{nullptr}; // allowing external access (data within *do_run*)
 	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
 
 	std::unique_ptr<std::thread> m_thread{};
 
     std::atomic_flag m_running{};
 
-	fps_limiter m_fps_limiter{};
+	utils::loop_per_sec_limit m_fps_limiter{};
 	window m_showing{window::game}; // FIXME : devrait être window::menu
 	bool m_showing_term{false};
 };

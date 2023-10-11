@@ -5,9 +5,9 @@
 #include <imgui.h>
 #include <utility>
 
+#include "map_viewer.hpp"
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/map_viewer.hpp"
 
 view::map_viewer::map_viewer(state::holder &state) noexcept
     : m_state{&state} { }

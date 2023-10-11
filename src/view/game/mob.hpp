@@ -1,9 +1,9 @@
 #ifndef NINJACLOWN_VIEW_MOB_HPP
 #define NINJACLOWN_VIEW_MOB_HPP
 
+#include "adapter/facing_dir.hpp"
 #include "utils/resources_type.hpp"
-#include "view/facing_dir.hpp"
-#include "view/overmap_displayable.hpp"
+#include "view/game/overmap_displayable.hpp"
 
 #include <memory>
 

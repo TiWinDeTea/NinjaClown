@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
+#include "facing_dir.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
 #include "model/model.hpp"
@@ -10,12 +11,11 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
-#include "view/facing_dir.hpp"
-#include "view/game_viewer.hpp"
-#include "view/map.hpp"
-#include "view/map_viewer.hpp"
-#include "view/mob.hpp"
-#include "view/object.hpp"
+#include "view/game/game_viewer.hpp"
+#include "view/game/map.hpp"
+#include "view/game/map_viewer.hpp"
+#include "view/game/mob.hpp"
+#include "view/game/object.hpp"
 #include "view/view.hpp"
 
 using fmt::literals::operator""_a;

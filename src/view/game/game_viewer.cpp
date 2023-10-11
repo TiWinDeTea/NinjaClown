@@ -2,8 +2,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include "game_viewer.hpp"
 #include "state_holder.hpp"
-#include "view/game_viewer.hpp"
 
 namespace {
 const sf::Event::KeyEvent &key(const sf::Event &event) {

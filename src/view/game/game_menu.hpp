@@ -1,15 +1,15 @@
 #ifndef NINJACLOWN_VIEW_MENU_HPP
 #define NINJACLOWN_VIEW_MENU_HPP
 
-#include "view/file_explorer.hpp"
-#include "view/configurator.hpp"
+#include "view/standalones/configurator.hpp"
+#include "view/standalones/file_explorer.hpp"
 
 namespace state {
 class holder;
 }
 
 namespace view {
-class menu {
+class game_menu {
 	enum class state {
 		none,
 		config,
@@ -33,7 +33,7 @@ public:
 	};
 
 
-	explicit menu(::state::holder& state) noexcept;
+	explicit game_menu(::state::holder& state) noexcept;
 
 	/**
 	 * @return true on close request

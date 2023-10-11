@@ -5,8 +5,6 @@
 #include <string_view>
 #include <utility>
 
-#include "utils/optional.hpp"
-
 namespace utils::log {
 namespace details {
 	[[nodiscard]] std::string_view log_for(std::string_view key) noexcept;

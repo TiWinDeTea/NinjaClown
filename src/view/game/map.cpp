@@ -1,8 +1,8 @@
-#include "view/map.hpp"
+#include "map.hpp"
 #include "utils/optional.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/resources_type.hpp"
-#include "view/map_viewer.hpp"
+#include "view/game/map_viewer.hpp"
 
 #include <SFML/System/Vector2.hpp>
 

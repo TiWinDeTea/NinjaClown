@@ -1,9 +1,5 @@
-#include "view/animation.hpp"
-#include "view/map_viewer.hpp"
-
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Mouse.hpp>
-#include <spdlog/spdlog.h>
+#include "animation.hpp"
+#include "view/game/map_viewer.hpp"
 
 namespace {
 void print_tile(view::map_viewer& viewer, sf::Sprite &frame,

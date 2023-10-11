@@ -1,10 +1,10 @@
 
-#include "view/overmap_collection.hpp"
+#include "overmap_collection.hpp"
 #include "adapter/adapter.hpp"
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
-#include "view/map_viewer.hpp"
+#include "view/game/map_viewer.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>

@@ -10,12 +10,12 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <cpptoml/cpptoml.h>
 
+#include "adapter/facing_dir.hpp"
 #include "terminal_ids.hpp"
 #include "utils/optional.hpp"
-#include "view/facing_dir.hpp"
 
-#include "view/animation.hpp"
-#include "view/mob_animations.hpp"
+#include "view/assets/animation.hpp"
+#include "view/assets/mob_animations.hpp"
 
 namespace utils {
 

@@ -1,7 +1,7 @@
 #ifndef NINJACLOWN_VIEW_GAME_VIEWER_HPP
 #define NINJACLOWN_VIEW_GAME_VIEWER_HPP
 
-#include "view/map_viewer.hpp"
+#include "map_viewer.hpp"
 
 #include "terminal_commands.hpp"
 

@@ -305,6 +305,12 @@
     [[log.entry]]
         id = "view.view.menu.unknown_request"
         fmt = "Requête inconnue reçue depuis le menu : {id}"
+    [[log.entry]]
+        id = "view.view.bad_state"
+        fmt = "État de la vue inconnu : {state}"
+    [[log.entry]]
+        id = "view.configurator.config_save_failed"
+        fmt = "Échec de sauvegarde de la configuration"
 
 [tooltip]
     [[tooltip.entry]]

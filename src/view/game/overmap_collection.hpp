@@ -1,8 +1,8 @@
 #ifndef NINJACLOWN_VIEW_OVERMAP_COLLECTION_HPP
 #define NINJACLOWN_VIEW_OVERMAP_COLLECTION_HPP
 
-#include "view/mob.hpp"
-#include "view/object.hpp"
+#include "mob.hpp"
+#include "object.hpp"
 
 #include "adapter/adapter.hpp"
 

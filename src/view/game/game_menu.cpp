@@ -1,8 +1,8 @@
-#include "menu.hpp"
+#include "game_menu.hpp"
 #include "adapter/adapter.hpp"
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/imgui_styles.hpp"
+#include "view/standalones/imgui_styles.hpp"
 
 #include <imgui.h>
 
@@ -10,11 +10,11 @@ namespace {
 constexpr const char *menu_window_name = "##in game menu popup";
 }
 
-view::menu::menu(::state::holder &state) noexcept
+view::game_menu::game_menu(::state::holder &state) noexcept
     : m_state{state}
     , m_configurator{} { }
 
-void view::menu::close() {
+void view::game_menu::close() {
 	if (m_currently_open) {
 		m_currently_open = false;
 		if (ImGui::BeginPopupModal(menu_window_name, nullptr, ImGuiWindowFlags_NoTitleBar)) {
@@ -28,7 +28,7 @@ void view::menu::close() {
 	}
 }
 
-view::menu::user_request view::menu::show() {
+view::game_menu::user_request view::game_menu::show() {
 	if (!m_currently_open) {
 		ImGui::OpenPopup(menu_window_name);
 		m_currently_open = true;
@@ -70,7 +70,7 @@ view::menu::user_request view::menu::show() {
 	if (ImGui::BeginPopupModal(menu_window_name, nullptr,
 	                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) { // NOLINT(hicpp-signed-bitwise)
 
-		if (!::state::access<menu>::adapter(m_state).map_is_loaded()) {
+		if (!::state::access<game_menu>::adapter(m_state).map_is_loaded()) {
 			using_style(disabled_button) {
 				ImGui::Button(resume.data(), ImVec2{text_width, 0.f});
 				ImGui::Button(restart.data(), ImVec2{text_width, 0.f});

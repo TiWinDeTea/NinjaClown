@@ -29,7 +29,7 @@ namespace view {
 class game_viewer;
 class map_viewer;
 class view;
-class menu;
+class game_menu;
 }
 
 namespace adapter {
@@ -81,7 +81,7 @@ private:
 	friend access<view::game_viewer>;
 	friend access<view::view>;
 	friend access<view::map_viewer>;
-	friend access<view::menu>;
+	friend access<view::game_menu>;
 	friend access<adapter::adapter>;
 	friend access<model::model>;
 	friend access<bot::ffi>;
@@ -198,12 +198,12 @@ class access<adapter::adapter> {
 };
 
 template<>
-class access<view::menu> {
+class access<view::game_menu> {
     static adapter::adapter &adapter(holder& holder) noexcept {
         return holder.adapter();
     }
 
-    friend view::menu;
+    friend view::game_menu;
 };
 
 template<>

@@ -71,7 +71,7 @@ void model::model::do_run() noexcept {
 			return m_state != thread_state::waiting;
 		});
 	}
-	m_fps_limiter.start_now();
+	m_lps_limiter.start_now();
 
 	while (m_state != thread_state::stopping) {
 		if (m_dll_await_load.load()) {
@@ -90,14 +90,14 @@ void model::model::do_run() noexcept {
 		adapter.clear_entities_changed_since_last_update();
 		world.update(adapter);
 
-		m_fps_limiter.wait();
+		m_lps_limiter.wait();
 
 		if (m_state == thread_state::waiting) {
 			std::unique_lock ul{m_wait_mutex};
 			m_cv.wait(ul, [this]() {
 				return m_state != thread_state::waiting;
 			});
-			m_fps_limiter.start_now();
+			m_lps_limiter.start_now();
 		}
 	}
 }

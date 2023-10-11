@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "view/facing_dir.hpp"
+#include "facing_dir.hpp"
 #include "utils/universal_constants.hpp"
 
 // TODO: add NE/NW/SE/SW

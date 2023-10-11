@@ -6,20 +6,20 @@
 #include <functional>
 #include <vector>
 
-#include "view/animation.hpp"
-#include "view/facing_dir.hpp"
+#include "adapter/facing_dir.hpp"
+#include "animation.hpp"
 
 namespace view {
 class mob_animations {
 public:
 	[[nodiscard]] const std::optional<shifted_animation> &animation_for(facing_direction::type dir) const noexcept {
-		assert(dir != facing_direction::MAX_VAL); // NOLINT
+		assert(dir != facing_direction::MAX_VAL);
 		return m_animations_by_direction[dir];
 	}
 
 	void add_animation(shifted_animation &&anim, facing_direction::type dir) noexcept {
-		assert(dir != facing_direction::MAX_VAL); // NOLINT
-		assert(!m_animations_by_direction[dir]); // NOLINT
+		assert(dir != facing_direction::MAX_VAL);
+		assert(!m_animations_by_direction[dir]);
 		m_animations_by_direction[dir] = std::move(anim);
 	}
 

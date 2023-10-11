@@ -305,6 +305,12 @@
     [[log.entry]]
         id = "view.view.menu.unknown_request"
         fmt = "unknown request from menu: {id}"
+    [[log.entry]]
+        id = "view.view.bad_state"
+        fmt = "unknown view state: {state}"
+    [[log.entry]]
+        id = "view.configurator.config_save_failed"
+        fmt = "Could not save the new configuration"
 
 [tooltip]
     [[tooltip.entry]]

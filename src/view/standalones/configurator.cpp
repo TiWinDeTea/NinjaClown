@@ -1,8 +1,9 @@
 #include <imgui.h>
 
+#include "configurator.hpp"
+#include "imgui_styles.hpp"
+#include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/configurator.hpp"
-#include "view/imgui_styles.hpp"
 
 // TODO : rendre la classe configurator statique (pas vraiment besoin de l’instancier plusieurs fois)
 
@@ -82,7 +83,9 @@ void view::configurator::give_control() noexcept {
 			}
 
 			if (m_config_must_be_saved) {
-				resources.save_user_config();
+				if (!resources.save_user_config()) {
+					utils::log::warn("view.configurator.config_save_failed");
+				}
 				m_config_must_be_saved = false;
 			}
 		}

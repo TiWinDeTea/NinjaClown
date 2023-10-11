@@ -35,6 +35,7 @@ public:
 	shifted_animation(shifted_animation &&) noexcept                  = default;
 	explicit shifted_animation(animation &&o) noexcept
 	    : m_frames{std::move(o.m_frames)} { }
+	~shifted_animation() = default;
 
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
 	shifted_animation &operator=(const shifted_animation &) = default;

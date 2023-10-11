@@ -8,7 +8,7 @@
 
 #include "bot/bot_dll.hpp"
 #include "model/world.hpp"
-#include "view/fps_limiter.hpp"
+#include "utils/loop_per_sec_limit.hpp"
 
 namespace state {
 class holder;
@@ -52,7 +52,7 @@ private:
 	std::mutex m_wait_mutex{};
 	std::condition_variable m_cv{};
 
-	view::fps_limiter m_fps_limiter{15};
+	utils::loop_per_sec_limit m_lps_limiter{15}; // updating the model 15 times per second at most
 };
 } // namespace model
 #endif //NINJACLOWN_MODEL_MODEL_HPP

@@ -1,11 +1,12 @@
+#include "view/view.hpp"
 #include "adapter/adapter.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
+#include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
-#include "view/game_viewer.hpp"
-#include "view/menu.hpp"
-#include "view/view.hpp"
+#include "view/game/game_menu.hpp"
+#include "view/game/game_viewer.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -15,8 +16,8 @@
 #include <imterm/terminal.hpp>
 #include <memory>
 
-#include <thread>
 #include <spdlog/spdlog.h>
+#include <thread>
 
 using fmt::operator""_a;
 
@@ -64,7 +65,7 @@ void view::view::exec(state::holder &state) {
 }
 
 void view::view::do_run(state::holder &state) {
-	const auto& resources = utils::resource_manager::instance();
+	const auto &resources = utils::resource_manager::instance();
 
 	constexpr unsigned int x_window_size = 1600;
 	constexpr unsigned int y_window_size = 900;
@@ -76,7 +77,7 @@ void view::view::do_run(state::holder &state) {
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
 	setup_terminal(terminal, x_window_size, y_window_size / 3);
 
-	menu menu{state};
+	game_menu menu{state};
 	game_viewer game{window, state};
 
 	m_game = &game;
@@ -95,43 +96,16 @@ void view::view::do_run(state::holder &state) {
 		manage_events(window, static_cast<unsigned int>(terminal.get_size().y));
 		auto restore_view = window.getView();
 
-		if (m_showing == window::menu) {
-			auto request = menu.show();
-			switch (request) {
-				case menu::user_request::none:
-					break;
-				case menu::user_request::close_menu:
-					m_showing = window::game;
-					game.resume();
-					menu.close();
-					break;
-				case menu::user_request::close_window:
-					m_running.clear();
-					break;
-				case menu::user_request::restart:
-					state::access<view>::adapter(state).load_map(state.current_map_path());
-					m_showing = window::game;
-					game.restart();
-					menu.close();
-					break;
-				case menu::user_request::load_dll: {
-					terminal_commands::argument_type arg{state, terminal, {}};
-					arg.command_line.emplace_back();
-					arg.command_line.push_back(menu.path().generic_string());
-					terminal_commands::load_shared_library(arg);
-					break;
-				}
-				case menu::user_request::load_map: {
-					terminal_commands::argument_type arg{state, terminal, {}};
-					arg.command_line.emplace_back();
-					arg.command_line.push_back(menu.path().generic_string());
-					terminal_commands::load_map(arg);
-					break;
-				}
-				default:
-					spdlog::error(resources.log_for("view.view.menu.unknown_request"), "id"_a=static_cast<int>(request));
-					break;
-			}
+		switch (m_showing) {
+			case window::game:
+				game.show(show_debug_data);
+				break;
+			case window::menu: // FIXME : this menu should be part of game.show()
+				game.show(show_debug_data);
+				display_menu(state);
+				break;
+			default:
+				utils::log::warn("view.view.bad_state", "state"_a=static_cast<int>(m_showing));
 		}
 
 		if (m_showing_term) {
@@ -139,7 +113,6 @@ void view::view::do_run(state::holder &state) {
 			terminal.show();
 		}
 
-		game.show(show_debug_data);
 		ImGui::SFML::Render();
 
 		{ // Fixxy doo fix, fixes linux display bug somehow
@@ -157,6 +130,48 @@ void view::view::do_run(state::holder &state) {
 
 	m_game = nullptr;
 	m_menu = nullptr;
+}
+
+void view::view::display_menu(state::holder &state) noexcept {
+
+	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
+	auto request                                  = m_menu->show();
+	switch (request) {
+		case game_menu::user_request::none:
+			break;
+		case game_menu::user_request::close_menu:
+			m_showing = window::game;
+			m_game->resume();
+			m_menu->close();
+			break;
+		case game_menu::user_request::close_window:
+			m_running.clear();
+			break;
+		case game_menu::user_request::restart:
+			state::access<view>::adapter(state).load_map(state.current_map_path());
+			m_showing = window::game;
+			m_game->restart();
+			m_menu->close();
+			break;
+		case game_menu::user_request::load_dll: {
+			terminal_commands::argument_type arg{state, terminal, {}};
+			arg.command_line.emplace_back();
+			arg.command_line.push_back(m_menu->path().generic_string());
+			terminal_commands::load_shared_library(arg);
+			break;
+		}
+		case game_menu::user_request::load_map: {
+			terminal_commands::argument_type arg{state, terminal, {}};
+			arg.command_line.emplace_back();
+			arg.command_line.push_back(m_menu->path().generic_string());
+			terminal_commands::load_map(arg);
+			break;
+		}
+		default:
+			spdlog::error(utils::resource_manager::instance().log_for("view.view.menu.unknown_request"),
+			              "id"_a = static_cast<int>(request));
+			break;
+	}
 }
 
 void view::view::manage_events(sf::RenderWindow &window, unsigned int terminal_height) noexcept {

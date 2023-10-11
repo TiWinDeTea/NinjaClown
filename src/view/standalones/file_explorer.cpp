@@ -1,9 +1,9 @@
 #include <imgui.h>
 #include <utility>
 
+#include "file_explorer.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/system.hpp"
-#include "view/file_explorer.hpp"
 
 // TODO : rendre la classe file_explorer statique (pas vraiment besoin de l’instancier plusieurs fois)
 
