@@ -333,6 +333,22 @@ const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last
 	return m_cells_changed_since_last_update;
 }
 
+void adapter::adapter::create_map(unsigned int width, unsigned int height) {
+	// TODO
+}
+void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id new_value) {
+	// TODO
+}
+void adapter::adapter::add_entity(unsigned int x, unsigned int y, view_handle new_handle) {
+	// TODO
+}
+void adapter::adapter::remove_entity(view_handle deleted_entity) {
+	// TODO
+}
+void adapter::adapter::edit_entity(view_handle handle, const base_entity_edit &new_data) {
+	// TODO
+}
+
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
 	if (h.is_mob) {
 		return h.handle;

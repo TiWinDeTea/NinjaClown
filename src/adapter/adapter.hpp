@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "model/grid_point.hpp"
-#include "model/types.hpp"
 #include "utils/utils.hpp"
+
+#include "adapter_classes.hpp"
 
 class terminal_commands;
 
@@ -26,71 +27,13 @@ namespace cpptoml {
 class table;
 }
 
+namespace utils::resources_type {
+enum class tile_id;
+}
+
 namespace adapter {
 
-enum class bot_log_level {
-	BTRACE    = 0,
-	BDEBUG   = 1,
-	BINFO    = 2,
-	BWARN    = 3,
-	BERROR   = 4,
-	BCRITICAL = 5,
-};
 
-struct model_handle {
-	enum type_t {
-		ACTIVATOR  = 1,
-		ACTIONABLE = 2,
-		ENTITY     = 4,
-	};
-
-	explicit model_handle() noexcept = default;
-	explicit constexpr model_handle(model::handle_t handle_, type_t type_) noexcept
-	    : handle{handle_}
-	    , type{type_} { }
-	constexpr bool operator==(const model_handle &other) const noexcept {
-		return other.handle == handle && type == other.type;
-	}
-
-	model::handle_t handle{};
-	type_t type{};
-};
-
-struct view_handle {
-	explicit view_handle() noexcept = default;
-	explicit constexpr view_handle(bool is_mob_, size_t handle_) noexcept
-	    : is_mob{is_mob_}
-	    , handle{handle_} { }
-	constexpr bool operator==(const view_handle &other) const noexcept {
-		return other.is_mob == is_mob && other.handle == handle;
-	}
-	bool is_mob{};
-	size_t handle{};
-};
-
-struct model_hhash: private std::hash<utils::ssize_t> {
-	utils::ssize_t operator()(const model_handle &h) const noexcept {
-		return std::hash<utils::ssize_t>::operator()(h.handle | h.type << 16u);
-	}
-};
-struct view_hhash {
-	std::size_t operator()(const view_handle &h) const noexcept;
-};
-
-namespace request {
-	struct coords {
-		std::size_t x, y;
-	};
-
-	struct hitbox {
-		float x, y;
-		float width, height;
-	};
-
-	struct info {
-		std::vector<std::string> lines;
-	};
-} // namespace request
 using draw_request = std::vector<std::variant<request::coords, request::hitbox, request::info>>;
 
 class adapter {
@@ -105,26 +48,13 @@ public:
 	bool map_is_loaded() noexcept;
 
 	[[nodiscard]] draw_request tooltip_for(view_handle entity) noexcept;
-	/**
-	 * Generates a tooltip for an actionable (door, ...), given its handle
-	 * @param actionable Model handle to the actionable
-	 * @param view_actionable View handle to the actionable
-	 * @return Draw request for the actionable's tooltip
-	 */
-	[[nodiscard]] draw_request tooltip_for_actionable(model_handle actionable, view_handle view_actionable) noexcept;
-	/**
-	 * Generates a tooltip for an activator (button, ...), given its handle
-	 * @param activator Model handle to the activator
-	 * @return Draw request for the activator's tooltip
-	 */
-	[[nodiscard]] draw_request tooltip_for_activator(model_handle activator) noexcept;
-	/**
-	 * Generates a tooltip for a mob, given its handle
-	 * @param mob Model handle to the mob
-	 * @param components Model components
-	 * @return Draw request for the mob's tooltip
-	 */
-	[[nodiscard]] draw_request tooltip_for_mob(model_handle mob, const model::components& components) noexcept;
+
+	// Used by view when map editing
+	void create_map(unsigned int width, unsigned int height);
+	void edit_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id new_value);
+	void add_entity(unsigned int x, unsigned int y, view_handle new_handle);
+	void remove_entity(view_handle deleted_entity);
+	void edit_entity(view_handle handle, const base_entity_edit& new_data);
 
 	// -- Used by model -- //
 
@@ -153,6 +83,27 @@ public:
 	void bot_log(bot_log_level level, const char *text);
 
 private:
+	/**
+	 * Generates a tooltip for an actionable (door, ...), given its handle
+	 * @param actionable Model handle to the actionable
+	 * @param view_actionable View handle to the actionable
+	 * @return Draw request for the actionable's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_actionable(model_handle actionable, view_handle view_actionable) noexcept;
+	/**
+	 * Generates a tooltip for an activator (button, ...), given its handle
+	 * @param activator Model handle to the activator
+	 * @return Draw request for the activator's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_activator(model_handle activator) noexcept;
+	/**
+	 * Generates a tooltip for a mob, given its handle
+	 * @param mob Model handle to the mob
+	 * @param components Model components
+	 * @return Draw request for the mob's tooltip
+	 */
+	[[nodiscard]] draw_request tooltip_for_mob(model_handle mob, const model::components& components) noexcept;
+
 	friend terminal_commands;
 
 	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
