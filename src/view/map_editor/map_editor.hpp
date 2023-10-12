@@ -4,6 +4,8 @@
 #include <variant>
 #include <optional>
 
+#include "view/standalones/file_explorer.hpp"
+
 
 namespace utils::resources_type {
 enum class mob_id;
@@ -40,11 +42,19 @@ public:
 	void event(sf::Event &);
 
 private:
+	enum class editor_state {
+		showing_menu,
+		loading_map,
+		creating_map,
+		editing_map,
+	};
 
 	/**
-	 * Loads a map or creates an empty one
+	 * Loads a map or creates an empty one (asks user)
 	 */
-	void initialize_map();
+	void display_map_creator();
+	// actually loads the selected map
+	void load_map();
 
 	/**
 	 * Shows the selector (clickables to select what to place : tiles, mobs, ...)
@@ -64,9 +74,13 @@ private:
 	state::holder &m_state;
 	sf::RenderWindow &m_window;
 
+	editor_state m_editor_state{editor_state::showing_menu};
+	int m_map_size_x{0}; // signed because of ImGui
+	int m_map_size_y{0}; // signed because of ImGui
+	bool m_popup_open{false};
+
 	bool m_has_map{false};
-	std::size_t m_map_size_x{0};
-	std::size_t m_map_size_y{0};
+	file_explorer m_file_explorer{};
 
 	/**
 	 * Current selection. nullopt_t if no selection at all

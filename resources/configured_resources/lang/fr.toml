@@ -418,3 +418,23 @@
     [[gui.entry]]
         id = "configurator.import_lang"
         fmt = "Importer une langue"
+
+    [[gui.entry]]
+        id = "view.map_editor.generate_map"
+        fmt = "Générer la carte"
+    [[gui.entry]]
+        id = "view.map_editor.map_size_x"
+        fmt = "Largeur"
+    [[gui.entry]]
+        id = "view.map_editor.map_size_y"
+        fmt = "Hauteur"
+    [[gui.entry]]
+        id = "view.map_editor.cancel_map_creation"
+        fmt = "Annuler"
+    [[gui.entry]]
+        id = "view.map_editor.load_map"
+        fmt = "Charger depuis un fichier"
+    [[gui.entry]]
+        id = "view.map_editor.create_map"
+        fmt = "Créer de zéro"
+

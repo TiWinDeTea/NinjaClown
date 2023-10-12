@@ -30,6 +30,7 @@ class game_viewer;
 class map_viewer;
 class view;
 class game_menu;
+class map_editor;
 }
 
 namespace adapter {
@@ -82,9 +83,10 @@ private:
 	friend access<view::view>;
 	friend access<view::map_viewer>;
 	friend access<view::game_menu>;
+	friend access<view::map_editor>;
+	friend access<bot::ffi>;
 	friend access<adapter::adapter>;
 	friend access<model::model>;
-	friend access<bot::ffi>;
 };
 
 struct property {
@@ -160,15 +162,25 @@ class access<view::game_viewer> {
 
 template <>
 class access<view::map_viewer> {
-    static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
-        return holder.terminal();
-    }
+	static ImTerm::terminal<terminal_commands> &terminal(holder &holder) noexcept {
+		return holder.terminal();
+	}
 
-    static adapter::adapter &adapter(holder &holder) noexcept {
-        return holder.adapter();
-    }
+	static adapter::adapter &adapter(holder &holder) noexcept {
+		return holder.adapter();
+	}
 
-    friend view::map_viewer;
+	friend view::map_viewer;
+};
+
+
+template <>
+class access<view::map_editor> {
+	static adapter::adapter &adapter(holder &holder) noexcept {
+		return holder.adapter();
+	}
+
+	friend view::map_editor;
 };
 
 template <>

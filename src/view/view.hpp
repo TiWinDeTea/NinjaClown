@@ -82,7 +82,7 @@ private:
     std::atomic_flag m_running{};
 
 	utils::loop_per_sec_limit m_fps_limiter{};
-	window m_show_state{window::game}; // FIXME : devrait être window::menu
+	window m_show_state{window::map_editor}; // FIXME : devrait être window::menu
 	bool m_showing_term{false};
 };
 } // namespace view

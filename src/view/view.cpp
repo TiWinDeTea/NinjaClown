@@ -113,6 +113,7 @@ void view::view::do_run(state::holder &state) {
 				if (!editor.show()) {
 					m_show_state = window::menu;
 				}
+				break;
 			default:
 				utils::log::warn("view.view.bad_state", "state"_a = static_cast<int>(m_show_state));
 		}
@@ -165,7 +166,7 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 				// TODO : pass events to main menu once it’s developped
 				break;
 			case window::map_editor:
-				// TODO : pass events to map editor once it’s developped
+				m_editor->event(event);
 				break;
 		}
 
