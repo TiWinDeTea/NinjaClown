@@ -63,7 +63,7 @@ void view::game_viewer::restart() noexcept {
 
 bool view::game_viewer::show(bool show_debug_data) {
 	m_window_size = m_window.getSize();
-	m_map.print(show_debug_data);
+	m_map.print(show_debug_data && !m_showing_menu);
 	show_rightmost_bar();
 	if (m_showing_menu) {
 		display_menu();
@@ -74,6 +74,15 @@ bool view::game_viewer::show(bool show_debug_data) {
 
 // todo split
 void view::game_viewer::event(const sf::Event &event) {
+	// disabling inputs other than escape if menu is shown
+	if (m_showing_menu) {
+		if (event.type == sf::Event::KeyPressed && key(event).code == sf::Keyboard::Escape) {
+			m_showing_menu = false;
+			m_menu.close();
+		}
+		return;
+	}
+
 	switch (event.type) {
 
 		case sf::Event::KeyPressed:
@@ -92,9 +101,7 @@ void view::game_viewer::event(const sf::Event &event) {
 					}
 					break;
 				case sf::Keyboard::Escape:
-					if (std::exchange(m_showing_menu, !m_showing_menu)) {
-						m_menu.close();
-					}
+					m_showing_menu = true; // at this point we know m_showing_menu was false.
 					break;
 				default:
 					break;

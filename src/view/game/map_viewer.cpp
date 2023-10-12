@@ -15,7 +15,7 @@ view::map_viewer::map_viewer(state::holder &state) noexcept
 void view::map_viewer::print(bool show_debug_data) {
 	assert(m_window);
 	assert(m_state);
-	const auto& resources = utils::resource_manager::instance();
+	const auto &resources = utils::resource_manager::instance();
 
 	++m_current_frame;
 	m_map.acquire()->print(*this);
@@ -25,8 +25,6 @@ void view::map_viewer::print(bool show_debug_data) {
 		return;
 	}
 
-	const sf::Vector2u window_size = m_window->getSize();
-
 	std::vector<std::vector<std::string>> printable_info
 	  = m_overmap.acquire()->print_all(*this, state::access<map_viewer>::adapter(*m_state));
 
@@ -35,10 +33,12 @@ void view::map_viewer::print(bool show_debug_data) {
 	mouse_pos.y /= static_cast<float>(tiles_infos.yspacing);
 	mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * static_cast<float>(tiles_infos.y_xshift)) / static_cast<float>(tiles_infos.xspacing);
 
-	if (mouse_pos.x < 0 || mouse_pos.y < 0 || mouse_pos.x >= static_cast<float>(m_level_size.x) || mouse_pos.y >= static_cast<float>(m_level_size.y)) {
+	if (mouse_pos.x < 0 || mouse_pos.y < 0 || mouse_pos.x >= static_cast<float>(m_level_size.x)
+	    || mouse_pos.y >= static_cast<float>(m_level_size.y)) {
 		return;
 	}
 
+	const sf::Vector2u window_size   = m_window->getSize();
 	const sf::Vector2i win_mouse_pos = sf::Mouse::getPosition(*m_window);
 	if (win_mouse_pos.x <= 0 || win_mouse_pos.y <= 0 || win_mouse_pos.x >= window_size.x || win_mouse_pos.y >= window_size.y) {
 		return;
@@ -47,12 +47,17 @@ void view::map_viewer::print(bool show_debug_data) {
 	printable_info.emplace_back().emplace_back("x : " + std::to_string(static_cast<int>(mouse_pos.x)));
 	printable_info.back().emplace_back("y : " + std::to_string(static_cast<int>(mouse_pos.y)));
 
+	print_tile_info(printable_info);
+}
+
+void view::map_viewer::print_tile_info(const std::vector<std::vector<std::string>> &tooltips) {
+
 	auto &style = ImGui::GetStyle();
 	float x_text_size{0.f};
 	float y_text_size{style.WindowPadding.y * 2 - style.ItemInnerSpacing.y};
-	for (const std::vector<std::string> &info : printable_info) {
+	for (const std::vector<std::string> &info : tooltips) {
 		for (const std::string &str : info) {
-			ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
+			const ImVec2 text_size = ImGui::CalcTextSize(str.data(), str.data() + str.size());
 			y_text_size += text_size.y;
 			y_text_size += style.ItemInnerSpacing.y;
 			x_text_size = std::max(x_text_size, text_size.x);
@@ -62,19 +67,19 @@ void view::map_viewer::print(bool show_debug_data) {
 	x_text_size += style.WindowPadding.x * 2;
 
 	const float prev = std::exchange(style.WindowRounding, 0.f);
-	const ImVec2 pos = {0, static_cast<float>(window_size.y) - y_text_size};
+	const ImVec2 pos = {0, static_cast<float>(m_window->getSize().y) - y_text_size};
 	ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2{x_text_size, y_text_size});
 	if (ImGui::Begin("##corner info window", nullptr,
-	                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoFocusOnAppearing // NOLINT(hicpp-signed-bitwise)
-	                   | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
-		for (auto it = printable_info.cbegin(), end = std::prev(printable_info.cend()); it != end; ++it) {
+	                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar // NOLINT(hicpp-signed-bitwise)
+	                   | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+		for (auto it = tooltips.cbegin(), end = std::prev(tooltips.cend()); it != end; ++it) {
 			for (const std::string &str : *it) {
 				ImGui::Text("%s", str.c_str());
 			}
 			ImGui::Separator();
 		}
-		for (const std::string &str : printable_info.back()) {
+		for (const std::string &str : tooltips.back()) {
 			ImGui::Text("%s", str.c_str());
 		}
 	}

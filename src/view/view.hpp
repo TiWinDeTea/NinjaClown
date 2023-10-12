@@ -74,6 +74,7 @@ private:
 
 	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
 
+
 	std::unique_ptr<std::thread> m_thread{};
 
     std::atomic_flag m_running{};

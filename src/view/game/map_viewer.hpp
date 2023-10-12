@@ -5,6 +5,9 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <vector>
+#include <string>
+
 #include "utils/synchronized.hpp"
 #include "utils/spinlock.hpp"
 
@@ -58,7 +61,7 @@ public:
 	/**
 	 * Prints some tooltip infos
 	 */
-	void print_tile_info(bool show_debug_data);
+	void print_tile_info(const std::vector<std::vector<std::string>>&);
 
     // converts world grid coords to on-screen coords
     sf::Vector2f to_screen_coords(float x, float y) const noexcept;

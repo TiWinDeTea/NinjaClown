@@ -62,7 +62,7 @@ std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::
 		displayable.first->print(viewer);
 		if (displayable.first->is_hovered(viewer)) {
 			local_info.clear();
-			adapter::draw_request requests = adapter.tooltip_for(displayable.second);
+			const adapter::draw_request requests = adapter.tooltip_for(displayable.second);
 			for (const adapter::draw_request::value_type &request : requests) {
 				std::visit(request_visitor, request);
 			}
