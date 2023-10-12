@@ -42,6 +42,7 @@ set(NINJA_CLOWN_SOURCES
         src/view/game/mob.cpp
         src/view/game/object.cpp
         src/view/game/overmap_collection.cpp
+        src/view/map_editor/map_editor.cpp
         src/view/standalones/configurator.cpp
         src/view/standalones/file_explorer.cpp
         src/view/standalones/imgui_styles.cpp
