@@ -72,11 +72,6 @@ private:
 	 */
 	void manage_events(sf::RenderWindow& window, state::holder&) noexcept;
 
-	/**
-	 * Defers display to menu and treats its requests
-	 */
-	 void display_menu(state::holder&) noexcept;
-
 	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
 
 	std::unique_ptr<std::thread> m_thread{};

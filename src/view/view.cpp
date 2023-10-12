@@ -32,25 +32,7 @@ void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int 
 	terminal.log_level(ImTerm::message::severity::info);
 	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
 	terminal.disallow_x_resize();
-	terminal.filter_hint() = "regex filter..."; // TODO traduction
-}
-
-bool mouse_type_event(sf::Event::EventType et) {
-	switch (et) {
-		case sf::Event::MouseWheelMoved:
-		case sf::Event::MouseWheelScrolled:
-		case sf::Event::MouseButtonPressed:
-		case sf::Event::MouseButtonReleased:
-		case sf::Event::MouseMoved:
-		case sf::Event::MouseEntered:
-		case sf::Event::MouseLeft:
-		case sf::Event::TouchBegan:
-		case sf::Event::TouchMoved:
-		case sf::Event::TouchEnded:
-			return true;
-		default:
-			return false;
-	}
+	terminal.filter_hint() = utils::resource_manager::instance().gui_text_for("view.terminal.regex_filter");
 }
 } // namespace
 

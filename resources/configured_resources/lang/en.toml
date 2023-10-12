@@ -316,6 +316,10 @@
         fmt = "successfully loaded font awesome"
 
     [[log.entry]]
+        id = "view.terminal.regex_filter"
+        fmt = "regex filter..."
+
+    [[log.entry]]
         id = "view.configurator.config_save_failed"
         fmt = "Could not save the new configuration"
 

@@ -23,7 +23,7 @@ namespace idx {
 	};
 }
 
-constexpr const char window_name[] = "##configurator";
+constexpr const char *window_name = "##configurator";
 
 std::string display_name(const utils::resource_manager::resource_pack_info &resource_pack, const lang_info &user_lang) {
 	if (auto it = resource_pack.names_by_shorthand_lang.find(user_lang.map_name); it != resource_pack.names_by_shorthand_lang.end()) {
@@ -69,9 +69,8 @@ const T *combo(std::string_view label, const std::vector<T> &choices, const lang
 }
 } // namespace
 
-
 void view::configurator::give_control() noexcept {
-	auto& resources = utils::resource_manager::instance();
+	auto &resources = utils::resource_manager::instance();
 
 	m_graphics_changed = false;
 	if (!m_showing) {
@@ -99,7 +98,8 @@ void view::configurator::give_control() noexcept {
 	}
 
 	if (!ImGui::BeginPopupModal(window_name, nullptr,
-	                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+	                            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize // NOLINT(*-signed-bitwise)
+	                              | ImGuiWindowFlags_AlwaysAutoResize)) {
 		m_popup_open = false;
 		m_showing    = false;
 		return;
@@ -152,7 +152,6 @@ void view::configurator::give_control() noexcept {
 		std::string_view import_lang = resources.gui_text_for("configurator.import_lang");
 		using_style(disabled_button) {
 			if (ImGui::Button(import_lang.data(), {ImGui::GetContentRegionAvail().x, 0})) {
-
 			}
 		};
 	}
@@ -183,11 +182,10 @@ void view::configurator::give_control() noexcept {
 		}
 
 		std::string_view import_respack = resources.gui_text_for("configurator.import_respack");
-        using_style(disabled_button) {
-            if (ImGui::Button(import_respack.data(), {ImGui::GetContentRegionAvail().x, 0})) {
-
-            }
-        };
+		using_style(disabled_button) {
+			if (ImGui::Button(import_respack.data(), {ImGui::GetContentRegionAvail().x, 0})) {
+			}
+		};
 	}
 
 	ImGui::EndPopup();

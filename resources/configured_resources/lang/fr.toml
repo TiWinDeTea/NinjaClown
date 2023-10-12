@@ -316,6 +316,10 @@
         fmt = "Font Awesome chargée avec succès"
 
     [[log.entry]]
+        id = "view.terminal.regex_filter"
+        fmt = "filtre regex..."
+
+    [[log.entry]]
         id = "view.configurator.config_save_failed"
         fmt = "Échec de sauvegarde de la configuration"
 
