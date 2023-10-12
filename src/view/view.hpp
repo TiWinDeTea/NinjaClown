@@ -20,6 +20,7 @@ class holder;
 namespace view {
 
 class game_viewer;
+class map_editor;
 
 class view {
 	enum class window {
@@ -72,7 +73,8 @@ private:
 	 */
 	void manage_events(sf::RenderWindow& window, state::holder&) noexcept;
 
-	game_viewer* m_game{nullptr}; // allowing external access (data within *do_run*)
+	game_viewer* m_game{nullptr}; // allowing external access (!= nullptr while within *do_run*)
+	map_editor* m_editor{nullptr}; // allowing external access (!= nullptr while within *do_run*)
 
 
 	std::unique_ptr<std::thread> m_thread{};

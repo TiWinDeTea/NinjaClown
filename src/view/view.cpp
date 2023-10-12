@@ -1,4 +1,3 @@
-#include "view/view.hpp"
 #include "adapter/adapter.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
@@ -6,7 +5,9 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/system.hpp"
+#include "view/map_editor/map_editor.hpp"
 #include "view/game/game_viewer.hpp"
+#include "view/view.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -59,9 +60,12 @@ void view::view::do_run(state::holder &state) {
 
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
 	setup_terminal(terminal, x_window_size, y_window_size / 3);
+
 	game_viewer game{window, state};
+	map_editor editor{window, state};
 
 	m_game = &game;
+	m_editor = &editor;
 
 	ImGui::SFML::Init(window);
 	ImGui::GetIO().IniFilename = nullptr;
@@ -104,10 +108,11 @@ void view::view::do_run(state::holder &state) {
 				}
 				break;
 			case window::menu:
-				// TODO : show main menu
 				break;
 			case window::map_editor:
-				// TODO : show map editor
+				if (!editor.show()) {
+					m_show_state = window::menu;
+				}
 			default:
 				utils::log::warn("view.view.bad_state", "state"_a = static_cast<int>(m_show_state));
 		}
