@@ -1,6 +1,7 @@
 #ifndef NINJACLOWN_VIEW_ANIMATION_HPP
 #define NINJACLOWN_VIEW_ANIMATION_HPP
 
+#include <cassert>
 #include <vector>
 
 #include <SFML/Graphics/Sprite.hpp>
@@ -20,6 +21,11 @@ public:
 
 	void highlight(map_viewer &viewer, float posx, float posy) const noexcept;
 
+	/**
+	 * Returns the sprite that should currently be displayed
+	 */
+	const sf::Sprite& current_sprite() const noexcept;
+
 	friend class shifted_animation;
 
 private:
@@ -38,7 +44,7 @@ public:
 	~shifted_animation() = default;
 
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
-	shifted_animation &operator=(const shifted_animation &) = default;
+	shifted_animation &operator=(const shifted_animation &)     = default;
 
 	bool is_hovered(map_viewer &viewer) const noexcept;
 
@@ -52,6 +58,12 @@ public:
 	}
 
 	void print(map_viewer &viewer, float posx, float posy) const noexcept;
+
+	/**
+	 * Returns the sprite that should currently be displayed
+	 * @param frame_count total number of frames that have been displayed by the program
+	 */
+	const sf::Sprite& current_sprite() const noexcept;
 
 	bool empty() const noexcept {
 		return m_frames.empty();

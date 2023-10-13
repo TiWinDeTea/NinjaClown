@@ -1,7 +1,7 @@
 #ifndef NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP
 #define NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP
 
-#include <variant>
+#include    <variant>
 #include <optional>
 
 #include "view/standalones/file_explorer.hpp"
@@ -26,9 +26,7 @@ class holder;
 namespace view {
 class map_editor {
 public:
-	map_editor(sf::RenderWindow &window, state::holder &state)
-	    : m_state{state}
-	    , m_window{window} { }
+	map_editor(sf::RenderWindow &window, state::holder &state) noexcept;
 
 	/**
 	 * Displays the map editor.
@@ -71,16 +69,25 @@ private:
 	 */
 	void display_map();
 
+	/**
+	 * Shows right click drop down menu
+	 */
+	 void display_popup();
+
 	state::holder &m_state;
 	sf::RenderWindow &m_window;
 
 	editor_state m_editor_state{editor_state::showing_menu};
 	int m_map_size_x{0}; // signed because of ImGui
 	int m_map_size_y{0}; // signed because of ImGui
-	bool m_popup_open{false};
+	bool m_popup_menu_open{false};
 
 	bool m_has_map{false};
 	file_explorer m_file_explorer{};
+
+	bool m_stay_in_map_editor{true};
+
+	std::optional<std::pair<int, int>> m_mouse_press_location{};
 
 	/**
 	 * Current selection. nullopt_t if no selection at all

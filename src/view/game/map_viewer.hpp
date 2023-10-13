@@ -81,7 +81,7 @@ public:
 
     void reload_sprites();
 
-	std::chrono::system_clock::time_point starting_time() {
+	std::chrono::system_clock::time_point starting_time() const {
 		return m_starting_time;
 	}
 

@@ -139,6 +139,10 @@ void view::view::do_run(state::holder &state) {
 	}
 
 	m_game = nullptr;
+	m_editor = nullptr;
+
+	ImGui::SFML::Shutdown();
+
 }
 
 void view::view::manage_events(sf::RenderWindow &window, state::holder &state) noexcept {

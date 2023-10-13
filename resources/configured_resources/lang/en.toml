@@ -448,3 +448,33 @@
     [[gui.entry]]
         id = "view.map_editor.create_map"
         fmt = "Create map from scratch"
+    [[gui.entry]]
+        id = "view.map_editor.tiles.chasm"
+        fmt = "Dark tile"
+    [[gui.entry]]
+        id = "view.map_editor.tiles.iron"
+        fmt = "Iron tile"
+    [[gui.entry]]
+        id = "view.map_editor.tiles.concrete"
+        fmt = "Concrete tile"
+    [[gui.entry]]
+        id = "view.map_editor.tiles.frame"
+        fmt = "Frame tile"
+    [[gui.entry]]
+        id = "view.map_editor.objects.button"
+        fmt = "Button"
+    [[gui.entry]]
+        id = "view.map_editor.objects.gate"
+        fmt = "Gate"
+    [[gui.entry]]
+        id = "view.map_editor.objects.autoshooter"
+        fmt = "Autoshooter"
+    [[gui.entry]]
+        id = "view.map_editor.objects.target"
+        fmt = "Target block"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.player"
+        fmt = "Player"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.scientist"
+        fmt = "Scientist"

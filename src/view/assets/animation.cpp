@@ -33,3 +33,11 @@ bool view::shifted_animation::is_hovered(view::map_viewer& viewer) const noexcep
 	auto selected_frame = (viewer.current_frame() / SINGLE_IMAGE_DURATION) % m_frames.size();
 	return m_frames[selected_frame].getGlobalBounds().contains(viewer.get_mouse_pos());
 }
+
+const sf::Sprite& view::animation::current_sprite() const noexcept {
+	return select({}, m_frames, SINGLE_IMAGE_DURATION);
+}
+
+const sf::Sprite& view::shifted_animation::current_sprite() const noexcept {
+	return select({}, m_frames, SINGLE_IMAGE_DURATION);
+}

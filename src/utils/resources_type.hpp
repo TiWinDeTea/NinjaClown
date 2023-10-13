@@ -18,7 +18,7 @@ enum class tile_id {
 	chasm    = TILES_CHASMID,
 	iron     = TILES_IRONID,
 	concrete = TILES_CONCRETEID,
-	frame    = TILES_FRAMEID,
+	frame    = TILES_FRAMEID, // TODO What is this one all about ?
 };
 } // namespace utils::resources_type
 

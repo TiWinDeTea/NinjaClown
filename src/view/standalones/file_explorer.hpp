@@ -19,6 +19,8 @@ struct with_extensions {
 	std::vector<std::string> exts{};
 };
 
+
+// FIXME : replace with https://github.com/mlabbe/nativefiledialog or https://github.com/btzy/nativefiledialog-extended
 class file_explorer {
 
 public:

@@ -23,8 +23,13 @@ public:
 		m_animations_by_direction[dir] = std::move(anim);
 	}
 
+	const sf::Sprite& current_sprite() const noexcept {
+		assert(m_animations_by_direction[facing_direction::S]);
+		return m_animations_by_direction[facing_direction::S]->current_sprite();
+	}
+
 private:
 	std::array<std::optional<shifted_animation>, facing_direction::MAX_VAL> m_animations_by_direction{};
 };
 } // namespace view
-#endif //NINJACLOWN_VIEW_SPRITES_HPP
+#endif //NINJACLOWN_VIEW_MOB_ANIMATIONS_HPP
