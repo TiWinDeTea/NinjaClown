@@ -18,7 +18,7 @@ enum class tile_id {
 	chasm    = TILES_CHASMID,
 	iron     = TILES_IRONID,
 	concrete = TILES_CONCRETEID,
-	frame    = TILES_FRAMEID,
+	frame    = TILES_FRAMEID, // used to highlight tiles targeted by actionnable objects 
 };
 } // namespace utils::resources_type
 
