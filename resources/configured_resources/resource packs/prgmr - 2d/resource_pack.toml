@@ -11,154 +11,154 @@
 
         [graphics.mobs.player]
             id = @MOBS_PLAYERID@
-
-        [graphics.mobs.player.downwards]
-            frame-count = 1
-            pos.x = 192
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.upwards]
-            frame-count = 1
-            pos.x = 208
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.rightwards]
-            frame-count = 1
-            pos.x = 208
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.leftwards]
-            frame-count = 1
-            pos.x = 192
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.uprightwards]
-            frame-count = 1
-            pos.x = 240
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.upleftwards]
-            frame-count = 1
-            pos.x = 224
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.downrightwards]
-            frame-count = 1
-            pos.x = 240
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.player.downleftwards]
-            frame-count = 1
-            pos.x = 224
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
+    
+            [graphics.mobs.player.downwards]
+                frame-count = 1
+                pos.x = 192
+                pos.y = 16
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.upwards]
+                frame-count = 1
+                pos.x = 208
+                pos.y = 16
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.rightwards]
+                frame-count = 1
+                pos.x = 208
+                pos.y = 0
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.leftwards]
+                frame-count = 1
+                pos.x = 192
+                pos.y = 0
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.uprightwards]
+                frame-count = 1
+                pos.x = 240
+                pos.y = 0
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.upleftwards]
+                frame-count = 1
+                pos.x = 224
+                pos.y = 0
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.downrightwards]
+                frame-count = 1
+                pos.x = 240
+                pos.y = 16
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.player.downleftwards]
+                frame-count = 1
+                pos.x = 224
+                pos.y = 16
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
 
 
         [graphics.mobs.scientist]
             id = @MOBS_SCIENTISTID@
-
-        [graphics.mobs.scientist.downwards]
-            frame-count = 1
-            pos.x = 192
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.upwards]
-            frame-count = 1
-            pos.x = 208
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.rightwards]
-            frame-count = 1
-            pos.x = 208
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.leftwards]
-            frame-count = 1
-            pos.x = 192
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.uprightwards]
-            frame-count = 1
-            pos.x = 240
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.upleftwards]
-            frame-count = 1
-            pos.x = 224
-            pos.y = 0
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.downrightwards]
-            frame-count = 1
-            pos.x = 240
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
-
-        [graphics.mobs.scientist.downleftwards]
-            frame-count = 1
-            pos.x = 224
-            pos.y = 16
-            shift.x = -8
-            shift.y = -8
-            width = 16
-            height = 16
+    
+            [graphics.mobs.scientist.downwards]
+                frame-count = 1
+                pos.x = 192
+                pos.y = 48
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.upwards]
+                frame-count = 1
+                pos.x = 208
+                pos.y = 48
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.rightwards]
+                frame-count = 1
+                pos.x = 208
+                pos.y = 32
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.leftwards]
+                frame-count = 1
+                pos.x = 192
+                pos.y = 32
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.uprightwards]
+                frame-count = 1
+                pos.x = 240
+                pos.y = 32
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.upleftwards]
+                frame-count = 1
+                pos.x = 224
+                pos.y = 32
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.downrightwards]
+                frame-count = 1
+                pos.x = 240
+                pos.y = 48
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.scientist.downleftwards]
+                frame-count = 1
+                pos.x = 224
+                pos.y = 48
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
 
 
     [graphics.tiles]
@@ -174,14 +174,14 @@
 
         [graphics.tiles.chasm]
             id = @TILES_CHASMID@
-            frame-count = 1
-            pos.x = 32
-            pos.y = 0
+            frame-count = 4
+            pos.x = 0
+            pos.y = 32
 
         [graphics.tiles.iron-tile]
             id = @TILES_IRONID@
             frame-count = 1
-            pos.x = 0
+            pos.x = 32
             pos.y = 0
 
         [graphics.tiles.concrete-tile]
@@ -197,7 +197,7 @@
             pos.y = 0
 
     [graphics.objects]
-        list = ["button", "gate", "target"]
+        list = ["button", "gate", "target", "autoshooter"]
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
@@ -227,3 +227,14 @@
             width = 32
             height = 32
             shift.x = 0
+            shift.y = 0
+
+        [graphics.objects.autoshooter]
+            id = @OBJECTS_AUTOSHOOTERID@
+            frame-count = 1
+            pos.x = 128
+            pos.y = 32
+            width = 32
+            height = 32
+            shift.x = 0
+            shift.y = 0

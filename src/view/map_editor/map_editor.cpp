@@ -129,7 +129,7 @@ void view::map_editor::show_selector() {
 		const std::array objects_type = {
 		  std::pair{utils::resources_type::object_id::button, text_for("view.map_editor.objects.button")},
 		  std::pair{utils::resources_type::object_id::gate, text_for("view.map_editor.objects.gate")},
-		  //std::pair{utils::resources_type::object_id::autoshooter, text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet
+		  std::pair{utils::resources_type::object_id::autoshooter, text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet
 		  std::pair{utils::resources_type::object_id::target, text_for("view.map_editor.objects.target")},
 		};
 
