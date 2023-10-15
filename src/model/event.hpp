@@ -14,7 +14,7 @@ namespace model {
 struct world;
 
 enum class event_reason {
-	NONE,
+	ENTITY,
 	REFIRE,
 	DELAY,
 };

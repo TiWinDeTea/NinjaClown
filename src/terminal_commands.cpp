@@ -422,7 +422,7 @@ void terminal_commands::fire_activator(argument_type &arg) {
 		return;
 	}
 
-	arg.val.model().world.fire_activator(arg.val.adapter(), *val, model::event_reason::NONE);
+	arg.val.model().world.fire_activator(arg.val.adapter(), *val, model::event_reason::ENTITY);
 }
 
 void terminal_commands::fire_actionable(argument_type &arg) {

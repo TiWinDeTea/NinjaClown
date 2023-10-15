@@ -31,19 +31,20 @@ struct actionable {
 	};
 
 	using behaviour_type = void (*)(const instance_data &, const argument_type &) noexcept;
-	struct behaviours_ns {
+
+	struct behaviours {
 		static void none(const instance_data &, const argument_type &) noexcept;
 		static void gate(const instance_data &, const argument_type &) noexcept;
 		static void autoshooter(const instance_data &, const argument_type &) noexcept;
 	};
 
 	void make_action(const argument_type &arg) const noexcept {
-		assert(behaviour); // NOLINT
+		assert(behaviour);
 		behaviour(data, arg);
 	}
 
 	instance_data data{};
-	behaviour_type behaviour{behaviours_ns::none};
+	behaviour_type behaviour{behaviours::none};
 };
 }; // namespace model
 

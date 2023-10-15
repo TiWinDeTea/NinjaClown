@@ -21,6 +21,12 @@ constexpr float default_activate_range = 1.0f;
 constexpr tick_t default_attack_delay  = 5;
 constexpr tick_t default_throw_delay   = 3;
 
+struct movement {
+	float rotation = 0.f; // radians
+	float forward_diff = 0.f;
+	float lateral_diff = 0.f;
+};
+
 using decision = std::variant<ninja_api::nnj_movement_request, ninja_api::nnj_activate_request, ninja_api::nnj_attack_request,
                               ninja_api::nnj_throw_request>;
 
@@ -114,6 +120,7 @@ struct components {
 	std::array<std::optional<component::health>, cst::max_entities> health;
 	std::array<std::optional<component::hitbox>, cst::max_entities> hitbox;
 	std::array<std::optional<component::decision>, cst::max_entities> decision;
+	std::array<std::optional<component::movement>, cst::max_entities> movement;
 	std::array<component::properties, cst::max_entities> properties;
 	std::array<component::metadata, cst::max_entities> metadata;
 	std::array<component::state, cst::max_entities> state;

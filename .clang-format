@@ -30,7 +30,7 @@ BraceWrapping:
   AfterUnion:            'false'
   AfterExternBlock:      'false'
   BeforeCatch:           'true'
-  BeforeElse:            'true'
+  BeforeElse:            'false'
   IndentBraces:          'false'
   SplitEmptyFunction:    'false'
   SplitEmptyRecord:      'false'

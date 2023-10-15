@@ -82,7 +82,9 @@ struct gate {
 struct autoshooter {
 	std::string name;
 	point pos;
+	bool enabled;
 	unsigned int firing_rate;
+	unsigned int initial_delay;
 	float facing;
 };
 
@@ -97,8 +99,10 @@ namespace keys {
 	constexpr const char *type                  = "type";
 	constexpr const char *x_pos                 = "pos.x";
 	constexpr const char *y_pos                 = "pos.y";
-	constexpr const char *facing                = "facing";
+	constexpr const char *enabled               = "enabled";
 	constexpr const char *firing_rate           = "firing_rate";
+	constexpr const char *initial_delay         = "initial_delay";
+	constexpr const char *facing                = "facing";
 	constexpr const char *closed                = "closed";
 	constexpr const char *refire_after          = "refire_after";
 	constexpr const char *refire_repeat         = "refire_repeat";
@@ -289,10 +293,10 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 		auto try_get = [&actor, &type](const char *key, auto &value, bool silent = false) -> bool {
 			if (silent) {
 				return try_get_silent(actor, key, value);
-			}
-			else {
-				return ::try_get(actor, key, value, utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.actor_missing_component"), "key"_a = key,
-				                 "type"_a = *type);
+			} else {
+				return ::try_get(actor, key, value,
+				                 utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.actor_missing_component"),
+				                 "key"_a = key, "type"_a = *type);
 			}
 		};
 
@@ -307,8 +311,18 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 		}
 
 		if (*type == values::autoshooter) {
+			bool enabled{};
+			if (!try_get(keys::enabled, enabled)) {
+				return {};
+			}
+
 			unsigned int firing_rate{};
 			if (!try_get(keys::firing_rate, firing_rate)) {
+				return {};
+			}
+
+			unsigned int initial_delay{};
+			if (!try_get(keys::initial_delay, initial_delay)) {
 				return {};
 			}
 
@@ -326,7 +340,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			if (!insert_result.second) {
 				utils::log::warn("adapter_map_loader_v1_0_0.actor_duplication", "actor"_a = name, "map"_a = map);
 			}
-			actors.emplace_back(autoshooter{name, point{x_pos, y_pos}, firing_rate, static_cast<float>(facing)});
+			actors.emplace_back(autoshooter{name, point{x_pos, y_pos}, enabled, firing_rate, initial_delay, static_cast<float>(facing)});
 		}
 		else if (*type == values::gate) {
 
@@ -378,6 +392,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 				error("actor_with_no_target", "type"_a = *type, keys::acts_on_table);
 				return {};
 			}
+
 			for (const std::string &target : *targets) {
 
 				auto it = actionable_handles.find(target);
@@ -404,8 +419,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	init_maps();
 
 	auto error = [&map, this](const char *key, auto &&...vals) {
-		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
-		                  std::forward<decltype(vals)>(vals)...);
+		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map, std::forward<decltype(vals)>(vals)...);
 	};
 
 	view::map_viewer map_viewer{m_state};
@@ -485,20 +499,20 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				switch (line[column_idx]) {
 					case '#':
 						world.map[column_idx][line_idx].type = model::cell_type::CHASM;
-						view_map[column_idx][line_idx]        = view::map::cell::abyss;
+						view_map[column_idx][line_idx]       = view::map::cell::abyss;
 						break;
 					case ' ':
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+						view_map[column_idx][line_idx]       = view::map::cell::concrete_tile;
 						break;
 					case '~':
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
+						view_map[column_idx][line_idx]       = view::map::cell::iron_tile;
 						break;
 					case 'T': {
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-						world.target_tile = {column_idx, line_idx};
+						view_map[column_idx][line_idx]       = view::map::cell::concrete_tile;
+						world.target_tile                    = {column_idx, line_idx};
 
 						view::object obj;
 						obj.set_id(utils::resources_type::object_id::target);
@@ -625,7 +639,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  const float TOPLEFT_Y = static_cast<float>(gate.pos.y) * model::cst::cell_height;
 
 				  world.actionables.push_back({model::actionable::instance_data{{gate.pos.x, gate.pos.y}, world.actionables.size()},
-				                               model::actionable::behaviours_ns::gate});
+				                               model::actionable::behaviours::gate});
 
 				  view::object o{};
 				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
@@ -636,7 +650,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_view2model[view_handle]  = model_handle;
 				  if (gate.closed) {
 					  world.map[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
-				  } else {
+				  }
+				  else {
 					  map_viewer_omap->hide(view_handle);
 				  }
 
@@ -649,17 +664,27 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  world.actionables.push_back(
 				    {model::actionable::instance_data{
 				       {autoshooter.pos.x, autoshooter.pos.y}, world.actionables.size(), autoshooter.firing_rate, autoshooter.facing},
-				     model::actionable::behaviours_ns::autoshooter});
+				     model::actionable::behaviours::autoshooter});
+				  model::handle_t actionnable_handle = world.actionables.size() - 1;
 
-				  view::object o{};
-				  o.set_pos(TOPLEFT_X, TOPLEFT_Y);
-				  o.set_id(utils::resources_type::object_id::autoshooter);
-				  view_handle view_handle = map_viewer_omap->add_object(std::move(o));
-				  model_handle model_handle{world.actionables.size() - 1, model_handle::ACTIONABLE};
+				  view::object obj{};
+				  obj.set_pos(TOPLEFT_X, TOPLEFT_Y);
+				  obj.set_id(utils::resources_type::object_id::autoshooter);
+				  view_handle view_handle = map_viewer_omap->add_object(std::move(obj));
+				  model_handle model_handle{actionnable_handle, model_handle::ACTIONABLE};
 				  m_model2view[model_handle] = view_handle;
 				  m_view2model[view_handle]  = model_handle;
 
 				  m_view2name[view_handle] = autoshooter.name;
+
+				  world.activators.push_back({
+				    {actionnable_handle},
+				    {autoshooter.firing_rate},
+				    autoshooter.initial_delay,
+				    0,
+				    true,
+				    false,
+				  });
 			  }};
 			std::visit(visitor, actor);
 		}

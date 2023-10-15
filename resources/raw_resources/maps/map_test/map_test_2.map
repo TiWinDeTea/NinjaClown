@@ -1,22 +1,24 @@
 [file]
 	version = "1.0.0"
+
 [mobs]
 	[[mobs.definition]]
-			name = "clown"
-			hp = 1
-			behaviour = "dll"
-			sprite = "clown"
-	[[mobs.definition]]
-			name = "scientist"
-			inherits = "clown"
-			behaviour = "none"
-			sprite = "scientist"
+		name = "clown"
+		hp = 1
+		behaviour = "dll"
+		sprite = "clown"
 
 	[[mobs.spawn]]
 		type = "clown"
 		pos.x = 10
 		pos.y = 2
 		facing = 0
+
+	[[mobs.definition]]
+		name = "scientist"
+		inherits = "clown"
+		behaviour = "none"
+		sprite = "scientist"
 
 	[[mobs.spawn]]
 		type = "scientist"
@@ -26,53 +28,53 @@
 
 [actors]
 	[[actors.spawn]]
-	    name = "Le BOSS"
-	    type = "gate"
-	    pos.x = 4
-	    pos.y = 11
-	    closed = true
+		name = "Le BOSS"
+		type = "gate"
+		pos.x = 4
+		pos.y = 11
+		closed = true
 
 	[[actors.spawn]]
-	    name = "gate2"
-	    type = "gate"
-	    pos.x = 10
-	    pos.y = 2
-	    closed = false
+		name = "gate2"
+		type = "gate"
+		pos.x = 10
+		pos.y = 2
+		closed = false
 
 	[[actors.spawn]]
-	    name = "gate3"
-	    type = "gate"
-	    pos.x = 9
-	    pos.y = 4
-	    closed = true
+		name = "gate3"
+		type = "gate"
+		pos.x = 9
+		pos.y = 4
+		closed = true
 
 	[[actors.spawn]]
-	    name = "gate4"
-	    type = "gate"
-	    pos.x = 7
-	    pos.y = 3
-	    closed = true
+		name = "gate4"
+		type = "gate"
+		pos.x = 7
+		pos.y = 3
+		closed = true
 
 	[[actors.spawn]]
-	    name = "gate5"
-	    type = "gate"
-	    pos.x = 7
-	    pos.y = 4
-	    closed = false
+		name = "gate5"
+		type = "gate"
+		pos.x = 7
+		pos.y = 4
+		closed = false
 
 	[[actors.spawn]]
-	    name = "gate6"
-	    type = "gate"
-	    pos.x = 8
-	    pos.y = 6
-	    closed = false
+		name = "gate6"
+		type = "gate"
+		pos.x = 8
+		pos.y = 6
+		closed = false
 
 	[[actors.spawn]]
-	    name = "gate7"
-	    type = "gate"
-	    pos.x = 9
-	    pos.y = 5
-	    closed = false
+		name = "gate7"
+		type = "gate"
+		pos.x = 9
+		pos.y = 5
+		closed = false
 
 	[[actors.spawn]]
 		name = "gate8"
@@ -86,6 +88,14 @@
 		pos.x = 5
 		pos.y = 1
 		acts_on = ["Le BOSS", "gate2", "gate3", "gate5", "gate6", "gate7", "gate8"]
+
+	[[actors.spawn]]
+		name = "shooty the autoshooter"
+		type = "autoshooter"
+		pos.x = 5
+		pos.y = 8
+		facing = 0
+		firing_rate = 30
 
 [map]
 	layout = [

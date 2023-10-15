@@ -6,14 +6,14 @@
 #include "model/world.hpp"
 #include "utils/logging.hpp"
 
-using behaviours_namespace = model::actionable::behaviours_ns;
+using behaviours = model::actionable::behaviours;
 using fmt::literals::operator""_a;
 
-void behaviours_namespace::none(const instance_data &data, const argument_type &arg) noexcept {
+void behaviours::none(const instance_data &data, const argument_type &arg) noexcept {
 	utils::log::info("actionable.none", "x"_a = data.pos.x, "y"_a = data.pos.y);
 }
 
-void behaviours_namespace::gate(const instance_data &data, const argument_type &arg) noexcept {
+void behaviours::gate(const instance_data &data, const argument_type &arg) noexcept {
 	assert(data.pos.x >= 0 && static_cast<std::size_t>(data.pos.x) < arg.world.map.width()); // NOLINT
 	assert(data.pos.y >= 0 && static_cast<std::size_t>(data.pos.y) < arg.world.map.height()); // NOLINT
 
@@ -34,7 +34,7 @@ void behaviours_namespace::gate(const instance_data &data, const argument_type &
 	}
 }
 
-void behaviours_namespace::autoshooter(const instance_data &data, const argument_type &) noexcept {
+void behaviours::autoshooter(const instance_data &data, const argument_type &) noexcept {
 	// TODO
 	assert(false && "autoshooter behaviour is not implemented");
 }
