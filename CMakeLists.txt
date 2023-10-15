@@ -60,6 +60,19 @@ set_target_properties(
 #target_compile_options(ninja-clown PRIVATE "-fsanitize=address")
 #target_link_options(ninja-clown PRIVATE "-fsanitize=address")
 
+# Do not open console on Windows
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC"))
+    # https://learn.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem
+    # https://learn.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol
+    target_link_options(ninja-clown PRIVATE
+        "/SUBSYSTEM:WINDOWS"
+        "/ENTRY:mainCRTStartup"
+    )
+elseif(MINGW)
+    # https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/x86-Windows-Options.html
+    target_link_options(ninja-clown PRIVATE "-mwindows")
+endif()
+
 target_include_directories(ninja-clown PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/ ${CMAKE_CURRENT_LIST_DIR}/bindings/c/)
 target_include_directories(ninja-clown SYSTEM PUBLIC
         ${IMGUI_SFML_INCLUDE_DIR}
