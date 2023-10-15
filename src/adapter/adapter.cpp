@@ -334,7 +334,13 @@ const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last
 }
 
 void adapter::adapter::create_map(unsigned int width, unsigned int height) {
-	// TODO
+	model::world &world = state::access<adapter>::model(m_state).world;
+	world.map.clear();
+	world.map.resize(width, height);
+
+	view::map_viewer map_viewer{m_state};
+	map_viewer.set_map({width, {height, {view::map::cell::abyss}}});
+	state::access<adapter>::view(m_state).set_map(std::move(map_viewer));
 }
 void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id new_value) {
 	// TODO

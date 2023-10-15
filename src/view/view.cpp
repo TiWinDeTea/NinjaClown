@@ -57,6 +57,8 @@ void view::view::do_run(state::holder &state) {
 	sf::RenderWindow window{sf::VideoMode{x_window_size, y_window_size}, "Ninja clown !"};
 	window.setFramerateLimit(std::numeric_limits<unsigned int>::max());
 	window.clear();
+	m_window_size = window.getSize();
+
 
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
 	setup_terminal(terminal, x_window_size, y_window_size / 3);
@@ -163,6 +165,7 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 		}
 
 
+		// Re setting correct view port
 		if (event.type == sf::Event::Resized) {
 			if (m_window_size.x == 0 || m_window_size.y == 0) {
 				m_window_size.x = event.size.width;
@@ -184,6 +187,11 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 			}
 		}
 
+		// Zooming in and out, moving the map around
+		if (m_show_state == window::game || m_show_state == window::map_editor) {
+				manage_zoom(event, window);
+		}
+
 		switch (m_show_state) {
 			case window::game:
 				m_game->event(event);
@@ -200,6 +208,96 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 	}
 }
 
+void view::view::manage_zoom(sf::Event event, sf::RenderWindow& window) noexcept {
+	switch (event.type) {
+		case sf::Event::MouseWheelScrolled: {
+			const sf::Event::MouseWheelScrollEvent wheel_scroll = event.mouseWheelScroll;
+			if (wheel_scroll.wheel == sf::Mouse::Wheel::VerticalWheel) {
+				sf::View view = window.getView();
+
+				const float delta = 1.1f;
+				float transform{};
+				if (wheel_scroll.delta < 0) {
+					transform = delta;
+				}
+				else {
+					transform = 1 / delta;
+				}
+
+				const float vp2win_ratio_x = view.getSize().x / static_cast<float>(m_window_size.x);
+				const float vp2win_ratio_y = view.getSize().y / static_cast<float>(m_window_size.y);
+				const auto wheel_x         = static_cast<float>(wheel_scroll.x);
+				const auto wheel_y         = static_cast<float>(wheel_scroll.y);
+
+				const sf::Vector2f top_left
+				  = view.getCenter() - view.getSize() / 2.f
+				    + sf::Vector2f{wheel_x * (1 - transform) * vp2win_ratio_x, wheel_y * (1 - transform) * vp2win_ratio_y};
+				view.zoom(transform);
+				view.setCenter(top_left + view.getSize() / 2.f);
+
+				window.setView(view);
+			}
+			break;
+		}
+
+		case sf::Event::MouseMoved: {
+			const sf::Event::MouseMoveEvent move = event.mouseMove;
+			if (m_left_click_pos) {
+				sf::View view           = window.getView();
+				const float zoom_factor = static_cast<float>(window.getSize().x) / view.getSize().x;
+
+				view.move(static_cast<float>(m_mouse_pos.x - move.x) / zoom_factor,
+				          static_cast<float>(m_mouse_pos.y - move.y) / zoom_factor);
+				window.setView(view);
+			}
+			m_mouse_pos = {move.x, move.y};
+			break;
+		}
+
+		case sf::Event::MouseButtonReleased:
+			switch (const sf::Event::MouseButtonEvent button = event.mouseButton; button.button) {
+				case sf::Mouse::Button::Left:
+					m_left_click_pos.reset();
+					break;
+				case sf::Mouse::Button::Right:
+					m_right_click_pos.reset();
+					break;
+				default:
+					break;
+			}
+			break;
+
+		case sf::Event::MouseButtonPressed:
+			switch (const sf::Event::MouseButtonEvent button = event.mouseButton; button.button) {
+				case sf::Mouse::Button::Left:
+					m_left_click_pos = {button.x, button.y};
+					break;
+				case sf::Mouse::Button::Right:
+					m_right_click_pos = {button.x, button.y};
+					break;
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+
 bool view::view::has_map() const noexcept {
 	return m_game != nullptr && m_game->has_map();
+}
+
+void view::view::set_map(map_viewer&& map) noexcept {
+	switch (m_show_state) {
+		case window::game:
+			game().set_map(std::move(map));
+			break;
+		case window::menu:
+			break;
+		case window::map_editor:
+			m_editor->set_map(std::move(map));
+			break;
+	}
 }

@@ -37,7 +37,7 @@ public:
 
 	void set_render_window(sf::RenderWindow &window) noexcept {
 		m_window   = &window;
-		m_viewport = window.getView().getViewport(); // TODO REMOVE THIS STATEMENT
+		m_viewport = window.getView().getViewport();
 	}
 
 	// viewport of the underlying map
@@ -93,6 +93,10 @@ public:
 	// todo refactor (delete this method)
 	sf::RenderWindow& window() {
 		return *m_window;
+	}
+
+	sf::Vector2u level_size() const noexcept {
+		return m_level_size;
 	}
 
 private:

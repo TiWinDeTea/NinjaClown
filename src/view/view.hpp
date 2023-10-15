@@ -13,6 +13,7 @@
 
 namespace sf {
 class RenderWindow;
+class Event;
 }
 
 namespace state {
@@ -65,6 +66,8 @@ public:
 		m_fps_limiter.target_lps(target);
     }
 
+	void set_map(map_viewer&& map) noexcept;
+
     std::atomic_bool show_debug_data{true};
 
 private:
@@ -74,11 +77,11 @@ private:
 	 * Polls through SFML events and manages them. Called while running
 	 */
 	void manage_events(sf::RenderWindow& window, state::holder&) noexcept;
+	void manage_zoom(sf::Event, sf::RenderWindow&) noexcept;
 
 	game_viewer* m_game{nullptr}; // allowing external access (!= nullptr while within *do_run*)
 	map_editor* m_editor{nullptr}; // allowing external access (!= nullptr while within *do_run*)
 
-	sf::Vector2u m_window_size{}; // lags behind one frame
 
 	std::unique_ptr<std::thread> m_thread{};
 
@@ -87,6 +90,12 @@ private:
 	utils::loop_per_sec_limit m_fps_limiter{};
 	window m_show_state{window::map_editor}; // FIXME : devrait être window::menu
 	bool m_showing_term{false};
+
+	sf::Vector2i m_mouse_pos{};
+	sf::Vector2u m_window_size{}; // lags behind one frame
+	std::optional<sf::Vector2i> m_left_click_pos{};
+	std::optional<sf::Vector2i> m_right_click_pos{};
+
 };
 } // namespace view
 

@@ -4,6 +4,7 @@
 #include    <variant>
 #include <optional>
 
+#include "view/game/game_viewer.hpp"
 #include "view/standalones/file_explorer.hpp"
 
 
@@ -39,6 +40,12 @@ public:
 	 */
 	void event(sf::Event &);
 
+	/**
+	 * Sets the viewer map
+	 */
+	void set_map(map_viewer&&);
+
+
 private:
 	enum class editor_state {
 		showing_menu,
@@ -68,14 +75,20 @@ private:
 	void display_selected();
 
 	/**
-	 * Displays the map being built
-	 */
-	void display_map();
-
-	/**
 	 * Shows right click drop down menu
 	 */
-	 void display_popup();
+	void display_popup();
+
+	 /**
+	  * Adds an item to the map, sets a tile, .... according to user input
+	  */
+	void enact_left_click();
+
+	/**
+	 * Computes the mouse position as in-map coordinates
+	 * Returns an empty optional if the mouse isn’t hovering the map
+	 */
+	std::optional<sf::Vector2i> mouse_pos_as_map_pos();
 
 	state::holder &m_state;
 	sf::RenderWindow &m_window;
@@ -91,6 +104,8 @@ private:
 	bool m_stay_in_map_editor{true};
 
 	std::optional<std::pair<int, int>> m_mouse_press_location{};
+
+	map_viewer m_map_viewer;
 
 	/**
 	 * Current selection. nullopt_t if no selection at all

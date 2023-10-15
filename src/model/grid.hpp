@@ -144,6 +144,11 @@ public:
 		resize(width, height);
 	}
 
+	void clear() {
+		m_inner.clear();
+		m_width = m_height = 0;
+	}
+
 	void resize(std::size_t width, std::size_t height) {
 		m_inner.resize(width);
 		for (auto &column : m_inner) {
