@@ -5,11 +5,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "utils/synchronized.hpp"
 #include "utils/spinlock.hpp"
+#include "utils/synchronized.hpp"
 
 #include "map.hpp"
 #include "overmap_collection.hpp"
@@ -18,7 +18,7 @@ namespace sf {
 class RenderWindow;
 class Sprite;
 class RectangleShape;
-}
+} // namespace sf
 
 namespace adapter {
 struct view_handle;
@@ -31,12 +31,12 @@ namespace view {
 class map_viewer {
 
 public:
-	explicit map_viewer(state::holder& state) noexcept;
-    map_viewer(map_viewer&&) noexcept = default;
-    map_viewer& operator=(map_viewer&&) noexcept = default;
+	explicit map_viewer(state::holder &state) noexcept;
+	map_viewer(map_viewer &&) noexcept            = default;
+	map_viewer &operator=(map_viewer &&) noexcept = default;
 
-	void set_render_window(sf::RenderWindow& window) noexcept {
-		m_window = &window;
+	void set_render_window(sf::RenderWindow &window) noexcept {
+		m_window   = &window;
 		m_viewport = window.getView().getViewport(); // TODO REMOVE THIS STATEMENT
 	}
 
@@ -61,54 +61,55 @@ public:
 	/**
 	 * Prints some tooltip infos
 	 */
-	void print_tile_info(const std::vector<std::vector<std::string>>&);
+	void print_tile_info(const std::vector<std::vector<std::string>> &);
 
-    // converts world grid coords to on-screen coords
-    sf::Vector2f to_screen_coords(float x, float y) const noexcept;
+	// converts world grid coords to on-screen coords
+	sf::Vector2f to_screen_coords(float x, float y) const noexcept;
 
-    // coords within the viewport
-    sf::Vector2f get_mouse_pos() const noexcept;
+	void draw(sf::Sprite &);
 
-    void draw(sf::Sprite&);
+	void draw(sf::RectangleShape &);
 
-    void draw(sf::RectangleShape&);
-
-    void highlight_tile(sf::Vector2i tile_coord);
+	void highlight_tile(sf::Vector2i tile_coord);
 
 	[[nodiscard]] unsigned int current_frame() const noexcept {
 		return m_current_frame;
 	}
 
-    void reload_sprites();
+	void reload_sprites();
 
 	std::chrono::system_clock::time_point starting_time() const {
 		return m_starting_time;
 	}
 
-    [[nodiscard]] bool is_filled() const noexcept {
+	[[nodiscard]] bool is_filled() const noexcept {
 		return !m_map.acquire()->empty();
-    }
+	}
 
 	auto acquire_overmap() {
 		return m_overmap.acquire();
 	}
 
-private:
+	// todo refactor (delete this method)
+	sf::RenderWindow& window() {
+		return *m_window;
+	}
 
-	void set_map(std::vector<std::vector<map::cell>>&& new_map) {
-        auto map = m_map.acquire();
-        map->set(std::move(new_map));
-        m_level_size = map->level_size();
+private:
+	void set_map(std::vector<std::vector<map::cell>> &&new_map) {
+		auto map = m_map.acquire();
+		map->set(std::move(new_map));
+		m_level_size = map->level_size();
 	}
 
 
-    state::holder* m_state{nullptr};
-	sf::RenderWindow* m_window{nullptr};
+	state::holder *m_state{nullptr};
+	sf::RenderWindow *m_window{nullptr};
 
-    std::chrono::system_clock::time_point m_starting_time{std::chrono::system_clock::now()};
+	std::chrono::system_clock::time_point m_starting_time{std::chrono::system_clock::now()};
 
-    utils::synchronized_moveable<overmap_collection> m_overmap{};
-    utils::synchronized_moveable<map, utils::spinlock> m_map{};
+	utils::synchronized_moveable<overmap_collection> m_overmap{};
+	utils::synchronized_moveable<map, utils::spinlock> m_map{};
 	sf::Vector2u m_level_size{};
 
 	sf::FloatRect m_viewport{};
@@ -116,9 +117,8 @@ private:
 
 	unsigned int m_current_frame{};
 
-
-    friend class adapter::adapter;
+	friend class adapter::adapter;
 };
-}  // namespace view
+} // namespace view
 
 #endif //NINJACLOWN_VIEW_MAP_VIEWER_HPP

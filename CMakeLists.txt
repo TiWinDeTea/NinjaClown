@@ -46,6 +46,7 @@ set(NINJA_CLOWN_SOURCES
         src/view/standalones/configurator.cpp
         src/view/standalones/file_explorer.cpp
         src/view/standalones/imgui_styles.cpp
+        src/view/standalones/mouse_position.cpp
         src/view/view.cpp
 )
 

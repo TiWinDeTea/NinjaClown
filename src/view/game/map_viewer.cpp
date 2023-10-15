@@ -8,6 +8,7 @@
 #include "map_viewer.hpp"
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
+#include "view/standalones/mouse_position.hpp"
 
 view::map_viewer::map_viewer(state::holder &state) noexcept
     : m_state{&state} { }
@@ -29,7 +30,7 @@ void view::map_viewer::print(bool show_debug_data) {
 	  = m_overmap.acquire()->print_all(*this, state::access<map_viewer>::adapter(*m_state));
 
 	const auto &tiles_infos = resources.tiles_infos();
-	sf::Vector2f mouse_pos  = get_mouse_pos();
+	sf::Vector2f mouse_pos  = get_mouse_pos(*m_window);
 	mouse_pos.y /= static_cast<float>(tiles_infos.yspacing);
 	mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * static_cast<float>(tiles_infos.y_xshift)) / static_cast<float>(tiles_infos.xspacing);
 
@@ -103,19 +104,6 @@ void view::map_viewer::highlight_tile(sf::Vector2i tile_coord) {
 
 void view::map_viewer::reload_sprites() {
 	m_overmap.acquire()->reload_sprites();
-}
-
-// conversions necessary to account for the viewport
-sf::Vector2f view::map_viewer::get_mouse_pos() const noexcept {
-	auto view = m_window->getView();
-	auto size = m_window->getSize();
-	const sf::Vector2f ratio{view.getSize().x / static_cast<float>(size.x), view.getSize().y / static_cast<float>(size.y)};
-
-	sf::Vector2f mouse(sf::Mouse::getPosition(*m_window));
-	mouse.x *= ratio.x;
-	mouse.y *= ratio.y;
-
-	return mouse + view.getCenter() - view.getSize() / 2.f;
 }
 
 sf::Vector2f view::map_viewer::to_screen_coords(float x, float y) const noexcept {

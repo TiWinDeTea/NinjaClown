@@ -5,6 +5,7 @@
 #include "utils/resources_type.hpp"
 #include "utils/visitor.hpp"
 #include "view/standalones/imgui_styles.hpp"
+#include "view/standalones/mouse_position.hpp"
 
 #include <imgui-SFML.h>
 #include <imgui.h>
@@ -16,7 +17,6 @@
 #include <atomic>
 
 namespace {
-std::atomic_bool globtooltip_popup_was_opened = false;
 const char* text_for(std::string_view key) {
 	return utils::resource_manager::instance().gui_text_for(key).data();
 }
@@ -25,7 +25,6 @@ const char* text_for(std::string_view key) {
 constexpr const char *popup_menu_name       = "##view.map_editor.map_editor.display_map_creator";
 constexpr const char *selector_name         = "##view.map_editor.map_editor.show_selector";
 constexpr const char *right_click_menu_name = "##view.map_editor.map_editor.display_popup";
-constexpr const char *tooltip_popup         = "##view.map_editor.map_editor.tooltip_popup";
 
 view::map_editor::map_editor(sf::RenderWindow &window, state::holder &state) noexcept
     : m_state{state}
@@ -113,8 +112,7 @@ void view::map_editor::show_selector() {
 }
 
 void view::map_editor::display_selected() {
-	const sf::Vector2i mpos = sf::Mouse::getPosition(m_window);
-	const sf::Vector2f mpos_f{static_cast<float>(mpos.x), static_cast<float>(mpos.y)};
+	const sf::Vector2f mpos_f = get_mouse_pos(m_window);
 
 	utils::visitor visitor {
 		[](std::nullopt_t) {},

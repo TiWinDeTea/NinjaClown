@@ -84,7 +84,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 }
 
 bool adapter::adapter::map_is_loaded() noexcept {
-	view::view &view = state::access<adapter>::view(m_state);
+	const view::view &view = state::access<adapter>::view(m_state);
 	return view.has_map();
 }
 

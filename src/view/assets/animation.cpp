@@ -1,5 +1,6 @@
 #include "animation.hpp"
 #include "view/game/map_viewer.hpp"
+#include "view/standalones/mouse_position.hpp"
 
 namespace {
 void print_tile(view::map_viewer& viewer, sf::Sprite &frame,
@@ -31,7 +32,7 @@ void view::shifted_animation::print(view::map_viewer& viewer, float posx, float 
 
 bool view::shifted_animation::is_hovered(view::map_viewer& viewer) const noexcept {
 	auto selected_frame = (viewer.current_frame() / SINGLE_IMAGE_DURATION) % m_frames.size();
-	return m_frames[selected_frame].getGlobalBounds().contains(viewer.get_mouse_pos());
+	return m_frames[selected_frame].getGlobalBounds().contains(get_mouse_pos(viewer.window()));
 }
 
 const sf::Sprite& view::animation::current_sprite() const noexcept {
