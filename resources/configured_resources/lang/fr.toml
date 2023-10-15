@@ -288,6 +288,9 @@
     [[log.entry]]
         id = "adapter.unknown_view_entity"
         fmt = "L'entité vue {view_handle} est introuvable. La logique et la vue n'ont peut-être pas été synchronisés correctement (erreur interne)"
+    [[log.entry]]
+        id = "adapter.adapter.unknown_tile_type"
+        fmt = "Type de tuile éditée inconnue : {id}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

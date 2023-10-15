@@ -45,6 +45,10 @@ public:
 	 */
 	void set_map(map_viewer&&);
 
+	map_viewer& get_map() {
+		return m_map_viewer;
+	}
+
 
 private:
 	enum class editor_state {

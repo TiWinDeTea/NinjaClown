@@ -20,13 +20,13 @@ using fmt::literals::operator""_a;
 
 namespace {
 template <typename... Args>
-[[nodiscard]] std::string tooltip_text_prefix(std::string_view key, char const *prefix, Args &&... args) {
+[[nodiscard]] std::string tooltip_text_prefix(std::string_view key, char const *prefix, Args &&...args) {
 	std::string_view fmt = utils::resource_manager::instance().tooltip_for(key);
 	return prefix + fmt::format(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-[[nodiscard]] std::string tooltip_text(std::string_view key, Args &&... args) {
+[[nodiscard]] std::string tooltip_text(std::string_view key, Args &&...args) {
 	return tooltip_text_prefix(key, "", std::forward<Args>(args)...);
 }
 } // namespace
@@ -61,8 +61,7 @@ bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
 
 	auto version = map_file->get_qualified_as<std::string>("file.version");
 	if (!version) {
-		utils::log::error("adapter.map_load_failure", "path"_a = string_path,
-		                  "reason"_a = "unknown file format (missing [file].version)");
+		utils::log::error("adapter.map_load_failure", "path"_a = string_path, "reason"_a = "unknown file format (missing [file].version)");
 		return false;
 	}
 
@@ -95,8 +94,7 @@ void adapter::adapter::fire_activator(model_handle handle) noexcept {
 void adapter::adapter::close_gate(model_handle gate) noexcept {
 	auto it = m_model2view.find(gate);
 	if (it == m_model2view.end()) {
-		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = gate.handle,
-		                  "operation"_a = "close gate");
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = gate.handle, "operation"_a = "close gate");
 	}
 	else {
 		state::access<adapter>::view(m_state).game().reveal(it->second);
@@ -113,7 +111,7 @@ void adapter::adapter::open_gate(model_handle gate) noexcept {
 	}
 }
 
-void adapter::adapter::update_map(const model::grid_point &target, model::cell_type  /*new_cell*/) noexcept {
+void adapter::adapter::update_map(const model::grid_point &target, model::cell_type /*new_cell*/) noexcept {
 	m_cells_changed_since_last_update.emplace_back(target);
 }
 
@@ -125,16 +123,14 @@ void adapter::adapter::move_entity(model_handle entity, float new_x, float new_y
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
-		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle,
-		                  "operation"_a = "move entity");
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle, "operation"_a = "move entity");
 	}
 }
 
 void adapter::adapter::hide_entity(model_handle entity) noexcept {
 	auto it = m_model2view.find(entity);
 	if (it == m_model2view.end()) {
-		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle,
-		                  "operation"_a = "hide entity");
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle, "operation"_a = "hide entity");
 	}
 	else {
 		mark_entity_as_dirty(entity.handle);
@@ -151,8 +147,7 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
-		utils::log::error( "adapter.unknown_model_handle", "model_handle"_a = entity.handle,
-		                  "operation"_a = "rotate entity");
+		utils::log::error("adapter.unknown_model_handle", "model_handle"_a = entity.handle, "operation"_a = "rotate entity");
 	}
 }
 
@@ -194,7 +189,6 @@ void adapter::adapter::bot_log(bot_log_level level, const char *text) {
 			break;
 	}
 }
-
 
 adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept {
 	const model::world &world = state::access<adapter>::model(m_state).world;
@@ -241,14 +235,11 @@ adapter::draw_request adapter::adapter::tooltip_for_actionable(model_handle acti
 	request::info info_req;
 	auto target_name = m_view2name.find(view_actionable);
 	if (target_name != m_view2name.end()) {
-		info_req.lines.emplace_back(tooltip_text("adapter.named_gate", "handle"_a = actionable.handle,
-		                                         "name"_a = target_name->second));
+		info_req.lines.emplace_back(tooltip_text("adapter.named_gate", "handle"_a = actionable.handle, "name"_a = target_name->second));
 	}
 	else {
-		info_req.lines.emplace_back(
-		  tooltip_text( "adapter.nameless_gate", "handle"_a = actionable.handle));
-		utils::log::warn("adapter.name_not_found", "handle"_a = actionable.handle,
-		                 "kind"_a = "actionable");
+		info_req.lines.emplace_back(tooltip_text("adapter.nameless_gate", "handle"_a = actionable.handle));
+		utils::log::warn("adapter.name_not_found", "handle"_a = actionable.handle, "kind"_a = "actionable");
 	}
 
 	draw_request list;
@@ -276,14 +267,11 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 		}
 
 		if (!target_name.empty()) {
-			info_req.lines.emplace_back(tooltip_text_prefix("adapter.named_target", "\t",
-			                                                "handle"_a = target, "name"_a = target_name));
+			info_req.lines.emplace_back(tooltip_text_prefix("adapter.named_target", "\t", "handle"_a = target, "name"_a = target_name));
 		}
 		else {
-			info_req.lines.emplace_back(
-			  tooltip_text_prefix( "adapter.nameless_target", "\t", "handle"_a = target));
-			utils::log::warn( "adapter.name_not_found", "handle"_a = target,
-			                 "kind"_a = "activator target");
+			info_req.lines.emplace_back(tooltip_text_prefix("adapter.nameless_target", "\t", "handle"_a = target));
+			utils::log::warn("adapter.name_not_found", "handle"_a = target, "kind"_a = "activator target");
 		}
 
 		const model::actionable::instance_data &target_data = world.actionables[target].data;
@@ -294,14 +282,13 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 	return list;
 }
 
-adapter::draw_request adapter::adapter::tooltip_for_mob(model_handle mob, const model::components& components) noexcept {
+adapter::draw_request adapter::adapter::tooltip_for_mob(model_handle mob, const model::components &components) noexcept {
 	assert(mob.type == model_handle::ENTITY);
 	draw_request list;
 	request::info info_req;
 
 	if (components.health[mob.handle]) {
-		info_req.lines.emplace_back(
-		  tooltip_text(  "adapter.hp", "hp"_a = components.health[mob.handle]->points));
+		info_req.lines.emplace_back(tooltip_text("adapter.hp", "hp"_a = components.health[mob.handle]->points));
 	}
 
 	if (components.hitbox[mob.handle]) {
@@ -309,13 +296,10 @@ adapter::draw_request adapter::adapter::tooltip_for_mob(model_handle mob, const 
 		model::vec2 top_left                   = hitbox.top_left();
 		model::vec2 bottom_right               = hitbox.bottom_right();
 
-		info_req.lines.emplace_back(tooltip_text( "adapter.hitbox", "top_left_x"_a = top_left.x,
-		                                         "top_left_y"_a = top_left.y, "bottom_right_x"_a = bottom_right.x,
-		                                         "bottom_right_y"_a = bottom_right.y));
-		info_req.lines.emplace_back(
-		  tooltip_text(  "adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
-		info_req.lines.emplace_back(
-		  tooltip_text( "adapter.angle", "angle"_a = hitbox.rad));
+		info_req.lines.emplace_back(tooltip_text("adapter.hitbox", "top_left_x"_a = top_left.x, "top_left_y"_a = top_left.y,
+		                                         "bottom_right_x"_a = bottom_right.x, "bottom_right_y"_a = bottom_right.y));
+		info_req.lines.emplace_back(tooltip_text("adapter.position", "x"_a = hitbox.center.x, "y"_a = hitbox.center.y));
+		info_req.lines.emplace_back(tooltip_text("adapter.angle", "angle"_a = hitbox.rad));
 	}
 
 	if (!info_req.lines.empty()) {
@@ -342,8 +326,27 @@ void adapter::adapter::create_map(unsigned int width, unsigned int height) {
 	map_viewer.set_map({width, {height, {view::map::cell::abyss}}});
 	state::access<adapter>::view(m_state).set_map(std::move(map_viewer));
 }
+
 void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id new_value) {
-	// TODO
+	model::world &world = state::access<adapter>::model(m_state).world;
+
+	switch (new_value) {
+		case utils::resources_type::tile_id::chasm:
+			world.map[x][y].type = model::cell_type::CHASM;
+			break;
+		case utils::resources_type::tile_id::iron:
+			// fallthrough
+		case utils::resources_type::tile_id::concrete:
+			world.map[x][y].type = model::cell_type::GROUND;
+			break;
+		case utils::resources_type::tile_id::frame:
+			break;
+		default:
+			utils::log::warn(utils::resource_manager::instance().log_for("adapter.adapter.unknown_tile_type"),
+			                 "id"_a = static_cast<int>(new_value)); // TODO add key to translations
+	}
+
+	state::access<adapter>::view(m_state).set_tile(x, y, new_value);
 }
 void adapter::adapter::add_entity(unsigned int x, unsigned int y, view_handle new_handle) {
 	// TODO

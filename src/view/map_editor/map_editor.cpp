@@ -89,10 +89,7 @@ void view::map_editor::event(sf::Event &event) {
 	}
 
 	if (event.type == sf::Event::MouseButtonPressed) {
-		if (event.mouseButton.button == sf::Mouse::Button::Right) {
-			m_mouse_press_location = {event.mouseButton.x, event.mouseButton.y};
-			return;
-		}
+		m_mouse_press_location = {event.mouseButton.x, event.mouseButton.y};
 	}
 
 	if (event.type == sf::Event::MouseButtonReleased) {
@@ -311,7 +308,26 @@ void view::map_editor::set_map(map_viewer && viewer) {
 void view::map_editor::enact_left_click() {
 	assert(m_mouse_press_location);
 	auto pos = mouse_pos_as_map_pos();
-	// TODO
+	if (!pos) {
+		return;
+	}
+
+	auto adapter = state::access<map_editor>::adapter(m_state);
+
+	utils::visitor visitor {
+	  [&](std::nullopt_t) {},
+	  [&](utils::resources_type::mob_id id) {
+		  // TODO
+	  },
+	  [&](utils::resources_type::object_id id) {
+		  // TODO
+	  },
+	  [&](utils::resources_type::tile_id id) {
+		  adapter.edit_tile(pos->x, pos->y, id);
+	  },
+	};
+
+	std::visit(visitor, m_selection);
 }
 
 std::optional<sf::Vector2i> view::map_editor::mouse_pos_as_map_pos() {

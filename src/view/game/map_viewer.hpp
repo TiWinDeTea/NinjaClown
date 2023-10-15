@@ -99,6 +99,8 @@ public:
 		return m_level_size;
 	}
 
+	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
+
 private:
 	void set_map(std::vector<std::vector<map::cell>> &&new_map) {
 		auto map = m_map.acquire();

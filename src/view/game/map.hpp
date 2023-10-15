@@ -46,6 +46,10 @@ public:
 		return m_cells.empty();
 	}
 
+	void set_tile(unsigned int x, unsigned int y, cell c) noexcept {
+		m_cells[x][y] = c;
+	}
+
 private:
 	std::vector<std::vector<cell>> m_cells;
 

@@ -150,6 +150,8 @@ void view::view::do_run(state::holder &state) {
 void view::view::manage_events(sf::RenderWindow &window, state::holder &state) noexcept {
 	sf::Event event{};
 	while (window.pollEvent(event)) {
+		ImGui::SFML::ProcessEvent(event);
+
 		if (event.type == sf::Event::KeyPressed) {
 			if (event.key.code == sf::Keyboard::F11) {
 				m_showing_term = !m_showing_term;
@@ -192,6 +194,11 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 				manage_zoom(event, window);
 		}
 
+        // TODO Also checks for WantCaptureKeyboard (needs refactor event system)
+		if (ImGui::GetIO().WantCaptureMouse) {
+			    continue;
+		}
+
 		switch (m_show_state) {
 			case window::game:
 				m_game->event(event);
@@ -204,7 +211,6 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 				break;
 		}
 
-		ImGui::SFML::ProcessEvent(event);
 	}
 }
 
@@ -298,6 +304,19 @@ void view::view::set_map(map_viewer&& map) noexcept {
 			break;
 		case window::map_editor:
 			m_editor->set_map(std::move(map));
+			break;
+	}
+}
+
+void view::view::set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id) {
+	switch (m_show_state) {
+		case window::game:
+			game().get_map().set_tile(x,y,id);
+			break;
+		case window::menu:
+			break;
+		case window::map_editor:
+			m_editor->get_map().set_tile(x,y,id);
 			break;
 	}
 }

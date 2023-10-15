@@ -20,6 +20,10 @@ namespace state {
 class holder;
 }
 
+namespace utils::resources_type {
+enum class tile_id;
+}
+
 namespace view {
 
 class game_viewer;
@@ -67,6 +71,7 @@ public:
     }
 
 	void set_map(map_viewer&& map) noexcept;
+	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
 
     std::atomic_bool show_debug_data{true};
 

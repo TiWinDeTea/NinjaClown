@@ -76,6 +76,10 @@ public:
 	 */
 	void display_menu() noexcept;
 
+	map_viewer& get_map() noexcept {
+		return m_map;
+	}
+
 private:
 	sf::RenderWindow &m_window;
     state::holder& m_state;

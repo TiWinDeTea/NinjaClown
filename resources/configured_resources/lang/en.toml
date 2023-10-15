@@ -288,6 +288,9 @@
     [[log.entry]]
         id = "adapter.unknown_view_entity"
         fmt = "Unknown view entity with id {view_handle}, logic and view might be out of sync (internal error)"
+    [[log.entry]]
+        id = "adapter.adapter.unknown_tile_type"
+        fmt = "unknown tile type while editing: {id}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"
