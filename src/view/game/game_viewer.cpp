@@ -108,29 +108,6 @@ void view::game_viewer::event(const sf::Event &event) {
 			}
 			break;
 
-		case sf::Event::Resized: {
-			if (m_window_size.x == 0 || m_window_size.y == 0) {
-				m_window_size.x = size(event).width;
-				m_window_size.y = size(event).height;
-				break;
-			}
-
-			const sf::Event::SizeEvent sz = size(event);
-			const float x_ratio           = static_cast<float>(sz.width) / static_cast<float>(m_window_size.x);
-			const float y_ratio           = static_cast<float>(sz.height) / static_cast<float>(m_window_size.y);
-
-			sf::View view               = m_window.getView();
-			const sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f;
-			view.setSize(view.getSize().x * x_ratio, view.getSize().y * y_ratio);
-			view.setCenter(top_left + view.getSize() / 2.f);
-
-			m_window_size.x = sz.width;
-			m_window_size.y = sz.height;
-			m_window.setView(view);
-
-			break;
-		}
-
 		case sf::Event::MouseWheelScrolled: {
 			const sf::Event::MouseWheelScrollEvent wheel_scroll = mouse_wheel_scroll(event);
 			if (wheel_scroll.wheel == sf::Mouse::Wheel::VerticalWheel) {

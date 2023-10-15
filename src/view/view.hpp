@@ -3,11 +3,13 @@
 
 #include "utils/loop_per_sec_limit.hpp"
 
-#include <cassert>
+#include <SFML/System/Vector2.hpp>
 
 #include <atomic>
+#include <cassert>
 #include <memory>
 #include <thread>
+
 
 namespace sf {
 class RenderWindow;
@@ -76,6 +78,7 @@ private:
 	game_viewer* m_game{nullptr}; // allowing external access (!= nullptr while within *do_run*)
 	map_editor* m_editor{nullptr}; // allowing external access (!= nullptr while within *do_run*)
 
+	sf::Vector2u m_window_size{}; // lags behind one frame
 
 	std::unique_ptr<std::thread> m_thread{};
 

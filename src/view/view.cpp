@@ -162,6 +162,28 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 			state::access<view>::terminal(state).set_width(window.getSize().x);
 		}
 
+
+		if (event.type == sf::Event::Resized) {
+			if (m_window_size.x == 0 || m_window_size.y == 0) {
+				m_window_size.x = event.size.width;
+				m_window_size.y = event.size.height;
+			} else {
+
+				const sf::Event::SizeEvent sz = event.size;
+				const float x_ratio           = static_cast<float>(sz.width) / static_cast<float>(m_window_size.x);
+				const float y_ratio           = static_cast<float>(sz.height) / static_cast<float>(m_window_size.y);
+
+				sf::View view               = window.getView();
+				const sf::Vector2f top_left = view.getCenter() - view.getSize() / 2.f;
+				view.setSize(view.getSize().x * x_ratio, view.getSize().y * y_ratio);
+				view.setCenter(top_left + view.getSize() / 2.f);
+
+				m_window_size.x = sz.width;
+				m_window_size.y = sz.height;
+				window.setView(view);
+			}
+		}
+
 		switch (m_show_state) {
 			case window::game:
 				m_game->event(event);
