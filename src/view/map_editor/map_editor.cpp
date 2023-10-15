@@ -3,17 +3,23 @@
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/resources_type.hpp"
+#include "utils/visitor.hpp"
 #include "view/standalones/imgui_styles.hpp"
 
 #include <imgui-SFML.h>
 #include <imgui.h>
 
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/Mouse.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 #include <atomic>
 
 namespace {
 std::atomic_bool globtooltip_popup_was_opened = false;
+const char* text_for(std::string_view key) {
+	return utils::resource_manager::instance().gui_text_for(key).data();
+}
 }
 
 constexpr const char *popup_menu_name       = "##view.map_editor.map_editor.display_map_creator";
@@ -94,80 +100,44 @@ void view::map_editor::event(sf::Event &event) {
 	}
 }
 
-// TODO split
 void view::map_editor::show_selector() {
-	const auto &res = utils::resource_manager::instance();
-	auto text_for   = [&](const char *key) {
-        return res.gui_text_for(key).data();
-	};
-
-	const char* popup_text = nullptr;
-
-	// TODO : replace text with icons
 	if (ImGui::Begin(selector_name)) {
 
-		const std::array tiles_type = {
-		  std::pair{utils::resources_type::tile_id::chasm, text_for("view.map_editor.tiles.chasm")},
-		  std::pair{utils::resources_type::tile_id::iron, text_for("view.map_editor.tiles.iron")},
-		  std::pair{utils::resources_type::tile_id::concrete, text_for("view.map_editor.tiles.concrete")},
-		  std::pair{utils::resources_type::tile_id::frame, text_for("view.map_editor.tiles.frame")},
-		};
-
-		for (auto tile : tiles_type) {
-			if (ImGui::ImageButton(res.tile_animation(tile.first)->current_sprite(), {32, 32})) {
-				m_selection = tile.first;
-			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("%s", tile.second);
-			}
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-
+		selector_tile();
 		ImGui::Separator();
-
-		const std::array objects_type = {
-		  std::pair{utils::resources_type::object_id::button, text_for("view.map_editor.objects.button")},
-		  std::pair{utils::resources_type::object_id::gate, text_for("view.map_editor.objects.gate")},
-		  std::pair{utils::resources_type::object_id::autoshooter, text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet
-		  std::pair{utils::resources_type::object_id::target, text_for("view.map_editor.objects.target")},
-		};
-
-
-		for (auto object : objects_type) {
-			if (ImGui::ImageButton(res.object_animation(object.first)->current_sprite(), {32, 32})) {
-				m_selection = object.first;
-			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("%s", object.second);
-			}
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-
+		selector_object();
 		ImGui::Separator();
-
-
-        const std::array mobs_type = {
-          std::pair{utils::resources_type::mob_id::player, text_for("view.map_editor.mobs.player")},
-          std::pair{utils::resources_type::mob_id::scientist, text_for("view.map_editor.mobs.scientist")},
-        };
-
-		for (auto mob : mobs_type) {
-			if (ImGui::ImageButton(res.mob_animations(mob.first)->current_sprite(), {32, 32})) {
-				m_selection = mob.first;
-			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("%s", mob.second);
-			}
-			ImGui::SameLine();
-		}
+		selector_mob();
 	}
 	ImGui::End();
 }
 
 void view::map_editor::display_selected() {
-	// TODO
+	const sf::Vector2i mpos = sf::Mouse::getPosition(m_window);
+	const sf::Vector2f mpos_f{static_cast<float>(mpos.x), static_cast<float>(mpos.y)};
+
+	utils::visitor visitor {
+		[](std::nullopt_t) {},
+		[this, &mpos_f](utils::resources_type::mob_id id) {
+			  auto sprite = utils::resource_manager::instance().mob_animations(id)->current_sprite();
+			  sprite.setPosition(mpos_f);
+			  m_window.draw(sprite);
+		  },
+		[this, &mpos_f](utils::resources_type::object_id id) {
+			  auto sprite = utils::resource_manager::instance().object_animation(id)->current_sprite();
+			  sprite.setPosition(mpos_f);
+			  m_window.draw(sprite);
+
+		  },
+		[this, &mpos_f](utils::resources_type::tile_id id) {
+			  auto sprite = utils::resource_manager::instance().tile_animation(id)->current_sprite();
+			  sprite.setPosition(mpos_f);
+			  m_window.draw(sprite);
+		  },
+
+	};
+
+	std::visit(visitor, m_selection);
 }
 
 void view::map_editor::display_map() {
@@ -249,4 +219,64 @@ void view::map_editor::display_popup() {
 		}
 		ImGui::EndPopup();
 	}
+}
+void view::map_editor::selector_tile() {
+	const std::array tiles_type = {
+	  std::pair{utils::resources_type::tile_id::iron, text_for("view.map_editor.tiles.iron")},
+	  std::pair{utils::resources_type::tile_id::chasm, text_for("view.map_editor.tiles.chasm")},
+	  std::pair{utils::resources_type::tile_id::concrete, text_for("view.map_editor.tiles.concrete")},
+	};
+
+	for (auto tile : tiles_type) {
+		ImGui::ImageButton(utils::resource_manager::instance().tile_animation(tile.first)->current_sprite(), {32, 32});
+		if (ImGui::IsItemClicked()) { // Doing it this way because the normal way ain’t working with our version of ImGui
+			m_selection = tile.first;
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", tile.second);
+		}
+		ImGui::SameLine();
+	}
+	ImGui::NewLine();
+}
+
+void view::map_editor::selector_object() {
+	const std::array objects_type = {
+	  std::pair{utils::resources_type::object_id::button, text_for("view.map_editor.objects.button")},
+	  std::pair{utils::resources_type::object_id::gate, text_for("view.map_editor.objects.gate")},
+	  std::pair{utils::resources_type::object_id::autoshooter, text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet on ISO (crashes)
+	  std::pair{utils::resources_type::object_id::target, text_for("view.map_editor.objects.target")},
+	};
+
+
+	for (auto object : objects_type) {
+		ImGui::ImageButton(utils::resource_manager::instance().object_animation(object.first)->current_sprite(), {32, 32});
+		if (ImGui::IsItemClicked()) { // Doing it this way because the normal way ain’t working with our version of ImGui
+			m_selection = object.first;
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", object.second);
+		}
+		ImGui::SameLine();
+	}
+	ImGui::NewLine();
+
+}
+void view::map_editor::selector_mob() {
+	const std::array mobs_type = {
+	  std::pair{utils::resources_type::mob_id::player, text_for("view.map_editor.mobs.player")},
+	  std::pair{utils::resources_type::mob_id::scientist, text_for("view.map_editor.mobs.scientist")},
+	};
+
+	for (auto mob : mobs_type) {
+		ImGui::ImageButton(utils::resource_manager::instance().mob_animations(mob.first)->current_sprite(), {32, 32});
+		if (ImGui::IsItemClicked()) { // Doing it this way because the normal way ain’t working with our version of ImGui
+			m_selection = mob.first;
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", mob.second);
+		}
+		ImGui::SameLine();
+	}
+	ImGui::NewLine();
 }

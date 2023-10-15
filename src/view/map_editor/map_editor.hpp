@@ -58,6 +58,9 @@ private:
 	 * Shows the selector (clickables to select what to place : tiles, mobs, ...)
 	 */
 	void show_selector();
+	void selector_tile();
+	void selector_object();
+	void selector_mob();
 
 	/**
 	 * Displays the current selection under the cursor
