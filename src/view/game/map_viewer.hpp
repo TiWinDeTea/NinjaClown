@@ -91,7 +91,7 @@ public:
 	}
 
 	// todo refactor (delete this method)
-	sf::RenderWindow& window() {
+	const sf::RenderWindow& window() const {
 		return *m_window;
 	}
 
@@ -101,7 +101,9 @@ public:
 
 	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
 
-private:
+	 [[nodiscard]] std::optional<adapter::view_handle> hovered_entity() const noexcept;
+
+ private:
 	void set_map(std::vector<std::vector<map::cell>> &&new_map) {
 		auto map = m_map.acquire();
 		map->set(std::move(new_map));

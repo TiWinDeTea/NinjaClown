@@ -21,7 +21,7 @@ void view::object::vprint(view::map_viewer &view) const {
 	m_animation->print(view, p_posx, p_posy);
 }
 
-bool view::object::vis_hovered(view::map_viewer &view) const noexcept {
+bool view::object::vis_hovered(const view::map_viewer &view) const noexcept {
 	assert(!m_animation->empty());
 	return m_animation->is_hovered(view);
 }

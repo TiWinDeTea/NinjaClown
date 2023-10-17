@@ -1,19 +1,17 @@
 #ifndef NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP
 #define NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP
 
-#include    <variant>
 #include <optional>
+#include <variant>
 
 #include "view/game/game_viewer.hpp"
 #include "view/standalones/file_explorer.hpp"
-
 
 namespace utils::resources_type {
 enum class mob_id;
 enum class object_id;
 enum class tile_id;
 } // namespace utils::resources_type
-
 
 namespace sf {
 class RenderWindow;
@@ -43,12 +41,11 @@ public:
 	/**
 	 * Sets the viewer map
 	 */
-	void set_map(map_viewer&&);
+	void set_map(map_viewer &&);
 
-	map_viewer& get_map() {
+	map_viewer &get_map() {
 		return m_map_viewer;
 	}
-
 
 private:
 	enum class editor_state {
@@ -83,7 +80,7 @@ private:
 	 */
 	void display_popup();
 
-	 /**
+	/**
 	  * Adds an item to the map, sets a tile, .... according to user input
 	  */
 	void enact_left_click();
@@ -114,11 +111,11 @@ private:
 	/**
 	 * Current selection. nullopt_t if no selection at all
 	 */
-	std::variant<std::nullopt_t,
-	             utils::resources_type::mob_id,
-	             utils::resources_type::object_id,
-	             utils::resources_type::tile_id
-	             > m_selection{std::nullopt};
+	std::variant<std::nullopt_t, utils::resources_type::mob_id, utils::resources_type::object_id, utils::resources_type::tile_id>
+	  m_selection{std::nullopt};
+
+	// Used by right click pop-up menu
+	std::optional<adapter::view_handle> m_hovered_entity{};
 };
 } // namespace view
 #endif //NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP

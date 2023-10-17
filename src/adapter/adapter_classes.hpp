@@ -20,7 +20,7 @@ struct model_handle {
 	enum type_t {
 		ACTIVATOR  = 1,
 		ACTIONABLE = 2,
-		ENTITY     = 4,
+		ENTITY     = 4, // TODO : should it be 1 << 2 or 0b00100 ?
 	};
 
 	explicit model_handle() noexcept = default;

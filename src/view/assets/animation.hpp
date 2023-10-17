@@ -46,7 +46,7 @@ public:
 	shifted_animation &operator=(shifted_animation &&) noexcept = default;
 	shifted_animation &operator=(const shifted_animation &)     = default;
 
-	bool is_hovered(map_viewer &viewer) const noexcept;
+	bool is_hovered(const map_viewer &viewer) const noexcept;
 
 	void add_frame(sf::Sprite &&sprite) {
 		m_frames.emplace_back(std::move(sprite));

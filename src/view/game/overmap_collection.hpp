@@ -44,11 +44,29 @@ public:
 
 	void clear() noexcept;
 
+	[[nodiscard]] const std::list<std::optional<mob>>& mobs() const noexcept {
+		return m_mobs;
+	}
+
+	[[nodiscard]] const std::list<std::optional<object>>& objects() const noexcept {
+		return m_objects;
+	}
+
+	/**
+	 * returns the handle ptr-corresponding to the passed reference
+	 */
+	[[nodiscard]] std::optional<adapter::view_handle> get_handle(const mob& ptr) const noexcept;
+	[[nodiscard]] std::optional<adapter::view_handle> get_handle(const object& ptr) const noexcept;
+
+	// Deletes a mob or an item
+	void erase(adapter::view_handle) noexcept;
+
 private:
+
 	std::multiset<pair_type, less> m_ordered_displayable;
 
-	std::list<mob> m_mobs;
-	std::list<object> m_objects;
+	std::list<std::optional<mob>> m_mobs;
+	std::list<std::optional<object>> m_objects;
 };
 } // namespace view
 

@@ -151,6 +151,15 @@
     [[log.entry]]
         id = "overmap_collection.incompatible_rotate"
         fmt = "Rotate request for non-compatible view object {handle}"
+    [[log.entry]]
+        id = "overmap_collection.invalid_mob_handle_move"
+        fmt = "Move request for unknown mob : {handle}"
+    [[log.entry]]
+        id = "overmap_collection.invalid_mob_handle_rotate"
+        fmt = "Rotate request for unknown mob : {handle}"
+    [[log.entry]]
+        id = "overmap_collection.invalid_object_handle_move"
+        fmt = "Move request for unknown object : {handle}"
 
     [[log.entry]]
         id = "actionable.none"

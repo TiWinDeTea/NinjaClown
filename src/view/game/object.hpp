@@ -30,7 +30,7 @@ public:
 private:
 	void vprint(map_viewer &view) const override;
 
-	bool vis_hovered(map_viewer &view) const noexcept override;
+	bool vis_hovered(const map_viewer &view) const noexcept override;
 
 	utils::resources_type::object_id m_object_id;
 

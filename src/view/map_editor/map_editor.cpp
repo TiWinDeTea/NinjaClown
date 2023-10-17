@@ -56,7 +56,7 @@ bool view::map_editor::show() {
 			m_map_viewer.print(true);
 			show_selector();
 			display_selected();
-			display_popup(); // if needed (managed by ImGui)
+			display_popup(); // if needed (managed by ImGui, cf ImGui::OpenPopup(right_click_menu_name))
 			break;
 	}
 
@@ -227,16 +227,28 @@ void view::map_editor::load_map() {
 }
 
 void view::map_editor::display_popup() {
+	auto& adapter = state::access<map_editor>::adapter(m_state);
 
-	// TODO : fill stub
 	if (ImGui::BeginPopup(right_click_menu_name)) {
+		if (!m_hovered_entity) {
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return;
+		}
+
 		if (ImGui::Selectable("delete")) {
+			adapter.remove_entity(*m_hovered_entity);
 		}
 		if (ImGui::Selectable("edit")) {
+			// TODO fill stub
 		}
 		if (ImGui::Selectable("link to (for buttons)")) {
+			// TODO fill stub
 		}
 		ImGui::EndPopup();
+
+	} else {
+		m_hovered_entity = m_map_viewer.hovered_entity();
 	}
 }
 void view::map_editor::selector_tile() {
@@ -312,15 +324,15 @@ void view::map_editor::enact_left_click() {
 		return;
 	}
 
-	auto adapter = state::access<map_editor>::adapter(m_state);
+	auto& adapter = state::access<map_editor>::adapter(m_state);
 
 	utils::visitor visitor {
 	  [&](std::nullopt_t) {},
 	  [&](utils::resources_type::mob_id id) {
-		  // TODO
+		  adapter.add_mob(pos->x, pos->y, id);
 	  },
 	  [&](utils::resources_type::object_id id) {
-		  // TODO
+		  adapter.add_object(pos->x, pos->y, id);
 	  },
 	  [&](utils::resources_type::tile_id id) {
 		  adapter.edit_tile(pos->x, pos->y, id);

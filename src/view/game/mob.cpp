@@ -26,7 +26,7 @@ void view::mob::vprint(view::map_viewer &view) const {
 	anim->print(view, p_posx, p_posy);
 }
 
-bool view::mob::vis_hovered(view::map_viewer &view) const noexcept {
+bool view::mob::vis_hovered(const view::map_viewer &view) const noexcept {
 	const auto &anim = m_animations->animation_for(m_dir);
 	assert(anim);
 	return anim->is_hovered(view);

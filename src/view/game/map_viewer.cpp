@@ -131,3 +131,21 @@ void view::map_viewer::set_tile(unsigned int x, unsigned int y, utils::resources
 			break;
 	}
 }
+
+std::optional<adapter::view_handle> view::map_viewer::hovered_entity() const noexcept {
+	auto overmap = m_overmap.acquire();
+
+	for (const std::optional<mob>& mob : overmap->mobs()) {
+		if (mob && mob->is_hovered(*this)) {
+			return overmap->get_handle(*mob);
+		}
+	}
+
+	for (const std::optional<object>& object: overmap->objects()) {
+		if (object && object->is_hovered(*this)) {
+			return overmap->get_handle(*object);
+		}
+	}
+
+	return {};
+}

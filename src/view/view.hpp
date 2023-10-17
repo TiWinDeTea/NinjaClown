@@ -24,10 +24,16 @@ namespace utils::resources_type {
 enum class tile_id;
 }
 
+namespace adapter {
+struct view_handle;
+}
+
+
 namespace view {
 
 class game_viewer;
 class map_editor;
+class mob;
 
 class view {
 	enum class window {
@@ -72,6 +78,8 @@ public:
 
 	void set_map(map_viewer&& map) noexcept;
 	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
+	adapter::view_handle add_mob(mob&& mob);
+	void erase(adapter::view_handle) noexcept;
 
     std::atomic_bool show_debug_data{true};
 

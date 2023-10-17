@@ -16,7 +16,7 @@ public:
 		}
 	}
 
-	bool is_hovered(map_viewer& v) const noexcept {
+	bool is_hovered(const map_viewer& v) const noexcept {
 		return !m_hidden && vis_hovered(v);
 	}
 
@@ -39,7 +39,7 @@ protected:
     virtual void vprint(map_viewer&) const = 0;
 
     // returns true if the displayable is currently hovered by the mouse
-    virtual bool vis_hovered(map_viewer&) const noexcept = 0;
+    virtual bool vis_hovered(const map_viewer&) const noexcept = 0;
 
 	float p_posx{};
 	float p_posy{};

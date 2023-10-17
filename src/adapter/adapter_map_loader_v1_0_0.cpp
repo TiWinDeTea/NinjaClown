@@ -403,7 +403,7 @@ void test(const class maclasse &tes) { }
 bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &map_file, std::string_view map) noexcept {
 	init_maps();
 
-	auto error = [&map, this](const char *key, auto &&...vals) {
+	auto error = [&map](const char *key, auto &&...vals) {
 		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
 		                  std::forward<decltype(vals)>(vals)...);
 	};

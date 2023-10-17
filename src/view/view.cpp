@@ -75,7 +75,7 @@ void view::view::do_run(state::holder &state) {
 	m_fps_limiter.start_now();
 	sf::Clock clock{};
 
-	state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map"); // TODO remove at some point
+	//state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map"); // TODO remove at some point
 
 	constexpr std::array<ImWchar, 3> fontawesome_icons_ranges = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	ImFontConfig fontawesome_icons_config{};
@@ -317,6 +317,34 @@ void view::view::set_tile(unsigned int x, unsigned int y, utils::resources_type:
 			break;
 		case window::map_editor:
 			m_editor->get_map().set_tile(x,y,id);
+			break;
+	}
+}
+
+
+adapter::view_handle view::view::add_mob(mob&& mob) {
+	switch (m_show_state) {
+		case window::game:
+			return game().get_map().acquire_overmap()->add_mob(std::move(mob));
+		case window::menu:
+			break;
+		case window::map_editor:
+			return m_editor->get_map().acquire_overmap()->add_mob(std::move(mob));
+	}
+
+	utils::log::error("view.view.add_mob-invalid_state", "state"_a = static_cast<int>(m_show_state)); // TODO add key to lang file
+	return adapter::view_handle{};
+}
+
+void view::view::erase(adapter::view_handle handle) noexcept {
+	switch (m_show_state) {
+		case window::game:
+			game().get_map().acquire_overmap()->erase(handle);
+			break;
+		case window::menu:
+			break;
+		case window::map_editor:
+			m_editor->get_map().acquire_overmap()->erase(handle);
 			break;
 	}
 }

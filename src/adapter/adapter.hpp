@@ -29,6 +29,8 @@ class table;
 
 namespace utils::resources_type {
 enum class tile_id;
+enum class mob_id;
+enum class object_id;
 }
 
 namespace adapter {
@@ -41,6 +43,8 @@ public:
 	explicit adapter(state::holder *state_holder) noexcept
 	    : m_state{*state_holder} { }
 
+	adapter(const adapter&) = delete;
+
 	// -- Used by view -- //
 
 	bool load_map(const std::filesystem::path &path) noexcept;
@@ -52,7 +56,8 @@ public:
 	// Used by view when map editing
 	void create_map(unsigned int width, unsigned int height);
 	void edit_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id new_value);
-	void add_entity(unsigned int x, unsigned int y, view_handle new_handle);
+	void add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id);
+	void add_object(unsigned int x, unsigned int y, utils::resources_type::object_id id);
 	void remove_entity(view_handle deleted_entity);
 	void edit_entity(view_handle handle, const base_entity_edit& new_data);
 

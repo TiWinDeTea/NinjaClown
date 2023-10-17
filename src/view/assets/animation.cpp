@@ -30,7 +30,7 @@ void view::shifted_animation::print(view::map_viewer& viewer, float posx, float 
 	print_tile(viewer, select(viewer.starting_time(), m_frames, SINGLE_IMAGE_DURATION), posx, posy, m_xshift, m_yshift);
 }
 
-bool view::shifted_animation::is_hovered(view::map_viewer& viewer) const noexcept {
+bool view::shifted_animation::is_hovered(const view::map_viewer& viewer) const noexcept {
 	auto selected_frame = (viewer.current_frame() / SINGLE_IMAGE_DURATION) % m_frames.size();
 	return m_frames[selected_frame].getGlobalBounds().contains(get_mouse_pos(viewer.window()));
 }

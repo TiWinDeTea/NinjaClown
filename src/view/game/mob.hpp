@@ -36,7 +36,7 @@ public:
 private:
 	void vprint(map_viewer &view) const override;
 
-	bool vis_hovered(map_viewer &view) const noexcept override;
+	bool vis_hovered(const map_viewer &view) const noexcept override;
 
 	std::unique_ptr<mob_animations> m_animations;
 	facing_direction::type m_dir;

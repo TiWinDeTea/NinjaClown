@@ -24,7 +24,7 @@ void model::world::update(adapter::adapter &adapter) {
 }
 
 void model::world::reset() {
-	map.resize(0, 0);
+	map.clear();
 	interactions.clear();
 	activators.clear();
 	actionables.clear();

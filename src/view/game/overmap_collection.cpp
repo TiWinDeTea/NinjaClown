@@ -13,11 +13,15 @@
 using fmt::literals::operator""_a;
 
 void view::overmap_collection::reload_sprites() noexcept {
-	for (mob &mob : m_mobs) {
-		mob.reload_sprites();
+	for (std::optional<mob> &mob : m_mobs) {
+		if (mob) {
+			mob->reload_sprites();
+		}
 	}
-	for (object &object : m_objects) {
-		object.reload_sprites();
+	for (std::optional<object> &object : m_objects) {
+		if (object) {
+			object->reload_sprites();
+		}
 	}
 }
 
@@ -75,16 +79,50 @@ std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::
 }
 
 adapter::view_handle view::overmap_collection::add_object(object &&obj) noexcept {
-	adapter::view_handle handle{false, m_objects.size()};
-	m_objects.emplace_back(std::move(obj));
-	m_ordered_displayable.emplace(&m_objects.back(), handle);
+
+	// scanning for first empty slot
+	unsigned int handle_id = 0;
+	auto it = m_objects.begin();
+	for (; it != m_objects.end() ; ++it, ++handle_id) {
+		// empty optional : it’s our new space
+		if (!*it) {
+			break;
+		}
+	}
+
+    adapter::view_handle handle{false, handle_id};
+	if (it == m_objects.end()) {
+		m_objects.emplace_back(std::move(obj));
+		m_ordered_displayable.emplace(&*m_objects.back(), handle);
+	} else {
+		(*it).emplace(std::move(obj));
+		m_ordered_displayable.emplace(&**it, handle);
+	}
+
 	return handle;
 }
 
 adapter::view_handle view::overmap_collection::add_mob(mob &&mb) noexcept {
-	adapter::view_handle handle{true, m_mobs.size()};
-	m_mobs.emplace_back(std::move(mb));
-	m_ordered_displayable.emplace(&m_mobs.back(), handle);
+
+	// scanning for first empty slot
+	unsigned int handle_id = 0;
+	auto it = m_mobs.begin();
+	for (; it != m_mobs.end() ; ++it, ++handle_id) {
+		// empty optional : it’s our new space
+		if (!*it) {
+			break;
+		}
+	}
+
+    adapter::view_handle handle{true, handle_id};
+	if (it == m_mobs.end()) {
+		m_mobs.emplace_back(std::move(mb));
+		m_ordered_displayable.emplace(&*m_mobs.back(), handle);
+	} else {
+		(*it).emplace(std::move(mb));
+		m_ordered_displayable.emplace(&**it, handle);
+	}
+
 	return handle;
 }
 
@@ -97,21 +135,38 @@ void view::overmap_collection::move_entity(adapter::view_handle handle, float ne
 
 	if (it == m_ordered_displayable.end()) {
 		utils::log::error("overmap_collection.unknown_entity_move", "is_mob"_a = handle.is_mob, "handle"_a = handle.handle);
-		spdlog::error("Tried to move unknown view entity {{{} {}}}", handle.is_mob, handle.handle);
 		return;
 	}
 
 	m_ordered_displayable.erase(it);
-	auto target = std::next(m_mobs.begin(), handle.handle);
 	if (handle.is_mob) {
+		assert(handle.handle < m_mobs.size());
+		auto target = std::next(m_mobs.begin(), handle.handle);
+
+		if (!*target) {
+			utils::log::error("overmap_collection.invalid_mob_handle_move", "handle"_a = handle.handle);
+			return;
+		}
+
+		(*target)->set_pos(newx, newy);
+		m_ordered_displayable.emplace(std::pair{&**target, handle});
+
 		utils::log::trace( "overmap_collection.moving_mob", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
-		target->set_pos(newx, newy);
-		m_ordered_displayable.emplace(std::pair{&*target, handle});
+
 	}
 	else {
+		assert(handle.handle < m_objects.size());
+		auto target = std::next(m_objects.begin(), handle.handle);
+
+		if (!*target) {
+			utils::log::error("overmap_collection.invalid_object_handle_move", "handle"_a = handle.handle);
+			return;
+		}
+
+		(*target)->set_pos(newx, newy);
+		m_ordered_displayable.emplace(std::pair{&**target, handle});
+
 		utils::log::trace("overmap_collection.moving_object", "handle"_a = handle.handle, "x"_a = newx, "y"_a = newy);
-		target->set_pos(newx, newy);
-		m_ordered_displayable.emplace(std::pair{&*target, handle});
 	}
 }
 
@@ -122,23 +177,81 @@ void view::overmap_collection::rotate_entity(adapter::view_handle handle,
 		return;
 	}
 
-	std::next(m_mobs.begin(), handle.handle)->set_direction(new_direction);
+	assert(handle.handle < m_mobs.size());
+	auto& mob = *std::next(m_mobs.begin(), handle.handle);
+	if (mob) {
+		mob->set_direction(new_direction);
+	} else {
+		utils::log::error("overmap_collection.invalid_mob_handle_rotate", "handle"_a = handle.handle);
+	}
 }
 
 void view::overmap_collection::hide(adapter::view_handle handle) {
 	if (handle.is_mob) {
-		std::next(m_mobs.begin(), handle.handle)->hide();
+		auto& mob = *std::next(m_mobs.begin(), handle.handle);
+		assert(mob);
+		mob->hide();
 	}
 	else {
-		std::next(m_objects.begin(), handle.handle)->hide();
+		auto& object = *std::next(m_objects.begin(), handle.handle);
+		assert(object);
+		object->hide();
 	}
 }
 
 void view::overmap_collection::reveal(adapter::view_handle handle) {
 	if (handle.is_mob) {
-		std::next(m_mobs.begin(), handle.handle)->reveal();
+		auto& mob = *std::next(m_mobs.begin(), handle.handle);
+		assert(mob);
+		mob->reveal();
 	}
 	else {
-		std::next(m_objects.begin(), handle.handle)->reveal();
+		auto& object = *std::next(m_objects.begin(), handle.handle);
+		assert(object);
+		object->reveal();
+	}
+}
+
+
+std::optional<adapter::view_handle> view::overmap_collection::get_handle(const mob& ptr) const noexcept {
+	unsigned int handle = 0;
+	for (auto it = m_mobs.begin() ; handle < m_mobs.size() ; ++handle, ++it) {
+		// if not empty optional and ptr corresponds
+		if (*it && &**it == &ptr) {
+			return adapter::view_handle{true, handle};
+		}
+	}
+	return {};
+}
+
+std::optional<adapter::view_handle> view::overmap_collection::get_handle(const object& ptr) const noexcept {
+	unsigned int handle = 0;
+	for (auto it = m_objects.begin() ; handle < m_objects.size() ; ++handle, ++it) {
+		// if not empty optional and ptr corresponds
+		if (*it && &**it == &ptr) {
+			return adapter::view_handle{false, handle};
+		}
+	}
+	return {};
+}
+
+void view::overmap_collection::erase(adapter::view_handle handle) noexcept {
+	auto it = std::find_if(m_ordered_displayable.begin(), m_ordered_displayable.end(), [handle](const auto &entity) {
+		return entity.second == handle;
+	});
+
+	// if invalid handle
+	if (it == m_ordered_displayable.end()) {
+		return;
+	}
+
+	m_ordered_displayable.erase(it);
+
+	if (handle.is_mob) {
+		assert(handle.handle < m_mobs.size());
+		std::next(m_mobs.begin(), handle.handle)->reset();
+	} else {
+		assert(handle.handle < m_objects.size());
+		std::next(m_objects.begin(), handle.handle)->reset();
 	}
 }

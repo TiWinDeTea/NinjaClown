@@ -29,6 +29,7 @@ template <typename... Args>
 [[nodiscard]] std::string tooltip_text(std::string_view key, Args &&...args) {
 	return tooltip_text_prefix(key, "", std::forward<Args>(args)...);
 }
+
 } // namespace
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
@@ -319,7 +320,11 @@ const std::vector<model::grid_point> &adapter::adapter::cells_changed_since_last
 
 void adapter::adapter::create_map(unsigned int width, unsigned int height) {
 	model::world &world = state::access<adapter>::model(m_state).world;
-	world.map.clear();
+	world.reset();
+	m_model2view.clear();
+	m_view2name.clear();
+	m_view2model.clear();
+
 	world.map.resize(width, height);
 
 	view::map_viewer map_viewer{m_state};
@@ -340,20 +345,86 @@ void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resource
 			world.map[x][y].type = model::cell_type::GROUND;
 			break;
 		case utils::resources_type::tile_id::frame:
-			break;
+			// fallthrough
 		default:
-			utils::log::warn(utils::resource_manager::instance().log_for("adapter.adapter.unknown_tile_type"),
-			                 "id"_a = static_cast<int>(new_value)); // TODO add key to translations
+			utils::log::warn("adapter.adapter.unknown_tile_type", "id"_a = static_cast<int>(new_value));
+			return;
 	}
 
 	state::access<adapter>::view(m_state).set_tile(x, y, new_value);
 }
-void adapter::adapter::add_entity(unsigned int x, unsigned int y, view_handle new_handle) {
+
+void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id) {
+	model::world &world     = state::access<adapter>::model(m_state).world;
+	unsigned int model_entity_handle = std::numeric_limits<unsigned int>::max();
+	for (int i = 0; i < model::cst::max_entities; ++i) {
+		if (world.components.metadata[i].kind == ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
+			model_entity_handle = i;
+			break;
+		}
+	}
+
+	if (model_entity_handle == std::numeric_limits<unsigned int>::max()) {
+		utils::log::warn("adapter.adapter.too_many_entities", "max"_a = model::cst::max_entities); // TODO : add key to text files
+		return;
+	}
+
+
+	const float center_x = static_cast<float>(x) * model::cst::cell_width + model::cst::cell_width / 2.f;
+	const float center_y = static_cast<float>(y) * model::cst::cell_height + model::cst::cell_height / 2.f;
+
+	switch (id) {
+		case utils::resources_type::mob_id::player:
+			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
+			break;
+		case utils::resources_type::mob_id::scientist:
+			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
+			break;
+		default:
+			utils::log::warn("adapter.adapter.unknown_mob_type", "id"_a = static_cast<int>(id)); // TODO : add key to text file
+			return;
+	}
+
+	world.components.health[model_entity_handle] = {1};
+	world.components.hitbox[model_entity_handle] = {center_x, center_y, 0.25f, 0.25f}; // FIXME : hardcoded 1/4.
+
+	model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
+	view::mob m{};
+	m.set_mob_id(id);
+	m.set_direction(view::facing_direction::from_angle(world.components.hitbox[model_entity_handle]->rad));
+	m.set_pos(hitbox.center.x, hitbox.center.y);
+
+	view_handle view_handle = state::access<adapter>::view(m_state).add_mob(std::move(m));
+	model_handle model_handle{model::handle_t{model_entity_handle}, model_handle::ENTITY};
+	m_model2view.insert({model_handle, view_handle});
+	m_view2model.insert({view_handle, model_handle});
+
+}
+
+void adapter::adapter::add_object(unsigned int x, unsigned int y, utils::resources_type::object_id id) {
 	// TODO
 }
-void adapter::adapter::remove_entity(view_handle deleted_entity) {
-	// TODO
+
+void adapter::adapter::remove_entity(view_handle view_handle) {
+
+	auto model_handle = m_view2model.at(view_handle);
+	m_model2view.erase(model_handle);
+	m_view2model.erase(view_handle);
+
+	state::access<adapter>::view(m_state).erase(view_handle);
+
+    model::world &world     = state::access<adapter>::model(m_state).world;
+	switch (model_handle.type) {
+		case model_handle::ACTIVATOR:
+		case model_handle::ACTIONABLE:
+		case model_handle::ENTITY:
+			world.components.metadata[model_handle.handle].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
+			break;
+		default:
+			utils::log::warn("adapter.adapter.remove_entity.unknown_hande_type", "handle"_a = static_cast<int>(model_handle.type)); // TODO add key to text files
+	}
 }
+
 void adapter::adapter::edit_entity(view_handle handle, const base_entity_edit &new_data) {
 	// TODO
 }

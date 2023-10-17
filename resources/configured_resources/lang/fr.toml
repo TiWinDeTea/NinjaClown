@@ -151,6 +151,12 @@
     [[log.entry]]
         id = "overmap_collection.incompatible_rotate"
         fmt = "Demande de rotation pour un objet incompatible [id vue] {handle}"
+    [[log.entry]]
+        id = "overmap_collection.invalid_mob_handle_move"
+        fmt = "Demande de movement pour un mob inconnu : {handle}"
+    [[log.entry]]
+        id = "overmap_collection.invalid_object_handle_move"
+        fmt = "Demande de movement pour un objet inconnu : {handle}"
 
     [[log.entry]]
         id = "actionable.none"
