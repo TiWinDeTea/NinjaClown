@@ -9,7 +9,7 @@
 #include <cassert>
 #include <memory>
 #include <thread>
-
+#include <optional>
 
 namespace sf {
 class RenderWindow;
@@ -32,6 +32,7 @@ struct view_handle;
 namespace view {
 
 class game_viewer;
+class map_viewer;
 class map_editor;
 class mob;
 

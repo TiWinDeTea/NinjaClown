@@ -1,3 +1,4 @@
+#include "view/view.hpp"
 #include "adapter/adapter.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
@@ -5,9 +6,8 @@
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/system.hpp"
-#include "view/map_editor/map_editor.hpp"
 #include "view/game/game_viewer.hpp"
-#include "view/view.hpp"
+#include "view/map_editor/map_editor.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -24,6 +24,15 @@
 using fmt::operator""_a;
 
 namespace {
+bool is_mouse_event(sf::Event::EventType type) {
+	return type == sf::Event::MouseWheelMoved || type == sf::Event::MouseWheelScrolled || type == sf::Event::MouseButtonPressed
+	       || type == sf::Event::MouseButtonReleased || type == sf::Event::MouseMoved || type == sf::Event::MouseEntered
+	       || type == sf::Event::MouseLeft;
+}
+bool is_kb_event(sf::Event::EventType type) {
+	return type == sf::Event::TextEntered || type == sf::Event::KeyPressed || type == sf::Event::KeyReleased;
+}
+
 constexpr const auto fontawesome_path = "fonts/fontawesome-free-5.4.0-desktop/" FONT_ICON_FILE_NAME_FAS;
 
 void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int x_size, unsigned int y_size) {
@@ -59,14 +68,13 @@ void view::view::do_run(state::holder &state) {
 	window.clear();
 	m_window_size = window.getSize();
 
-
 	ImTerm::terminal<terminal_commands> &terminal = state::access<view>::terminal(state);
 	setup_terminal(terminal, x_window_size, y_window_size / 3);
 
 	game_viewer game{window, state};
 	map_editor editor{window, state};
 
-	m_game = &game;
+	m_game   = &game;
 	m_editor = &editor;
 
 	ImGui::SFML::Init(window);
@@ -86,9 +94,8 @@ void view::view::do_run(state::holder &state) {
 	ImGuiIO &io = ImGui::GetIO();
 	io.Fonts->AddFontDefault(&fontawesome_icons_config);
 
-	auto *fontawesome = io.Fonts->AddFontFromFileTTF(
-	  (utils::resources_directory() / fontawesome_path).generic_string().c_str(), 13.5f,
-	  &fontawesome_icons_config, fontawesome_icons_ranges.data());
+	auto *fontawesome = io.Fonts->AddFontFromFileTTF((utils::resources_directory() / fontawesome_path).generic_string().c_str(), 13.5f,
+	                                                 &fontawesome_icons_config, fontawesome_icons_ranges.data());
 
 	if (fontawesome == nullptr) {
 		utils::log::warn("view.view.FA_load_failed");
@@ -99,8 +106,8 @@ void view::view::do_run(state::holder &state) {
 	}
 
 	while (m_running.test_and_set() && window.isOpen()) {
-		ImGui::SFML::Update(window, clock.restart());
 		manage_events(window, state);
+		ImGui::SFML::Update(window, clock.restart());
 		auto restore_view = window.getView();
 
 		switch (m_show_state) {
@@ -140,23 +147,32 @@ void view::view::do_run(state::holder &state) {
 		window.clear();
 	}
 
-	m_game = nullptr;
+	m_game   = nullptr;
 	m_editor = nullptr;
 
 	ImGui::SFML::Shutdown();
-
 }
 
 void view::view::manage_events(sf::RenderWindow &window, state::holder &state) noexcept {
 	sf::Event event{};
 	while (window.pollEvent(event)) {
-		ImGui::SFML::ProcessEvent(event);
-
 		if (event.type == sf::Event::KeyPressed) {
 			if (event.key.code == sf::Keyboard::F11) {
 				m_showing_term = !m_showing_term;
+				continue;
 			}
 		}
+
+		ImGui::SFML::ProcessEvent(event);
+
+		// TODO Also checks for WantCaptureKeyboard (needs refactor event system)
+		if (is_mouse_event(event.type) && ImGui::GetIO().WantCaptureMouse) {
+			continue;
+		}
+		if (is_kb_event(event.type) && ImGui::GetIO().WantCaptureKeyboard) {
+			continue;
+		}
+
 
 		if (event.type == sf::Event::Closed) {
 			window.close();
@@ -166,13 +182,13 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 			state::access<view>::terminal(state).set_width(window.getSize().x);
 		}
 
-
 		// Re setting correct view port
 		if (event.type == sf::Event::Resized) {
 			if (m_window_size.x == 0 || m_window_size.y == 0) {
 				m_window_size.x = event.size.width;
 				m_window_size.y = event.size.height;
-			} else {
+			}
+			else {
 
 				const sf::Event::SizeEvent sz = event.size;
 				const float x_ratio           = static_cast<float>(sz.width) / static_cast<float>(m_window_size.x);
@@ -191,12 +207,7 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 
 		// Zooming in and out, moving the map around
 		if (m_show_state == window::game || m_show_state == window::map_editor) {
-				manage_zoom(event, window);
-		}
-
-        // TODO Also checks for WantCaptureKeyboard (needs refactor event system)
-		if (ImGui::GetIO().WantCaptureMouse) {
-			    continue;
+			manage_zoom(event, window);
 		}
 
 		switch (m_show_state) {
@@ -210,11 +221,10 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 				m_editor->event(event);
 				break;
 		}
-
 	}
 }
 
-void view::view::manage_zoom(sf::Event event, sf::RenderWindow& window) noexcept {
+void view::view::manage_zoom(sf::Event event, sf::RenderWindow &window) noexcept {
 	switch (event.type) {
 		case sf::Event::MouseWheelScrolled: {
 			const sf::Event::MouseWheelScrollEvent wheel_scroll = event.mouseWheelScroll;
@@ -295,7 +305,7 @@ bool view::view::has_map() const noexcept {
 	return m_game != nullptr && m_game->has_map();
 }
 
-void view::view::set_map(map_viewer&& map) noexcept {
+void view::view::set_map(map_viewer &&map) noexcept {
 	switch (m_show_state) {
 		case window::game:
 			game().set_map(std::move(map));
@@ -311,18 +321,17 @@ void view::view::set_map(map_viewer&& map) noexcept {
 void view::view::set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id) {
 	switch (m_show_state) {
 		case window::game:
-			game().get_map().set_tile(x,y,id);
+			game().get_map().set_tile(x, y, id);
 			break;
 		case window::menu:
 			break;
 		case window::map_editor:
-			m_editor->get_map().set_tile(x,y,id);
+			m_editor->get_map().set_tile(x, y, id);
 			break;
 	}
 }
 
-
-adapter::view_handle view::view::add_mob(mob&& mob) {
+adapter::view_handle view::view::add_mob(mob &&mob) {
 	switch (m_show_state) {
 		case window::game:
 			return game().get_map().acquire_overmap()->add_mob(std::move(mob));
