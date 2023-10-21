@@ -113,7 +113,8 @@ struct hitbox {
 namespace model {
 
 namespace cst {
-	constexpr size_t max_entities = 10;
+	// NOTE: it’s crucial for max_entities to not be too big because we are using a very naive algorithm for collisions
+	constexpr size_t max_entities = 32;
 }
 
 struct components {

@@ -313,7 +313,6 @@ bool model::world::entity_check_collision(handle_t handle) {
 	}
 
 	// Against other entities
-	// NOTE: it’s crucial for max_entities to not be too big because we are using a very naive algorithm
 	for (handle_t other_handle = cst::max_entities; (other_handle--) != 0u;) {
 		if (other_handle != handle) {
 			ENSURE_COMPONENT_OR_ELSE(other_handle, hitbox, { continue; });
