@@ -30,6 +30,31 @@ template <typename... Args>
 	return tooltip_text_prefix(key, "", std::forward<Args>(args)...);
 }
 
+std::pair<adapter::model_handle, adapter::view_handle> add_button(unsigned int x, unsigned int y, model::world &world, view::view &view) {
+	// TODO check if (x,y) is already occupied
+	const float topleft_x = static_cast<float>(x) * model::cst::cell_width;
+	const float topleft_y = static_cast<float>(y) * model::cst::cell_height;
+
+	world.map[x][y].interaction_handle = {world.interactions.size()};
+
+	view::object obj{};
+	obj.set_pos(topleft_x, topleft_y);
+	obj.set_id(utils::resources_type::object_id::button);
+
+	world.interactions.push_back({model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
+	world.activators.push_back(
+	  {{}, {std::numeric_limits<model::tick_t>::max()}, model::default_activation_delay, model::default_activation_difficulty, false});
+
+	return {adapter::model_handle{world.activators.size() - 1, adapter::model_handle::ACTIVATOR},
+	        view.add_object(std::move(obj))};
+}
+
+std::pair<adapter::model_handle, adapter::view_handle> add_gate(unsigned int x, unsigned int y, model::world &world, view::view &view) {
+	// TODO check if (x,y) is already occupied
+	// TODO
+	return {adapter::model_handle{},adapter::view_handle{}};
+}
+
 } // namespace
 
 bool adapter::adapter::load_map(const std::filesystem::path &path) noexcept {
@@ -357,7 +382,7 @@ void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resource
 void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id) {
 	// TODO : check if (x,y) is already occupied
 
-	model::world &world     = state::access<adapter>::model(m_state).world;
+	model::world &world              = state::access<adapter>::model(m_state).world;
 	unsigned int model_entity_handle = std::numeric_limits<unsigned int>::max();
 	for (int i = 0; i < model::cst::max_entities; ++i) {
 		if (world.components.metadata[i].kind == ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
@@ -370,7 +395,6 @@ void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_
 		utils::log::warn("adapter.adapter.too_many_entities", "max"_a = model::cst::max_entities);
 		return;
 	}
-
 
 	const float center_x = static_cast<float>(x) * model::cst::cell_width + model::cst::cell_width / 2.f;
 	const float center_y = static_cast<float>(y) * model::cst::cell_height + model::cst::cell_height / 2.f;
@@ -400,11 +424,33 @@ void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_
 	const model_handle model_handle{model::handle_t{model_entity_handle}, model_handle::ENTITY};
 	m_model2view.insert({model_handle, view_handle});
 	m_view2model.insert({view_handle, model_handle});
-
 }
 
 void adapter::adapter::add_object(unsigned int x, unsigned int y, utils::resources_type::object_id id) {
-	// TODO
+
+	switch (id) {
+
+		case utils::resources_type::object_id::button: {
+			auto handles = add_button(x, y, state::access<adapter>::model(m_state).world, state::access<adapter>::view(m_state));
+			m_model2view[handles.first]  = handles.second;
+			m_view2model[handles.second] = handles.first;
+			break;
+		}
+		case utils::resources_type::object_id::gate: {
+			auto handles = add_gate(x, y, state::access<adapter>::model(m_state).world, state::access<adapter>::view(m_state));
+			m_model2view[handles.first]  = handles.second;
+			m_view2model[handles.second] = handles.first;
+			break;
+		}
+		case utils::resources_type::object_id::autoshooter:
+			// TODO
+			break;
+		case utils::resources_type::object_id::target:
+			// TODO
+			break;
+		default:
+			utils::log::warn("adapter.adapter.unknown_object", "id"_a = static_cast<int>(id)); // FIXME add key in lang files
+	}
 }
 
 void adapter::adapter::remove_entity(view_handle view_handle) {
@@ -415,12 +461,13 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 
 	state::access<adapter>::view(m_state).erase(view_handle);
 
-    model::world &world     = state::access<adapter>::model(m_state).world;
+	model::world &world = state::access<adapter>::model(m_state).world;
 	switch (model_handle.type) {
 		case model_handle::ACTIVATOR:
 		case model_handle::ACTIONABLE:
 		case model_handle::ENTITY:
-			world.components.metadata[model_handle.handle].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
+			world.components.metadata[model_handle.handle].kind
+			  = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
 			break;
 		default:
 			utils::log::warn("adapter.adapter.remove_entity.unknown_handle_type", "handle"_a = static_cast<int>(model_handle.type));

@@ -350,6 +350,20 @@ adapter::view_handle view::view::add_mob(mob &&mob) {
 	return adapter::view_handle{};
 }
 
+adapter::view_handle view::view::add_object(object &&object) {
+	switch (m_show_state) {
+		case window::game:
+			return game().get_map().acquire_overmap()->add_object(std::move(object));
+		case window::menu:
+			break;
+		case window::map_editor:
+			return m_editor->get_map().acquire_overmap()->add_object(std::move(object));
+	}
+
+	utils::log::error("view.view.add_object-invalid_state", "state"_a = static_cast<int>(m_show_state)); // TODO add key to lang file
+	return adapter::view_handle{};
+}
+
 void view::view::erase(adapter::view_handle handle) noexcept {
 	switch (m_show_state) {
 		case window::game:

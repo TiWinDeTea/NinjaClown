@@ -92,6 +92,8 @@ void view::game_viewer::event(const sf::Event &event) {
 					break;
 			}
 			break;
+		default:
+			break;
 	}
 }
 
