@@ -157,7 +157,7 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 	sf::Event event{};
 	while (window.pollEvent(event)) {
 		if (event.type == sf::Event::KeyPressed) {
-			if (event.key.code == sf::Keyboard::F11) {
+			if (event.key.code == sf::Keyboard::F12) {
 				m_showing_term = !m_showing_term;
 			}
 		}
