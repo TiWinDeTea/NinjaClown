@@ -297,6 +297,15 @@
     [[log.entry]]
         id = "adapter.adapter.unknown_tile_type"
         fmt = "Type de tuile éditée inconnue : {id}"
+    [[log.entry]]
+        id = "adapter.adapter.too_many_entities"
+        fmt = "Trop d’entités ! Nombre max : {max}"
+    [[log.entry]]
+        id = "adapter.adapter.unknown_mob_type"
+        fmt = "Type de mob inconnu : {id}"
+    [[log.entry]]
+        id = "adapter.adapter.remove_entity.unknown_handle_type"
+        fmt = "Type de handle modèle inconnu : {handle}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

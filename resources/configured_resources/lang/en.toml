@@ -300,6 +300,15 @@
     [[log.entry]]
         id = "adapter.adapter.unknown_tile_type"
         fmt = "unknown tile type while editing: {id}"
+    [[log.entry]]
+        id = "adapter.adapter.too_many_entities"
+        fmt = "Too many entities. Max count: {max}"
+    [[log.entry]]
+        id = "adapter.adapter.unknown_mob_type"
+        fmt = "Unknown mob type: {id}"
+    [[log.entry]]
+        id = "adapter.adapter.remove_entity.unknown_handle_type"
+        fmt = "Unknown model handle type: {handle}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

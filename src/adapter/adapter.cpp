@@ -355,6 +355,8 @@ void adapter::adapter::edit_tile(unsigned int x, unsigned int y, utils::resource
 }
 
 void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id) {
+	// TODO : check if (x,y) is already occupied
+
 	model::world &world     = state::access<adapter>::model(m_state).world;
 	unsigned int model_entity_handle = std::numeric_limits<unsigned int>::max();
 	for (int i = 0; i < model::cst::max_entities; ++i) {
@@ -365,7 +367,7 @@ void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_
 	}
 
 	if (model_entity_handle == std::numeric_limits<unsigned int>::max()) {
-		utils::log::warn("adapter.adapter.too_many_entities", "max"_a = model::cst::max_entities); // TODO : add key to text files
+		utils::log::warn("adapter.adapter.too_many_entities", "max"_a = model::cst::max_entities);
 		return;
 	}
 
@@ -381,21 +383,21 @@ void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_
 			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
 			break;
 		default:
-			utils::log::warn("adapter.adapter.unknown_mob_type", "id"_a = static_cast<int>(id)); // TODO : add key to text file
+			utils::log::warn("adapter.adapter.unknown_mob_type", "id"_a = static_cast<int>(id));
 			return;
 	}
 
 	world.components.health[model_entity_handle] = {1};
 	world.components.hitbox[model_entity_handle] = {center_x, center_y, 0.25f, 0.25f}; // FIXME : hardcoded 1/4.
 
-	model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
-	view::mob m{};
-	m.set_mob_id(id);
-	m.set_direction(view::facing_direction::from_angle(world.components.hitbox[model_entity_handle]->rad));
-	m.set_pos(hitbox.center.x, hitbox.center.y);
+	const model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
+	view::mob mob{};
+	mob.set_mob_id(id);
+	mob.set_direction(view::facing_direction::from_angle(world.components.hitbox[model_entity_handle]->rad));
+	mob.set_pos(hitbox.center.x, hitbox.center.y);
 
-	view_handle view_handle = state::access<adapter>::view(m_state).add_mob(std::move(m));
-	model_handle model_handle{model::handle_t{model_entity_handle}, model_handle::ENTITY};
+	const view_handle view_handle = state::access<adapter>::view(m_state).add_mob(std::move(mob));
+	const model_handle model_handle{model::handle_t{model_entity_handle}, model_handle::ENTITY};
 	m_model2view.insert({model_handle, view_handle});
 	m_view2model.insert({view_handle, model_handle});
 
@@ -421,7 +423,7 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 			world.components.metadata[model_handle.handle].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
 			break;
 		default:
-			utils::log::warn("adapter.adapter.remove_entity.unknown_hande_type", "handle"_a = static_cast<int>(model_handle.type)); // TODO add key to text files
+			utils::log::warn("adapter.adapter.remove_entity.unknown_handle_type", "handle"_a = static_cast<int>(model_handle.type));
 	}
 }
 
