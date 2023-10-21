@@ -188,6 +188,8 @@ void view::file_explorer::give_control() noexcept {
 		}
 
 		ImGui::EndPopup();
+	} else {
+		m_was_showing = false;
 	}
 }
 

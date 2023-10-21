@@ -32,6 +32,11 @@ bool is_mouse_event(sf::Event::EventType type) {
 bool is_kb_event(sf::Event::EventType type) {
 	return type == sf::Event::TextEntered || type == sf::Event::KeyPressed || type == sf::Event::KeyReleased;
 }
+bool is_fallthrough_key(sf::Keyboard::Key key) {
+	using K = sf::Keyboard::Key;
+	return (key >= K::F1 && key <= K::F12) || key == K::Escape;
+}
+
 
 constexpr const auto fontawesome_path = "fonts/fontawesome-free-5.4.0-desktop/" FONT_ICON_FILE_NAME_FAS;
 
@@ -169,7 +174,7 @@ void view::view::manage_events(sf::RenderWindow &window, state::holder &state) n
 		if (is_mouse_event(event.type) && ImGui::GetIO().WantCaptureMouse) {
 			continue;
 		}
-		if (is_kb_event(event.type) && ImGui::GetIO().WantCaptureKeyboard) {
+		if (is_kb_event(event.type) && !is_fallthrough_key(event.key.code) && ImGui::GetIO().WantCaptureKeyboard) {
 			continue;
 		}
 

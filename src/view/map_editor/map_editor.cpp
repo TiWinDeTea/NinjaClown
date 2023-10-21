@@ -34,6 +34,11 @@ view::map_editor::map_editor(sf::RenderWindow &window, state::holder &state) noe
 
 bool view::map_editor::show() {
 
+	if (m_has_map) {
+		m_map_viewer.print(m_editor_state == editor_state::editing_map);
+		show_selector();
+	}
+
 	switch (m_editor_state) {
 		case editor_state::showing_menu:
 			// fallthrough
@@ -41,20 +46,18 @@ bool view::map_editor::show() {
 			display_map_creator();
 			break;
 		case editor_state::loading_map:
-			if (m_file_explorer.path_ready()) {
-				load_map();
-				m_file_explorer.close();
-			}
-			else {
-				m_file_explorer.give_control();
-				if (!m_file_explorer.showing()) {
+			m_file_explorer.give_control();
+			if (!m_file_explorer.showing()) {
+				if (m_file_explorer.path_ready()) {
+					load_map();
+					m_file_explorer.close();
+					m_editor_state = editor_state::editing_map;
+				} else {
 					m_editor_state = editor_state::showing_menu;
 				}
 			}
 			break;
 		case editor_state::editing_map:
-			m_map_viewer.print(true);
-			show_selector();
 			display_selected();
 			display_popup(); // if needed (managed by ImGui, cf ImGui::OpenPopup(right_click_menu_name))
 			break;
@@ -77,10 +80,6 @@ void view::map_editor::event(sf::Event &event) {
 			}
 			else if (m_has_map) {
 				m_editor_state = editor_state::editing_map;
-				if (ImGui::BeginPopupModal(popup_menu_name)) {
-					ImGui::CloseCurrentPopup();
-					ImGui::EndPopup();
-				}
 				m_popup_menu_open = false;
 			}
 		}
@@ -105,7 +104,7 @@ void view::map_editor::event(sf::Event &event) {
 				m_selection = std::nullopt;
 				return;
 			}
-			ImGui::OpenPopup(right_click_menu_name);
+			m_needs_open_right_click = true;
 		}
 
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
@@ -222,12 +221,17 @@ void view::map_editor::display_map_creator() {
 }
 
 void view::map_editor::load_map() {
-	// TODO : load map with m_file_explorer.selected_path();
+	state::access<map_editor>::adapter(m_state).load_map(m_file_explorer.selected_path());
 	m_has_map = true;
 }
 
 void view::map_editor::display_popup() {
 	auto& adapter = state::access<map_editor>::adapter(m_state);
+
+	if (m_needs_open_right_click) {
+		m_needs_open_right_click = false;
+		ImGui::OpenPopup(right_click_menu_name);
+	}
 
 	if (ImGui::BeginPopup(right_click_menu_name)) {
 		if (!m_hovered_entity) {
@@ -236,13 +240,16 @@ void view::map_editor::display_popup() {
 			return;
 		}
 
-		if (ImGui::Selectable("delete")) {
-			adapter.remove_entity(*m_hovered_entity);
+		if (ImGui::Selectable("delete")) { // FIXME externalize string
+			adapter.remove_entity(*m_hovered_entity); // FIXME does not work on target tile
 		}
-		if (ImGui::Selectable("edit")) {
+		if (ImGui::Selectable("edit")) { // FIXME externalize string
 			// TODO fill stub
 		}
-		if (ImGui::Selectable("link to (for buttons)")) {
+		if (ImGui::Selectable("link to (for buttons)")) { // FIXME externalize string
+			// TODO fill stub
+		}
+		if (ImGui::Selectable("toggle (for buttons")) { // FIXME externalize string
 			// TODO fill stub
 		}
 		ImGui::EndPopup();

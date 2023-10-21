@@ -24,8 +24,8 @@ public:
 	}
 
 	const sf::Sprite& current_sprite() const noexcept {
-		assert(m_animations_by_direction[facing_direction::S]);
-		return m_animations_by_direction[facing_direction::S]->current_sprite();
+		assert(m_animations_by_direction[facing_direction::E]);
+		return m_animations_by_direction[facing_direction::E]->current_sprite();
 	}
 
 private:

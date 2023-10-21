@@ -97,14 +97,17 @@ private:
 	editor_state m_editor_state{editor_state::showing_menu};
 	int m_map_size_x{0}; // signed because of ImGui
 	int m_map_size_y{0}; // signed because of ImGui
-	bool m_popup_menu_open{false};
 
-	bool m_has_map{false};
+	bool m_popup_menu_open{false}; //! is the escape menu open?
+
+	bool m_needs_open_right_click{false}; //! do we need to open the edit/delete/... context menu?
+
+	bool m_has_map{false}; //! do we have a map currently being worked on?
 	file_explorer m_file_explorer{};
 
-	bool m_stay_in_map_editor{true};
+	bool m_stay_in_map_editor{true}; //! should we stay in map editor or go back to main menu?
 
-	std::optional<std::pair<int, int>> m_mouse_press_location{};
+	std::optional<std::pair<int, int>> m_mouse_press_location{}; //! Position of the last mouse press, if any
 
 	map_viewer m_map_viewer;
 
