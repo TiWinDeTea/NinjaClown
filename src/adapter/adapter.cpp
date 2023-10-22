@@ -217,7 +217,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	}
 
 	if (entity.is_mob) {
-		return tooltip_for_mob(it->second, world.components);
+		return tooltip_for_mob(it->second, world.get_components());
 	}
 
 	switch (it->second.type) {
@@ -264,7 +264,7 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 
 	info_req.lines.emplace_back(tooltip_text("adapter.activator", "handle"_a = activator.handle));
 
-	auto targets = world.activators[activator.handle].targets;
+	auto targets = world.get_activators()[activator.handle].targets;
 	for (size_t target : targets) {
 		std::string target_name;
 		auto target_view_handle = m_model2view.find(model_handle{target, model_handle::ACTIONABLE});
@@ -286,7 +286,7 @@ adapter::draw_request adapter::adapter::tooltip_for_activator(model_handle activ
 			                 "kind"_a = "activator target");
 		}
 
-		const model::actionable::instance_data &target_data = world.actionables[target].data;
+		const model::actionable::instance_data &target_data = world.get_actionables()[target].data;
 		list.emplace_back(request::coords{target_data.pos.x, target_data.pos.y});
 	}
 

@@ -13,14 +13,15 @@ using fmt::literals::operator""_a;
 
 namespace {
 
-void fill_entity_struct(const ::model::components &components, ninja_api::nnj_entity *entity) {
+void fill_entity_struct(const model::components &components, ninja_api::nnj_entity *entity) {
 	entity->kind = components.metadata[entity->handle].kind;
 	if (entity->kind != ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY) {
-		if (components.hitbox[entity->handle]) {
-			const auto &hitbox = components.hitbox[entity->handle];
-			entity->x          = hitbox->center.x;
-			entity->y          = hitbox->center.y;
-			entity->angle      = hitbox->rad;
+		const std::optional<model::component::hitbox> hitbox = components.hitbox[entity->handle];
+
+		if (hitbox.has_value()) {
+			entity->x     = hitbox->center.x;
+			entity->y     = hitbox->center.y;
+			entity->angle = hitbox->rad;
 
 			const auto &properties            = components.properties[entity->handle];
 			entity->properties.move_speed     = properties.move_speed;
@@ -83,25 +84,25 @@ void NINJACLOWN_CALLCONV ffi::log(void *ninja_data, ninja_api::nnj_log_level lev
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_width(void *ninja_data) {
-	return get_world(ninja_data)->map.width();
+	return get_world(ninja_data)->get_map().width();
 }
 
 size_t NINJACLOWN_CALLCONV ffi::map_height(void *ninja_data) {
-	return get_world(ninja_data)->map.height();
+	return get_world(ninja_data)->get_map().height();
 }
 
 ninja_api::nnj_cell_pos NINJACLOWN_CALLCONV ffi::target_position(void *ninja_data) {
-	model::grid_point &target = get_world(ninja_data)->target_tile;
+	model::grid_point target = get_world(ninja_data)->get_target_tile();
 	return ninja_api::nnj_cell_pos { target.x, target.y };
 }
 
 void NINJACLOWN_CALLCONV ffi::map_scan(void *ninja_data, ninja_api::nnj_cell *map_view) {
 	model::world *world = get_world(ninja_data);
-	model::grid &grid = world->map;
+	model::grid &grid = world->get_map();
 	for (const auto &cell : grid.subgrid({0, 0}, {grid.width(), grid.height()})) {
 		map_view->kind = static_cast<ninja_api::nnj_cell_kind>(cell.type);
 		if (cell.interaction_handle) {
-			map_view->interaction = static_cast<ninja_api::nnj_interaction_kind>(world->interactions[*cell.interaction_handle].kind);
+			map_view->interaction = static_cast<ninja_api::nnj_interaction_kind>(world->get_interactions()[*cell.interaction_handle].kind);
 		}
 		++map_view; // NOLINT
 	}
@@ -111,7 +112,7 @@ size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, ninja_api::nnj_cell
                                            size_t changed_size) {
 	adapter::adapter *adapter = get_adapter(ninja_data);
 	model::world *world       = get_world(ninja_data);
-	model::grid &grid       = world->map;
+	model::grid &grid       = world->get_map();
 	size_t changed_count      = 0;
 
 	for (const auto &changed : adapter->cells_changed_since_last_update()) {
@@ -125,7 +126,7 @@ size_t NINJACLOWN_CALLCONV ffi::map_update(void *ninja_data, ninja_api::nnj_cell
 
 		bot_cell.kind = static_cast<ninja_api::nnj_cell_kind>(model_cell.type);
 		if (model_cell.interaction_handle) {
-			bot_cell.interaction = static_cast<ninja_api::nnj_interaction_kind>(world->interactions[*model_cell.interaction_handle].kind);
+			bot_cell.interaction = static_cast<ninja_api::nnj_interaction_kind>(world->get_interactions()[*model_cell.interaction_handle].kind);
 		}
 
 		++changed_count;
@@ -143,7 +144,7 @@ void NINJACLOWN_CALLCONV ffi::entities_scan(void *ninja_data, ninja_api::nnj_ent
 
 	for (size_t i = 0; i < model::cst::max_entities; ++i) {
 		entities[i].handle = i; // NOLINT
-		fill_entity_struct(world->components, entities + i); // NOLINT
+		fill_entity_struct(world->get_components(), entities + i); // NOLINT
 	}
 }
 
@@ -153,7 +154,7 @@ size_t NINJACLOWN_CALLCONV ffi::entities_update(void *ninja_data, ninja_api::nnj
 
 	for (size_t changed : adapter->entities_changed_since_last_update()) {
 		entities[changed].handle = changed; // NOLINT
-		fill_entity_struct(world->components, entities + changed); // NOLINT
+		fill_entity_struct(world->get_components(), entities + changed); // NOLINT
 	}
 
 	return adapter->entities_changed_since_last_update().size();
@@ -173,27 +174,27 @@ void NINJACLOWN_CALLCONV ffi::commit_decisions(void *ninja_data, ninja_api::nnj_
 			utils::log::warn("bot_api.commit.invalid_handle", "handle"_a = commit.target_handle,
 			                 "decision"_a = i);
 		}
-		else if (world->components.metadata[commit.target_handle].kind == ninja_api::EK_DLL) {
+		else if (world->get_components().metadata[commit.target_handle].kind == ninja_api::EK_DLL) {
 			switch (commit.decision.kind) {
 				case ninja_api::DK_NONE:
-					world->components.decision[commit.target_handle] = {};
+					world->get_components().decision[commit.target_handle] = {};
 					break;
 				case ninja_api::DK_MOVEMENT: {
 					ninja_api::nnj_movement_request req = commit.decision.movement_req; // NOLINT
 					SANITIZE(req.forward_diff)
 					SANITIZE(req.lateral_diff)
 					SANITIZE(req.rotation)
-					world->components.decision[commit.target_handle] = {req}; // NOLINT
+					world->get_components().decision[commit.target_handle] = {req}; // NOLINT
 					break;
 				}
 				case ninja_api::DK_ACTIVATE:
-					world->components.decision[commit.target_handle] = {commit.decision.activate_req}; // NOLINT
+					world->get_components().decision[commit.target_handle] = {commit.decision.activate_req}; // NOLINT
 					break;
 				case ninja_api::DK_ATTACK:
-					world->components.decision[commit.target_handle] = {commit.decision.attack_req}; // NOLINT
+					world->get_components().decision[commit.target_handle] = {commit.decision.attack_req}; // NOLINT
 					break;
 				case ninja_api::DK_THROW:
-					world->components.decision[commit.target_handle] = {commit.decision.throw_req}; // NOLINT
+					world->get_components().decision[commit.target_handle] = {commit.decision.throw_req}; // NOLINT
 					break;
 				default:
 					spdlog::warn("DLL sent invalid decision kind ({}) for decision {}", commit.decision.kind, i);

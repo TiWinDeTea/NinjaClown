@@ -27,6 +27,7 @@ set(NINJA_CLOWN_SOURCES
         src/model/vec2.cpp
         src/model/model.cpp
         src/model/event.cpp
+        src/model/systems.cpp
 
         src/utils/dll.cpp
         src/utils/logging.cpp

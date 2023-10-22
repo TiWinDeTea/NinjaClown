@@ -411,13 +411,13 @@ void terminal_commands::fire_activator(argument_type &arg) {
 		return;
 	}
 
-	if (*val >= arg.val.model().world.activators.size()) {
-		if (arg.val.model().world.activators.empty()) {
+	if (*val >= arg.val.model().world.get_activators().size()) {
+		if (arg.val.model().world.get_activators().empty()) {
 			log_formatted_err(arg, "terminal_commands.fire_activator.none");
 		}
 		else {
 			log_formatted_err(arg, "terminal_commands.fire_activator.too_high", "value"_a = arg.command_line.back(),
-			                  "max_value"_a = arg.val.model().world.activators.size() - 1);
+			                  "max_value"_a = arg.val.model().world.get_activators().size() - 1);
 		}
 		return;
 	}
@@ -437,13 +437,13 @@ void terminal_commands::fire_actionable(argument_type &arg) {
 		return;
 	}
 
-	if (*val >= arg.val.model().world.actionables.size()) {
-		if (arg.val.model().world.actionables.empty()) {
+	if (*val >= arg.val.model().world.get_actionables().size()) {
+		if (arg.val.model().world.get_actionables().empty()) {
 			log_formatted_err(arg, "terminal_commands.fire_actionable.none");
 		}
 		else {
 			log_formatted_err(arg, "terminal_commands.fire_actionable.too_high", "value"_a = arg.command_line.back(),
-			                  "max_value"_a = arg.val.model().world.actionables.size() - 1);
+			                  "max_value"_a = arg.val.model().world.get_actionables().size() - 1);
 		}
 		return;
 	}
