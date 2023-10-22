@@ -184,8 +184,7 @@ void model::world::action_system(adapter::adapter &adapter, handle_t handle) {
 				  health[attack_req.target_handle]->points -= 1;
 				  if (health[attack_req.target_handle]->points == 0) {
 					  reset_entity(attack_req.target_handle);
-					  adapter.hide_entity(
-					    adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
+					  adapter.hide_entity(adapter::model_handle{attack_req.target_handle, adapter::model_handle::ENTITY});
 				  }
 			  }
 		  }
