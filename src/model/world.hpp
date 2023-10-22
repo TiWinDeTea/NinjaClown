@@ -37,12 +37,12 @@ struct world {
 	grid_point target_tile;
 
 private:
-	void behavior_system(adapter::adapter &, handle_t);
+	void behavior_system(handle_t);
 	void decision_system(adapter::adapter &, handle_t);
 	void action_system(adapter::adapter &, handle_t);
 	void movement_system(adapter::adapter &, handle_t);
 
-	void handle_projectile_behavior(adapter::adapter &, handle_t);
+	void handle_projectile_behavior(handle_t);
 
 	void move_entity(adapter::adapter &, handle_t, vec2 movement);
 	void rotate_entity(adapter::adapter &, handle_t, float rotation_rad);

@@ -25,7 +25,7 @@ float slowdown_factor(float r);
 
 void model::world::update(adapter::adapter &adapter) {
 	for (handle_t handle = cst::max_entities; (handle--) != 0u;) {
-		behavior_system(adapter, handle);
+		behavior_system(handle);
 		decision_system(adapter, handle);
 		action_system(adapter, handle);
 		movement_system(adapter, handle);
@@ -57,7 +57,7 @@ void model::world::reset_entity(handle_t handle) {
 
 // -- Systems -- //
 
-void model::world::behavior_system(adapter::adapter &adapter, handle_t handle) {
+void model::world::behavior_system(handle_t handle) {
 	switch (components.metadata[handle].kind) {
 		case ninja_api::nnj_entity_kind::EK_PATROL:
 			// TODO: follow a predefined path
@@ -68,7 +68,7 @@ void model::world::behavior_system(adapter::adapter &adapter, handle_t handle) {
 			break;
 
 		case ninja_api::nnj_entity_kind::EK_PROJECTILE:
-			handle_projectile_behavior(adapter, handle);
+			handle_projectile_behavior(handle);
 			break;
 
 		case ninja_api::nnj_entity_kind::EK_DLL:
@@ -79,7 +79,7 @@ void model::world::behavior_system(adapter::adapter &adapter, handle_t handle) {
 	}
 }
 
-void model::world::handle_projectile_behavior(adapter::adapter &adapter, handle_t handle) {
+void model::world::handle_projectile_behavior(handle_t handle) {
 	component::movement movement = {
 	  .rotation     = components.properties[handle].rotation_speed,
 	  .forward_diff = components.properties[handle].move_speed,
@@ -87,8 +87,6 @@ void model::world::handle_projectile_behavior(adapter::adapter &adapter, handle_
 	};
 
 	components.movement[handle] = {movement};
-
-	adapter.mark_entity_as_dirty(handle);
 }
 
 void model::world::decision_system(adapter::adapter &adapter, handle_t handle) {
