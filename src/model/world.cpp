@@ -68,7 +68,7 @@ void model::world::behavior_system(adapter::adapter &adapter, handle_t handle) {
 			break;
 
 		case ninja_api::nnj_entity_kind::EK_PROJECTILE:
-			handle_projectile_behavior(handle);
+			handle_projectile_behavior(adapter, handle);
 			break;
 
 		case ninja_api::nnj_entity_kind::EK_DLL:
