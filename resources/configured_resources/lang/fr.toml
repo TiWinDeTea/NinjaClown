@@ -309,6 +309,9 @@
     [[log.entry]]
         id = "adapter.adapter.remove_entity.unknown_handle"
         fmt = "Handle de vue inconnu; id: {handle}, is_mob: {is_mob}"
+    [[log.entry]]
+        id = "adapter.adapter.remove_entity.unknown_actionable_handle"
+        fmt = "Handle d’actionnable incconu; id: {handle}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

@@ -45,14 +45,36 @@ std::pair<adapter::model_handle, adapter::view_handle> add_button(unsigned int x
 	world.activators.push_back(
 	  {{}, {std::numeric_limits<model::tick_t>::max()}, model::default_activation_delay, model::default_activation_difficulty, false});
 
-	return {adapter::model_handle{world.activators.size() - 1, adapter::model_handle::ACTIVATOR},
-	        view.add_object(std::move(obj))};
+	return {adapter::model_handle{world.activators.size() - 1, adapter::model_handle::ACTIVATOR}, view.add_object(std::move(obj))};
 }
 
 std::pair<adapter::model_handle, adapter::view_handle> add_gate(unsigned int x, unsigned int y, model::world &world, view::view &view) {
 	// TODO check if (x,y) is already occupied
+
+	std::size_t id = 0u;
+	for (const auto &actionable : world.actionables) {
+		id = std::max(id, actionable.data.handle + 1);
+	}
+
+	world.actionables.push_back({{{x, y}, id}, model::actionable::behaviours_ns::gate});
+
+	view::object vgate{};
+	vgate.set_pos(static_cast<float>(x) * model::cst::cell_width, static_cast<float>(y) * model::cst::cell_height);
+	vgate.set_id(utils::resources_type::object_id::gate);
+
+	adapter::view_handle view_handle = view.add_object(std::move(vgate));
+	adapter::model_handle model_handle{id, adapter::model_handle::ACTIONABLE};
+
+	// Door closed by default
+	world.map[x][y].type = model::cell_type::CHASM;
+	return {model_handle, view_handle};
+}
+
+std::pair<adapter::model_handle, adapter::view_handle> add_autoshooter(unsigned int x, unsigned int y, model::world &world,
+                                                                       view::view &view) {
+	// TODO check if (x,y) is already occupied
 	// TODO
-	return {adapter::model_handle{},adapter::view_handle{}};
+	return {adapter::model_handle{}, adapter::view_handle{}};
 }
 
 } // namespace
@@ -440,15 +462,19 @@ void adapter::adapter::add_object(unsigned int x, unsigned int y, utils::resourc
 			auto handles = add_gate(x, y, state::access<adapter>::model(m_state).world, state::access<adapter>::view(m_state));
 			m_model2view[handles.first]  = handles.second;
 			m_view2model[handles.second] = handles.first;
+
+			m_view2name[handles.second] = "gate" + std::to_string(handles.first.handle);
 			break;
 		}
-		case utils::resources_type::object_id::autoshooter:
-			// TODO
+		case utils::resources_type::object_id::autoshooter: {
+			auto handles = add_autoshooter(x, y, state::access<adapter>::model(m_state).world, state::access<adapter>::view(m_state));
+			m_model2view[handles.first]  = handles.second;
+			m_view2model[handles.second] = handles.first;
 			break;
-
+		}
 		case utils::resources_type::object_id::target: {
 			model::world &world = state::access<adapter>::model(m_state).world;
-			world.target_tile = {x, y};
+			world.target_tile   = {x, y};
 
 			if (m_target_handle) {
 				state::access<adapter>::view(m_state).erase(*m_target_handle);
@@ -488,7 +514,29 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 		model::world &world = state::access<adapter>::model(m_state).world;
 		switch (model_handle.type) {
 			case model_handle::ACTIVATOR:
-			case model_handle::ACTIONABLE:
+				// TODO
+				break;
+			case model_handle::ACTIONABLE: {
+				// FIXME: check if activators work with ID (as coded) or with index (this section to reconsider)
+				unsigned int index = 0u;
+				while (index < world.actionables.size() && model_handle.handle != world.actionables[index].data.handle) {
+					++index;
+				}
+				if (index < world.actionables.size()) {
+					std::swap(world.actionables[index], world.actionables.back());
+					world.actionables.erase(std::prev(world.actionables.end()));
+
+					for (auto &activator : world.activators) {
+						auto rm_begin = std::remove(activator.targets.begin(), activator.targets.end(), model_handle.handle);
+						activator.targets.erase(rm_begin, activator.targets.end());
+					}
+				}
+				else {
+					utils::log::warn("adapter.adapter.remove_entity.unknown_actionable_handle",
+					                 "handle"_a = static_cast<int>(model_handle.type));
+				}
+				break;
+			}
 			case model_handle::ENTITY:
 				world.components.metadata[model_handle.handle].kind
 				  = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
@@ -496,8 +544,10 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 			default:
 				utils::log::warn("adapter.adapter.remove_entity.unknown_handle_type", "handle"_a = static_cast<int>(model_handle.type));
 		}
-	} catch (const std::out_of_range& e) {
-		utils::log::warn("adapter.adapter.remove_entity.unknown_handle", "handle"_a = static_cast<int>(view_handle.handle), "is_mob"_a = view_handle.is_mob);
+	}
+	catch (const std::out_of_range &e) {
+		utils::log::warn("adapter.adapter.remove_entity.unknown_handle", "handle"_a = static_cast<int>(view_handle.handle),
+		                 "is_mob"_a = view_handle.is_mob);
 	}
 }
 
