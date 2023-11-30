@@ -271,7 +271,7 @@ void view::map_editor::display_popup() {
 		}
 
 		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.delete").data())) {
-			adapter.remove_entity(*m_hovered_entity); // FIXME does not work on target tile
+			adapter.remove_entity(*m_hovered_entity);
 		}
 		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.edit").data())) {
 			// TODO fill stub

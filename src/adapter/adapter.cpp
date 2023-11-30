@@ -445,15 +445,38 @@ void adapter::adapter::add_object(unsigned int x, unsigned int y, utils::resourc
 		case utils::resources_type::object_id::autoshooter:
 			// TODO
 			break;
-		case utils::resources_type::object_id::target:
-			// TODO
+
+		case utils::resources_type::object_id::target: {
+			model::world &world = state::access<adapter>::model(m_state).world;
+			world.target_tile = {x, y};
+
+			if (m_target_handle) {
+				state::access<adapter>::view(m_state).erase(*m_target_handle);
+			}
+
+			view::object obj;
+			obj.set_id(utils::resources_type::object_id::target);
+			obj.set_pos(static_cast<float>(x) * model::cst::cell_width, static_cast<float>(y) * model::cst::cell_height);
+			obj.reveal();
+			m_target_handle = state::access<adapter>::view(m_state).add_object(std::move(obj));
 			break;
+		}
 		default:
 			utils::log::warn("adapter.adapter.unknown_object", "id"_a = static_cast<int>(id)); // FIXME add key in lang files
 	}
 }
 
 void adapter::adapter::remove_entity(view_handle view_handle) {
+
+	if (view_handle == m_target_handle) {
+		model::world &world = state::access<adapter>::model(m_state).world;
+		world.target_tile.x = std::numeric_limits<decltype(world.target_tile.x)>::max();
+		world.target_tile.y = std::numeric_limits<decltype(world.target_tile.y)>::max();
+
+		state::access<adapter>::view(m_state).erase(view_handle);
+
+		return;
+	}
 
 	try {
 		auto model_handle = m_view2model.at(view_handle);
