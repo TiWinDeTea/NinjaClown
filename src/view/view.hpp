@@ -109,7 +109,7 @@ private:
 
 	sf::Vector2i m_mouse_pos{};
 	sf::Vector2u m_window_size{}; // lags behind one frame
-	std::optional<sf::Vector2i> m_left_click_pos{};
+	std::optional<sf::Vector2i> m_middle_click_pos{};
 	std::optional<sf::Vector2i> m_right_click_pos{};
 
 };

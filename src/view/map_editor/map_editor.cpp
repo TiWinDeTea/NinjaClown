@@ -10,17 +10,17 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
 
 #include <atomic>
 
 namespace {
-const char* text_for(std::string_view key) {
+const char *text_for(std::string_view key) {
 	return utils::resource_manager::instance().gui_text_for(key).data();
 }
-}
+} // namespace
 
 constexpr const char *popup_menu_name       = "##view.map_editor.map_editor.display_map_creator";
 constexpr const char *selector_name         = "##view.map_editor.map_editor.show_selector";
@@ -29,8 +29,7 @@ constexpr const char *right_click_menu_name = "##view.map_editor.map_editor.disp
 view::map_editor::map_editor(sf::RenderWindow &window, state::holder &state) noexcept
     : m_state{state}
     , m_window{window}
-	, m_map_viewer(state)
-{ }
+    , m_map_viewer(state) { }
 
 bool view::map_editor::show() {
 
@@ -52,7 +51,8 @@ bool view::map_editor::show() {
 					load_map();
 					m_file_explorer.close();
 					m_editor_state = editor_state::editing_map;
-				} else {
+				}
+				else {
 					m_editor_state = editor_state::showing_menu;
 				}
 			}
@@ -79,7 +79,7 @@ void view::map_editor::event(sf::Event &event) {
 				m_editor_state = editor_state::showing_menu;
 			}
 			else if (m_has_map) {
-				m_editor_state = editor_state::editing_map;
+				m_editor_state    = editor_state::editing_map;
 				m_popup_menu_open = false;
 			}
 		}
@@ -87,15 +87,48 @@ void view::map_editor::event(sf::Event &event) {
 		return;
 	}
 
+	if (event.type == sf::Event::MouseMoved) {
+		if (m_mouse_press_button && *m_mouse_press_button == sf::Mouse::Button::Left) {
+
+			auto in_game_pos = mouse_pos_as_map_pos();
+			if (!in_game_pos) {
+				return;
+			}
+
+			if (!m_last_placed_location || m_last_placed_location->x != in_game_pos->x || m_last_placed_location->y != in_game_pos->y) {
+				place_item();
+				m_last_placed_location = in_game_pos;
+				return;
+			}
+		}
+	}
+
 	if (event.type == sf::Event::MouseButtonPressed) {
 		m_mouse_press_location = {event.mouseButton.x, event.mouseButton.y};
+		m_mouse_press_button   = event.mouseButton.button;
+
+		if (event.mouseButton.button == sf::Mouse::Button::Left) {
+			auto in_game_pos = mouse_pos_as_map_pos();
+			if (in_game_pos) {
+				m_last_placed_location = in_game_pos;
+				place_item();
+			}
+		}
+		return;
 	}
 
 	if (event.type == sf::Event::MouseButtonReleased) {
-		if (!m_mouse_press_location) {
-			return;
+		bool early_exit = false;
+
+		if (!m_mouse_press_location || m_mouse_press_location->x != event.mouseButton.x
+		    || m_mouse_press_location->y != event.mouseButton.y) {
+			early_exit = true;
 		}
-		if (m_mouse_press_location->first != event.mouseButton.x || m_mouse_press_location->second != event.mouseButton.y) {
+
+		m_mouse_press_location.reset();
+		m_mouse_press_button.reset();
+
+		if (early_exit) {
 			return;
 		}
 
@@ -107,9 +140,7 @@ void view::map_editor::event(sf::Event &event) {
 			m_needs_open_right_click = true;
 		}
 
-		if (event.mouseButton.button == sf::Mouse::Button::Left) {
-			enact_left_click();
-		}
+		return;
 	}
 }
 
@@ -127,35 +158,34 @@ void view::map_editor::show_selector() {
 
 void view::map_editor::display_selected() {
 	sf::Vector2f mpos_f = get_mouse_pos(m_window);
-	auto tile_width = utils::resource_manager::instance().tiles_infos().xspacing;
-	auto tile_height = utils::resource_manager::instance().tiles_infos().yspacing;
-	mpos_f.x = static_cast<float>(static_cast<int>((mpos_f.x) / static_cast<float>(tile_width)) * tile_width);
-	mpos_f.y = static_cast<float>(static_cast<int>((mpos_f.y) / static_cast<float>(tile_height)) * tile_height);
+	auto tile_width     = utils::resource_manager::instance().tiles_infos().xspacing;
+	auto tile_height    = utils::resource_manager::instance().tiles_infos().yspacing;
+	mpos_f.x            = static_cast<float>(static_cast<int>((mpos_f.x) / static_cast<float>(tile_width)) * tile_width);
+	mpos_f.y            = static_cast<float>(static_cast<int>((mpos_f.y) / static_cast<float>(tile_height)) * tile_height);
 
-	utils::visitor visitor {
-		[](std::nullopt_t) {},
-		[&](utils::resources_type::mob_id id) {
-			  auto sprite = utils::resource_manager::instance().mob_animations(id)->current_sprite();
-			  auto height = sprite.getLocalBounds().height;
-			  auto width = sprite.getLocalBounds().width;
-			  mpos_f.x += (static_cast<float>(tile_width) - width) / 2;
-			  mpos_f.y += (static_cast<float>(tile_height) - height) / 2;
+	utils::visitor visitor{
+	  [](std::nullopt_t) {},
+	  [&](utils::resources_type::mob_id id) {
+		  auto sprite = utils::resource_manager::instance().mob_animations(id)->current_sprite();
+		  auto height = sprite.getLocalBounds().height;
+		  auto width  = sprite.getLocalBounds().width;
+		  mpos_f.x += (static_cast<float>(tile_width) - width) / 2;
+		  mpos_f.y += (static_cast<float>(tile_height) - height) / 2;
 
-			  sprite.setPosition(mpos_f);
-			  m_window.draw(sprite);
-		  },
-		[&](utils::resources_type::object_id id) {
-			  auto sprite = utils::resource_manager::instance().object_animation(id)->current_sprite();
+		  sprite.setPosition(mpos_f);
+		  m_window.draw(sprite);
+	  },
+	  [&](utils::resources_type::object_id id) {
+		  auto sprite = utils::resource_manager::instance().object_animation(id)->current_sprite();
 
-			  sprite.setPosition(mpos_f);
-			  m_window.draw(sprite);
-
-		  },
-		[&](utils::resources_type::tile_id id) {
-			  auto sprite = utils::resource_manager::instance().tile_animation(id)->current_sprite();
-			  sprite.setPosition(mpos_f);
-			  m_window.draw(sprite);
-		  },
+		  sprite.setPosition(mpos_f);
+		  m_window.draw(sprite);
+	  },
+	  [&](utils::resources_type::tile_id id) {
+		  auto sprite = utils::resource_manager::instance().tile_animation(id)->current_sprite();
+		  sprite.setPosition(mpos_f);
+		  m_window.draw(sprite);
+	  },
 
 	};
 
@@ -226,7 +256,7 @@ void view::map_editor::load_map() {
 }
 
 void view::map_editor::display_popup() {
-	auto& adapter = state::access<map_editor>::adapter(m_state);
+	auto &adapter = state::access<map_editor>::adapter(m_state);
 
 	if (m_needs_open_right_click) {
 		m_needs_open_right_click = false;
@@ -253,8 +283,8 @@ void view::map_editor::display_popup() {
 			// TODO fill stub
 		}
 		ImGui::EndPopup();
-
-	} else {
+	}
+	else {
 		m_hovered_entity = m_map_viewer.hovered_entity();
 	}
 }
@@ -282,10 +312,10 @@ void view::map_editor::selector_object() {
 	const std::array objects_type = {
 	  std::pair{utils::resources_type::object_id::button, text_for("view.map_editor.objects.button")},
 	  std::pair{utils::resources_type::object_id::gate, text_for("view.map_editor.objects.gate")},
-	  std::pair{utils::resources_type::object_id::autoshooter, text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet on ISO (crashes)
+	  std::pair{utils::resources_type::object_id::autoshooter,
+	            text_for("view.map_editor.objects.autoshooter")}, // Sprite does not exist yet on ISO (crashes)
 	  std::pair{utils::resources_type::object_id::target, text_for("view.map_editor.objects.target")},
 	};
-
 
 	for (auto object : objects_type) {
 		ImGui::ImageButton(utils::resource_manager::instance().object_animation(object.first)->current_sprite(), {32, 32});
@@ -298,7 +328,6 @@ void view::map_editor::selector_object() {
 		ImGui::SameLine();
 	}
 	ImGui::NewLine();
-
 }
 void view::map_editor::selector_mob() {
 	const std::array mobs_type = {
@@ -319,21 +348,21 @@ void view::map_editor::selector_mob() {
 	ImGui::NewLine();
 }
 
-void view::map_editor::set_map(map_viewer && viewer) {
+void view::map_editor::set_map(map_viewer &&viewer) {
 	m_map_viewer = std::move(viewer);
 	m_map_viewer.set_render_window(m_window);
 }
 
-void view::map_editor::enact_left_click() {
+void view::map_editor::place_item() {
 	assert(m_mouse_press_location);
 	auto pos = mouse_pos_as_map_pos();
 	if (!pos) {
 		return;
 	}
 
-	auto& adapter = state::access<map_editor>::adapter(m_state);
+	auto &adapter = state::access<map_editor>::adapter(m_state);
 
-	utils::visitor visitor {
+	utils::visitor visitor{
 	  [&](std::nullopt_t) {},
 	  [&](utils::resources_type::mob_id id) {
 		  adapter.add_mob(pos->x, pos->y, id);
@@ -351,9 +380,9 @@ void view::map_editor::enact_left_click() {
 
 std::optional<sf::Vector2i> view::map_editor::mouse_pos_as_map_pos() {
 	auto tiles_infos = utils::resource_manager::instance().tiles_infos();
-	auto level_size = m_map_viewer.level_size();
+	auto level_size  = m_map_viewer.level_size();
 
-	sf::Vector2f mouse_pos  = get_mouse_pos(m_window);
+	sf::Vector2f mouse_pos = get_mouse_pos(m_window);
 	mouse_pos.y /= static_cast<float>(tiles_infos.yspacing);
 	mouse_pos.x = (mouse_pos.x - (mouse_pos.y - 1) * static_cast<float>(tiles_infos.y_xshift)) / static_cast<float>(tiles_infos.xspacing);
 

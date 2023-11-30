@@ -4,6 +4,7 @@
 #include <optional>
 #include <variant>
 
+#include "SFML/Window/Mouse.hpp"
 #include "view/game/game_viewer.hpp"
 #include "view/standalones/file_explorer.hpp"
 
@@ -83,7 +84,7 @@ private:
 	/**
 	  * Adds an item to the map, sets a tile, .... according to user input
 	  */
-	void enact_left_click();
+	void place_item();
 
 	/**
 	 * Computes the mouse position as in-map coordinates
@@ -107,7 +108,9 @@ private:
 
 	bool m_stay_in_map_editor{true}; //! should we stay in map editor or go back to main menu?
 
-	std::optional<std::pair<int, int>> m_mouse_press_location{}; //! Position of the last mouse press, if any
+	std::optional<sf::Vector2<int>> m_mouse_press_location{}; //! Position of the last mouse press, if any
+	std::optional<sf::Mouse::Button> m_mouse_press_button{}; //! Type of the last mouse press, if any
+	std::optional<sf::Vector2<int>> m_last_placed_location{}; //! position of the last position where a tile/object/... was placed
 
 	map_viewer m_map_viewer;
 

@@ -263,7 +263,7 @@ void view::view::manage_zoom(sf::Event event, sf::RenderWindow &window) noexcept
 
 		case sf::Event::MouseMoved: {
 			const sf::Event::MouseMoveEvent move = event.mouseMove;
-			if (m_left_click_pos) {
+			if (m_middle_click_pos) {
 				sf::View view           = window.getView();
 				const float zoom_factor = static_cast<float>(window.getSize().x) / view.getSize().x;
 
@@ -277,8 +277,8 @@ void view::view::manage_zoom(sf::Event event, sf::RenderWindow &window) noexcept
 
 		case sf::Event::MouseButtonReleased:
 			switch (const sf::Event::MouseButtonEvent button = event.mouseButton; button.button) {
-				case sf::Mouse::Button::Left:
-					m_left_click_pos.reset();
+				case sf::Mouse::Button::Middle:
+					m_middle_click_pos.reset();
 					break;
 				case sf::Mouse::Button::Right:
 					m_right_click_pos.reset();
@@ -290,8 +290,8 @@ void view::view::manage_zoom(sf::Event event, sf::RenderWindow &window) noexcept
 
 		case sf::Event::MouseButtonPressed:
 			switch (const sf::Event::MouseButtonEvent button = event.mouseButton; button.button) {
-				case sf::Mouse::Button::Left:
-					m_left_click_pos = {button.x, button.y};
+				case sf::Mouse::Button::Middle:
+					m_middle_click_pos = {button.x, button.y};
 					break;
 				case sf::Mouse::Button::Right:
 					m_right_click_pos = {button.x, button.y};
