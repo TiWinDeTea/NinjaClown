@@ -309,6 +309,9 @@
     [[log.entry]]
         id = "adapter.adapter.remove_entity.unknown_handle_type"
         fmt = "Unknown model handle type: {handle}"
+    [[log.entry]]
+        id = "adapter.adapter.remove_entity.unknown_handle"
+        fmt = "Unknown view handle; id: {handle}, is_mob: {is_mob}"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"
@@ -499,3 +502,15 @@
     [[gui.entry]]
         id = "view.map_editor.mobs.scientist"
         fmt = "Scientist"
+    [[gui.entry]]
+        id = "view.map_editor.rcmenu.delete"
+        fmt = "Supprimer"
+    [[gui.entry]]
+        id = "view.map_editor.rcmenu.edit"
+        fmt = "Edit"
+    [[gui.entry]]
+        id = "view.map_editor.rcmenu.link_to"
+        fmt = "Link to"
+    [[gui.entry]]
+        id = "view.map_editor.rcmenu.toggle"
+        fmt = "Toggle"

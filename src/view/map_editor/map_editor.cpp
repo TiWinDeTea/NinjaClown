@@ -270,17 +270,17 @@ void view::map_editor::display_popup() {
 			return;
 		}
 
-		if (ImGui::Selectable("delete")) { // FIXME externalize string
+		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.delete").data())) {
 			adapter.remove_entity(*m_hovered_entity); // FIXME does not work on target tile
 		}
-		if (ImGui::Selectable("edit")) { // FIXME externalize string
+		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.edit").data())) {
 			// TODO fill stub
 		}
-		if (ImGui::Selectable("link to (for buttons)")) { // FIXME externalize string
-			// TODO fill stub
+		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.link_to").data())) {
+			// TODO fill stub (for buttons)
 		}
-		if (ImGui::Selectable("toggle (for buttons")) { // FIXME externalize string
-			// TODO fill stub
+		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.toggle").data())) {
+			// TODO fill stub (for buttons)
 		}
 		ImGui::EndPopup();
 	}

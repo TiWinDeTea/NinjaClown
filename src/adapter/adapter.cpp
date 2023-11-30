@@ -455,22 +455,26 @@ void adapter::adapter::add_object(unsigned int x, unsigned int y, utils::resourc
 
 void adapter::adapter::remove_entity(view_handle view_handle) {
 
-	auto model_handle = m_view2model.at(view_handle);
-	m_model2view.erase(model_handle);
-	m_view2model.erase(view_handle);
+	try {
+		auto model_handle = m_view2model.at(view_handle);
+		m_model2view.erase(model_handle);
+		m_view2model.erase(view_handle);
 
-	state::access<adapter>::view(m_state).erase(view_handle);
+		state::access<adapter>::view(m_state).erase(view_handle);
 
-	model::world &world = state::access<adapter>::model(m_state).world;
-	switch (model_handle.type) {
-		case model_handle::ACTIVATOR:
-		case model_handle::ACTIONABLE:
-		case model_handle::ENTITY:
-			world.components.metadata[model_handle.handle].kind
-			  = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
-			break;
-		default:
-			utils::log::warn("adapter.adapter.remove_entity.unknown_handle_type", "handle"_a = static_cast<int>(model_handle.type));
+		model::world &world = state::access<adapter>::model(m_state).world;
+		switch (model_handle.type) {
+			case model_handle::ACTIVATOR:
+			case model_handle::ACTIONABLE:
+			case model_handle::ENTITY:
+				world.components.metadata[model_handle.handle].kind
+				  = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY; // TODO check if this is enough
+				break;
+			default:
+				utils::log::warn("adapter.adapter.remove_entity.unknown_handle_type", "handle"_a = static_cast<int>(model_handle.type));
+		}
+	} catch (const std::out_of_range& e) {
+		utils::log::warn("adapter.adapter.remove_entity.unknown_handle", "handle"_a = static_cast<int>(view_handle.handle), "is_mob"_a = view_handle.is_mob);
 	}
 }
 
