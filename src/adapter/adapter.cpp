@@ -19,6 +19,40 @@
 using fmt::literals::operator""_a;
 
 namespace {
+
+adapter::behaviour::bhvr nnj_ett_kind2adapter_behaviour(ninja_api::nnj_entity_kind ett_kind) {
+	switch (ett_kind) {
+		case ninja_api::EK_NOT_AN_ENTITY:
+			return adapter::behaviour::unsupported;
+		case ninja_api::EK_HARMLESS:
+			return adapter::behaviour::harmless;
+		case ninja_api::EK_PATROL:
+			return adapter::behaviour::patrol;
+		case ninja_api::EK_AGGRESSIVE:
+			return adapter::behaviour::aggressive;
+		case ninja_api::EK_PROJECTILE:
+			return adapter::behaviour::unsupported;
+		case ninja_api::EK_DLL:
+			return adapter::behaviour::dll;
+	}
+}
+
+ninja_api::nnj_entity_kind adapter_behaviour2nnj_ett_kind(adapter::behaviour::bhvr behaviour) {
+	switch (behaviour) {
+		case adapter::behaviour::harmless:
+			return ninja_api::EK_HARMLESS;
+		case adapter::behaviour::patrol:
+			return ninja_api::EK_PATROL;
+		case adapter::behaviour::aggressive:
+			return ninja_api::EK_AGGRESSIVE;
+		case adapter::behaviour::dll:
+			return ninja_api::EK_DLL;
+		case adapter::behaviour::unsupported:
+			return ninja_api::EK_NOT_AN_ENTITY;
+	}
+}
+
+
 template <typename... Args>
 [[nodiscard]] std::string tooltip_text_prefix(std::string_view key, char const *prefix, Args &&...args) {
 	std::string_view fmt = utils::resource_manager::instance().tooltip_for(key);
@@ -191,7 +225,7 @@ void adapter::adapter::rotate_entity(model_handle entity, float new_rad) noexcep
 
 	if (auto it = m_model2view.find(entity); it != m_model2view.end()) {
 		utils::log::trace("adapter.trace.rotate_entity", "view_handle"_a = it->first.handle, "angle"_a = new_rad);
-		view.game().rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
+		view.rotate_entity(it->second, view::facing_direction::from_angle(new_rad));
 		mark_entity_as_dirty(entity.handle);
 	}
 	else {
@@ -254,7 +288,7 @@ adapter::draw_request adapter::adapter::tooltip_for(view_handle entity) noexcept
 	// Retrieving model's handle
 	auto it = m_view2model.find(entity);
 	if (it == m_view2model.end()) {
-		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = entity.handle);
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = entity.handle, "is_mob"_a = entity.is_mob);
 		return list;
 	}
 
@@ -551,8 +585,68 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 	}
 }
 
-void adapter::adapter::edit_entity(view_handle handle, const base_entity_edit &new_data) {
-	// TODO
+
+
+void adapter::adapter::edit_entity(view_handle handle, const entity_edit &new_data) {
+
+	if (handle == m_target_handle) {
+		utils::log::warn("adapter.adapter.edit_entity.target_tile_edit");
+		return;
+	}
+
+	// Retrieving model's handle
+	auto it = m_view2model.find(handle);
+	if (it == m_view2model.end()) {
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = handle.handle, "is_mob"_a = handle.is_mob);
+		return;
+	}
+
+	if (handle.is_mob) {
+		edit_mob_entity(handle, new_data);
+	}
+
+	switch (it->second.type) {
+		case model_handle::ACTIVATOR: {
+			edit_activator_entity(handle, new_data);
+		}
+		case model_handle::ACTIONABLE: {
+			edit_actionable_entity(handle, new_data);
+		}
+		case model_handle::ENTITY:
+			utils::log::warn("adapter.non_coherent_entity", "handle"_a = it->second.handle);
+			break;
+	}
+}
+
+adapter::entity_edit adapter::adapter::entity_properties(view_handle handle) const {
+	if (handle == m_target_handle) {
+		return {};
+	}
+
+	// Retrieving model's handle
+	auto it = m_view2model.find(handle);
+	if (it == m_view2model.end()) {
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = handle.handle, "is_mob"_a = handle.is_mob);
+		return {};
+	}
+
+	if (handle.is_mob) {
+		return mob_entity_properties(handle);
+	}
+
+	switch (it->second.type) {
+		case model_handle::ACTIVATOR: {
+			return activator_entity_properties(handle);
+		}
+		case model_handle::ACTIONABLE: {
+			return actionable_entity_properties(handle);
+		}
+		case model_handle::ENTITY:
+			utils::log::warn("adapter.non_coherent_entity", "handle"_a = it->second.handle);
+			break;
+	}
+
+	return {};
 }
 
 std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept {
@@ -561,3 +655,142 @@ std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept
 	}
 	return h.handle | 0xFF00u;
 }
+
+adapter::entity_edit adapter::adapter::actionable_entity_properties(view_handle handle) const {
+	entity_edit edit;
+	const entity_edit_v name = m_view2name.at(handle);
+	edit.emplace_back(utils::gui_str_for("adapter.properties.actionable.name"), name);
+	return edit;
+}
+
+adapter::entity_edit adapter::adapter::activator_entity_properties(view_handle handle) const {
+	// TODO (autoshooter: fire rate, ...)
+	return {};
+}
+
+adapter::entity_edit adapter::adapter::mob_entity_properties(view_handle vhandle) const {
+	// TODO: add behaviour selector
+
+	entity_edit edit;
+	auto& world = state::access<adapter>::model(m_state).world;
+	const auto& mhandle = m_view2model.find(vhandle);
+
+	if (mhandle == m_view2model.end()) {
+		utils::log::error("adapter.unknown_view_entity", "view_handle"_a = vhandle.handle, "is_mob"_a = vhandle.is_mob);
+		return {};
+	}
+
+	const auto& hp_component = world.components.health[mhandle->second.handle];
+	if (!hp_component) {
+		utils::log::error("adapter.non_coherent_entity", "handle"_a = mhandle->second.handle);
+		return {};
+	}
+
+	const auto& dir_component = world.components.hitbox[mhandle->second.handle];
+	if (!dir_component) {
+		utils::log::error("adapter.non_coherent_entity", "handle"_a = mhandle->second.handle);
+		return {};
+	}
+
+
+	const entity_edit_v hp = hp_component->points;
+	const entity_edit_v dir = angle{dir_component->rad};
+	const entity_edit_v bhvr = behaviour{nnj_ett_kind2adapter_behaviour(world.components.metadata[mhandle->second.handle].kind)};
+
+	edit.emplace_back(utils::gui_str_for("adapter.properties.mob.hp"), hp);
+	edit.emplace_back(utils::gui_str_for("adapter.properties.mob.direction"), dir);
+	edit.emplace_back(utils::gui_str_for("adapter.properties.mob.behaviour"), bhvr);
+	return edit;
+}
+
+
+void adapter::adapter::edit_actionable_entity(view_handle handle, const entity_edit& edits) {
+	auto visitor = [&](const auto& value) {
+		using T = std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
+		if constexpr (std::is_same_v<T, std::string>) {
+			m_view2name[handle] = value;
+			m_name2view[value] = handle;
+
+		} else {
+			utils::log::error("adapter.properties.bad_property");
+		}
+	};
+
+	for (const auto& edit : edits) {
+		std::visit(visitor, edit.second);
+	}
+}
+
+void adapter::adapter::edit_activator_entity(view_handle handle, const entity_edit& edits) {
+	// Nothing there yet
+	// TODO (autoshooter: fire rate, ...)
+}
+
+void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit& edits) {
+	const std::string_view hp_str = utils::gui_text_for("adapter.properties.mob.hp");
+	const std::string_view dir_str = utils::gui_text_for("adapter.properties.mob.direction");
+	const std::string_view bhvr_str = utils::gui_text_for("adapter.properties.mob.behaviour");
+
+	auto& world = state::access<adapter>::model(m_state).world;
+	const auto& mhandle = m_view2model.find(vhandle);
+
+	if (mhandle == m_view2model.end()) {
+		utils::log::error("adapter.unknown_view_entity", "view_handle"_a = vhandle.handle, "is_mob"_a = vhandle.is_mob);
+		return;
+	}
+
+	for (const auto& edit : edits) {
+		const auto& str = edit.first;
+
+		auto visitor = [&](const auto& value) {
+			using T = std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
+
+			if (str == hp_str) {
+				if constexpr (!std::is_same_v<T, std::uint8_t>) { // FIXME use something else other than hard coded std::uint8_t here
+					utils::log::error("adapter.properties.bad_property");
+					return;
+				} else {
+					if (!world.components.health[mhandle->second.handle]) {
+						utils::log::error("oh no"); // FIXME log
+						return;
+					}
+					world.components.health[mhandle->second.handle]->points = value;
+				}
+			}
+			else if (str == dir_str) {
+				if constexpr (!std::is_same_v<T, angle>) {
+					utils::log::error("adapter.properties.bad_property");
+					return;
+				} else {
+					if (!world.components.hitbox[mhandle->second.handle]) {
+						utils::log::error("oh no"); // FIXME log
+						return;
+					}
+					world.components.hitbox[mhandle->second.handle]->rad = value.val;
+					state::access<adapter>::view(m_state).rotate_entity(vhandle, view::facing_direction::from_angle(value.val));
+				}
+			}
+			else if (str == bhvr_str) {
+				if constexpr (!std::is_same_v<T, behaviour>) {
+					utils::log::error("adapter.properties.bad_property");
+					return;
+				} else {
+					world.components.metadata[mhandle->second.handle].kind = adapter_behaviour2nnj_ett_kind(value.val);
+					// FIXME update view
+				}
+
+			}
+			else {
+
+				utils::log::error("oh no"); // FIXME log
+			}
+		};
+
+		std::visit(visitor, edit.second);
+	}
+}
+
+
+
+
+

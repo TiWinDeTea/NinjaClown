@@ -1,6 +1,7 @@
 #ifndef NINJACLOWN_VIEW_VIEW_HPP
 #define NINJACLOWN_VIEW_VIEW_HPP
 
+#include "adapter/facing_dir.hpp"
 #include "utils/loop_per_sec_limit.hpp"
 
 #include <SFML/System/Vector2.hpp>
@@ -82,6 +83,7 @@ public:
 	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
 	adapter::view_handle add_mob(mob&& mob);
 	adapter::view_handle add_object(object&& mob);
+	void rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept;
 	void erase(adapter::view_handle) noexcept;
 
     std::atomic_bool show_debug_data{true};

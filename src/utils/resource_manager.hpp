@@ -190,6 +190,14 @@ private:
 	lang_info m_user_log_lang{};
 	resource_pack_info m_user_resource_pack{};
 };
+
+inline std::string_view gui_text_for(std::string_view key) noexcept {
+	return resource_manager::instance().gui_text_for(key);
+}
+inline std::string gui_str_for(std::string_view key) {
+	return std::string{gui_text_for(key)};
+}
+
 } // namespace utils
 
 #endif //NINJACLOWN_UTILS_RESOURCE_MANAGER_HPP

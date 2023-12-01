@@ -296,7 +296,7 @@
         fmt = "Non coherent entity type for id {handle}, logic and view might be out of sync (internal error)"
     [[log.entry]]
         id = "adapter.unknown_view_entity"
-        fmt = "Unknown view entity with id {view_handle}, logic and view might be out of sync (internal error)"
+        fmt = "Unknown view entity with id ({view_handle}, {is_mob}), logic and view might be out of sync (internal error)"
     [[log.entry]]
         id = "adapter.adapter.unknown_tile_type"
         fmt = "unknown tile type while editing: {id}"
@@ -315,6 +315,9 @@
     [[log.entry]]
         id = "adapter.adapter.remove_entity.unknown_actionable_handle"
         fmt = "Unknown actionable handle; id: {handle}"
+    [[log.entry]]
+        id = "adapter.properties.bad_property"
+        fmt = "Unexpected property type when editing value."
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"
@@ -384,6 +387,18 @@
 
 
 [gui]
+    [[gui.entry]]
+        id = "adapter.properties.actionable.name"
+        fmt = "actionable name"
+    [[gui.entry]]
+        id = "adapter.properties.mob.hp"
+        fmt = "mob hitpoints"
+    [[gui.entry]]
+        id = "adapter.properties.mob.direction"
+        fmt = "mob facing direction"
+    [[gui.entry]]
+        id = "adapter.properties.mob.behaviour"
+        fmt = "mob behaviour"
     [[gui.entry]]
         id = "view.in_game_menu.resume"
         fmt = "Resume"
@@ -517,3 +532,21 @@
     [[gui.entry]]
         id = "view.map_editor.rcmenu.toggle"
         fmt = "Toggle"
+    [[gui.entry]]
+        id = "view.map_editor.editmenu.ok"
+        fmt = "OK"
+    [[gui.entry]]
+        id = "view.map_editor.editmenu.cancel"
+        fmt = "Cancel"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.harmless"
+        fmt = "Peaceful"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.patrol"
+        fmt = "Patrolling"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.aggressive"
+        fmt = "Aggressive"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.dll"
+        fmt = "DLL (player)"

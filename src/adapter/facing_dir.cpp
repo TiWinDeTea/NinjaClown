@@ -5,8 +5,8 @@
 
 // TODO: add NE/NW/SE/SW
 view::facing_direction::type view::facing_direction::from_angle(float rad) {
-    assert(rad >= -uni::math::pi<float>);
-    assert(rad <= uni::math::pi<float>);
+    assert(rad >= -uni::math::pi<float> - 0.01);
+    assert(rad <= uni::math::pi<float> + 0.01);
 
 	if (rad >= 7 * uni::math::pi<float> / 8) {
 		return W;

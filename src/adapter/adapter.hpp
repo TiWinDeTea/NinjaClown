@@ -59,7 +59,12 @@ public:
 	void add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id);
 	void add_object(unsigned int x, unsigned int y, utils::resources_type::object_id id);
 	void remove_entity(view_handle deleted_entity);
-	void edit_entity(view_handle handle, const base_entity_edit& new_data);
+	/**
+	 * @param handle Handle to the view item
+	 * @return Returns the list of available properties for a given item (may be empty)
+	 */
+	[[nodiscard]] entity_edit entity_properties(view_handle handle) const;
+	void edit_entity(view_handle handle, const entity_edit& new_data);
 
 	// -- Used by model -- //
 
@@ -109,6 +114,20 @@ private:
 	 */
 	[[nodiscard]] draw_request tooltip_for_mob(model_handle mob, const model::components& components) noexcept;
 
+	/**
+	 * Compute the list of properties that can be edited (used by map editor)
+	 */
+	[[nodiscard]] entity_edit actionable_entity_properties(view_handle handle) const;
+	[[nodiscard]] entity_edit activator_entity_properties(view_handle handle) const;
+	[[nodiscard]] entity_edit mob_entity_properties(view_handle handle) const;
+
+	/**
+	 * Enacts modifications of properties (used by map editor)
+	 */
+	void edit_actionable_entity(view_handle handle, const entity_edit& edits);
+	void edit_activator_entity(view_handle handle, const entity_edit& edits);
+	void edit_mob_entity(view_handle handle, const entity_edit& edits);
+
 	friend terminal_commands;
 
 	bool load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &tables, std::string_view map) noexcept;
@@ -119,6 +138,7 @@ private:
 	std::unordered_map<model_handle, view_handle, model_hhash> m_model2view;
 	std::unordered_map<view_handle, model_handle, view_hhash> m_view2model;
 	std::unordered_map<view_handle, std::string, view_hhash> m_view2name;
+	std::unordered_map<std::string, view_handle> m_name2view; // FIXME : ensure name unicity when editing a map
 
 	std::vector<model::grid_point> m_cells_changed_since_last_update{};
 	std::vector<std::size_t> m_entities_changed_since_last_update{};

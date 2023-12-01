@@ -555,6 +555,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 			world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
 			world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
+			world.components.hitbox[model_entity_handle]->rad = mob.facing;
 			world.components.properties[model_entity_handle].throw_delay  = mob.type.throw_delay;
 			world.components.properties[model_entity_handle].attack_delay = mob.type.attack_delay;
 
@@ -641,6 +642,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  }
 
 				  m_view2name[view_handle] = gate.name;
+				  m_name2view[gate.name] = view_handle;
 			  },
 			  [&](const autoshooter &autoshooter) {
 				  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cst::cell_width;
@@ -660,6 +662,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_view2model[view_handle]  = model_handle;
 
 				  m_view2name[view_handle] = autoshooter.name;
+				  m_name2view[autoshooter.name] = view_handle;
 			  }};
 			std::visit(visitor, actor);
 		}

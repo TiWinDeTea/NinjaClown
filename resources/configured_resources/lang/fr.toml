@@ -22,7 +22,7 @@
         desc = "affiche du texte à l'écran"
     [commands.@COMMANDS_QUITID@]
         name = "quitter"
-        desc = "ferme l’application"
+        desc = "ferme l'application"
     [commands.@COMMANDS_LOAD_DLLID@]
         name = "charge_lib"
         desc = "charge une bilbiothèque pour gérer le roBot"
@@ -31,10 +31,10 @@
         desc = "charge une carte depuis un fichier"
     [commands.@COMMANDS_UPDATE_WORLDID@]
         name = "tick"
-        desc = "avance le monde d’un tick dans le temps"
+        desc = "avance le monde d'un tick dans le temps"
     [commands.@COMMANDS_SETID@]
         name = "majv"
-        desc = "met à jour la valeur d’une variable"
+        desc = "met à jour la valeur d'une variable"
     [commands.@COMMANDS_VALUEOFID@]
         name = "valv"
         desc = "affiche la valeur d'une variable"
@@ -59,7 +59,7 @@
 [log]
     [[log.entry]]
         id = "terminal_commands.command_missing_name"
-        fmt = "La commande {cmd_id} n’est associée à aucun nom d’appel"
+        fmt = "La commande {cmd_id} n'est associée à aucun nom d'appel"
 
     [[log.entry]]
         id = "terminal_commands.load_dll.usage"
@@ -83,7 +83,7 @@
         fmt = "{var_name} : variable non reconnue"
     [[log.entry]]
         id = "terminal_commands.set.need_uint"
-        fmt = "{value} n’est pas un entier positif"
+        fmt = "{value} n'est pas un entier positif"
     [[log.entry]]
         id = "terminal_commands.set.is_read_only"
         fmt = "Erreur : {var_name} est en lecture seule"
@@ -107,13 +107,13 @@
 
     [[log.entry]]
         id = "terminal_commands.fire_activator.usage"
-        fmt = "Utilisation : {arg0} <id d’activateur>"
+        fmt = "Utilisation : {arg0} <id d'activateur>"
     [[log.entry]]
         id = "terminal_commands.fire_activator.need_uint"
-        fmt = "Erreur : l’id \"{value}\" n’est pas un entier positif"
+        fmt = "Erreur : l'id \"{value}\" n'est pas un entier positif"
     [[log.entry]]
         id = "terminal_commands.fire_activator.too_high"
-        fmt = "Erreur : l’id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
+        fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
     [[log.entry]]
         id = "terminal_commands.fire_activator.none"
         fmt = "Erreur : il' n'y a pas d'activateur sur cette carte"
@@ -127,7 +127,7 @@
         fmt = "Utilisation: {arg0} <id d'actionable>"
     [[log.entry]]
         id = "terminal_commands.fire_actionable.need_uint"
-        fmt = "Erreur : l'id \"{value}\" n’est pas un entier positif valide"
+        fmt = "Erreur : l'id \"{value}\" n'est pas un entier positif valide"
     [[log.entry]]
         id = "terminal_commands.fire_actionable.too_high"
         fmt = "Erreur : l'id {value} dépasse la valeur maximale autorisée pour la carte (max: {max_value})"
@@ -141,13 +141,13 @@
 
     [[log.entry]]
         id = "overmap_collection.unknow_entity_move"
-        fmt = "Tentative de déplacement d’une entité inconnue {{type: vue, is_mob:{is_mob}, handle:{handle}}}"
+        fmt = "Tentative de déplacement d'une entité inconnue {{type: vue, is_mob:{is_mob}, handle:{handle}}}"
     [[log.entry]]
         id = "overmap_collection.moving_mob"
         fmt = "Déplacement du mob [id vue] {handle} vers ({x} ; {y})"
     [[log.entry]]
         id = "overmap_collection.moving_object"
-        fmt = "Déplacement de l’objet [id vue] {handle} vers ({x} ; {y})"
+        fmt = "Déplacement de l'objet [id vue] {handle} vers ({x} ; {y})"
     [[log.entry]]
         id = "overmap_collection.incompatible_rotate"
         fmt = "Demande de rotation pour un objet incompatible [id vue] {handle}"
@@ -186,7 +186,7 @@
         fmt = "Fonction facultative {func_name} chargée depuis {file}"
     [[log.entry]]
         id = "bod_dll.reload.no_path"
-        fmt = "Échec du chargement de la dll : chemin d’accès vide."
+        fmt = "Échec du chargement de la dll : chemin d'accès vide."
     [[log.entry]]
         id = "bot_dll.load.failed"
         fmt = "Échec du chargement de la dll \"{file}\": {error}"
@@ -220,22 +220,22 @@
         fmt = "Erreur lors du chargement de la carte \"{map}\" : la clef {key} est manquante (lors du chargement des information de la section 'spawn') (type de mob : {type})"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_type"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : clef '{key}' manquante pour un acteur (type de l’acteur inconnu)"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : clef '{key}' manquante pour un acteur (type de l'acteur inconnu)"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_missing_component"
-        fmt = "Erreur lors du chargement de la carte\"{map}\" : clef '{key}' manquante pour un acteur (type de l’acteur : {type})"
+        fmt = "Erreur lors du chargement de la carte\"{map}\" : clef '{key}' manquante pour un acteur (type de l'acteur : {type})"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_duplication"
-        fmt = "Attention : l’acteur '{actor}' est dupliqué (dans la carte \"{map}\")"
+        fmt = "Attention : l'acteur '{actor}' est dupliqué (dans la carte \"{map}\")"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_unrecognized_type"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : le type d’acteur '{type}' n’est pas connu (clef: {key})"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : le type d'acteur '{type}' n'est pas connu (clef: {key})"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_no_target"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' n’a pas de cible sur laquelle agir (clef : {key}) (la valeur est peut-être malformée)"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' n'a pas de cible sur laquelle agir (clef : {key}) (la valeur est peut-être malformée)"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_target"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' à pour cible \"{target}\", qui n’est pas connue"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' à pour cible \"{target}\", qui n'est pas connue"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_mob_def"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'mobs.definition' est maquante"
@@ -299,7 +299,7 @@
         fmt = "Type de tuile éditée inconnue : {id}"
     [[log.entry]]
         id = "adapter.adapter.too_many_entities"
-        fmt = "Trop d’entités ! Nombre max : {max}"
+        fmt = "Trop d'entités ! Nombre max : {max}"
     [[log.entry]]
         id = "adapter.adapter.unknown_mob_type"
         fmt = "Type de mob inconnu : {id}"
@@ -311,14 +311,17 @@
         fmt = "Handle de vue inconnu; id: {handle}, is_mob: {is_mob}"
     [[log.entry]]
         id = "adapter.adapter.remove_entity.unknown_actionable_handle"
-        fmt = "Handle d’actionnable incconu; id: {handle}"
+        fmt = "Handle d'actionnable incconu; id: {handle}"
+    [[log.entry]]
+        id = "adapter.properties.bad_property"
+        fmt = "Type de propriété innatendu lors de l'édition."
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"
         fmt = "Échec lors du rechargement du nom des commandes"
     [[log.entry]]
         id = "resource_manager.gui_texts.reload_failed"
-        fmt = "Échec lors du rechargement des textes de l’interface"
+        fmt = "Échec lors du rechargement des textes de l'interface"
     [[log.entry]]
         id = "resource_manger.log_texts.reload_failed"
         fmt = "Échec lors du rechargement des textes de log"
@@ -381,6 +384,18 @@
 
 [gui]
     [[gui.entry]]
+        id = "adapter.properties.actionable.name"
+        fmt = "Nom de l'actionable"
+    [[gui.entry]]
+        id = "adapter.properties.mob.hp"
+        fmt = "Points de vie du mob"
+    [[gui.entry]]
+        id = "adapter.properties.mob.direction"
+        fmt = "Direction du mob"
+    [[gui.entry]]
+        id = "adapter.properties.mob.behaviour"
+        fmt = "Comportement du mob"
+    [[gui.entry]]
         id = "view.in_game_menu.resume"
         fmt = "Reprendre"
     [[gui.entry]]
@@ -429,7 +444,7 @@
         fmt = "Langue de commandes : "
     [[gui.entry]]
         id = "configurator.gui_lang"
-        fmt = "Langue de l’interface : "
+        fmt = "Langue de l'interface : "
     [[gui.entry]]
         id = "configurator.log_lang"
         fmt = "Langue de log : "
@@ -503,3 +518,21 @@
     [[gui.entry]]
         id = "view.map_editor.rcmenu.toggle"
         fmt = "Basculer"
+    [[gui.entry]]
+        id = "view.map_editor.editmenu.ok"
+        fmt = "OK"
+    [[gui.entry]]
+        id = "view.map_editor.editmenu.cancel"
+        fmt = "Annuler"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.harmless"
+        fmt = "Paisible"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.patrol"
+        fmt = "Patrouilleur"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.aggressive"
+        fmt = "Aggressif"
+    [[gui.entry]]
+        id = "view.map_editor.bhvr.dll"
+        fmt = "DLL (joueur)"

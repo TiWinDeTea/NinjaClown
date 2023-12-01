@@ -82,6 +82,11 @@ private:
 	void display_popup();
 
 	/**
+	 * Shows the field editor (accessed via rigth-clicking>edit)
+	 */
+	void display_field_editor();
+
+	/**
 	  * Adds an item to the map, sets a tile, .... according to user input
 	  */
 	void place_item();
@@ -122,6 +127,9 @@ private:
 
 	// Used by right click pop-up menu
 	std::optional<adapter::view_handle> m_hovered_entity{};
+	adapter::entity_edit m_hovered_entity_fields{};
+	bool m_editing_hovered_entity_fields{false}; //! Are we currently editing the fields ?
+	bool m_field_editor_open{false};
 };
 } // namespace view
 #endif //NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP

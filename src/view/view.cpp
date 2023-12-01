@@ -47,7 +47,7 @@ void setup_terminal(ImTerm::terminal<terminal_commands> &terminal, unsigned int 
 	terminal.log_level(ImTerm::message::severity::info);
 	terminal.set_flags(ImGuiWindowFlags_NoTitleBar);
 	terminal.disallow_x_resize();
-	terminal.filter_hint() = utils::resource_manager::instance().gui_text_for("view.terminal.regex_filter");
+	terminal.filter_hint() = utils::gui_text_for("view.terminal.regex_filter");
 }
 } // namespace
 
@@ -362,6 +362,19 @@ adapter::view_handle view::view::add_object(object &&object) {
 
 	utils::log::error("view.view.add_object-invalid_state", "state"_a = static_cast<int>(m_show_state)); // TODO add key to lang file
 	return adapter::view_handle{};
+}
+
+void view::view::rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept {
+	switch (m_show_state) {
+		case window::game:
+			game().get_map().acquire_overmap()->rotate_entity(handle, dir);
+			break;
+		case window::menu:
+			break;
+		case window::map_editor:
+			m_editor->get_map().acquire_overmap()->rotate_entity(handle, dir);
+			break;
+	}
 }
 
 void view::view::erase(adapter::view_handle handle) noexcept {

@@ -4,15 +4,16 @@
 #include <vector>
 
 #include "model/types.hpp"
+#include "ninja_clown/api.h"
 #include "utils/utils.hpp"
 
 namespace adapter {
 enum class bot_log_level {
 	BTRACE    = 0,
-	BDEBUG   = 1,
-	BINFO    = 2,
-	BWARN    = 3,
-	BERROR   = 4,
+	BDEBUG    = 1,
+	BINFO     = 2,
+	BWARN     = 3,
+	BERROR    = 4,
 	BCRITICAL = 5,
 };
 
@@ -57,21 +58,36 @@ struct view_hhash {
 };
 
 namespace request {
-struct coords {
-	std::size_t x, y;
-};
+	struct coords {
+		std::size_t x, y;
+	};
 
-struct hitbox {
-	float x, y;
-	float width, height;
-};
+	struct hitbox {
+		float x, y;
+		float width, height;
+	};
 
-struct info {
-	std::vector<std::string> lines;
-};
+	struct info {
+		std::vector<std::string> lines;
+	};
 } // namespace request
 
-struct base_entity_edit {};
+struct angle {
+	float val;
+};
+
+struct behaviour {
+	enum bhvr {
+		harmless,
+		patrol,
+		aggressive,
+		dll,
+		unsupported
+	} val;
+};
+
+using entity_edit_v = std::variant<std::string, float, std::uint8_t, angle, behaviour>;
+using entity_edit   = std::vector<std::pair<std::string, entity_edit_v>>;
 } // namespace adapter
 
 #endif //NINJACLOWN_ADAPTER_ADAPTER_CLASSES_HPP

@@ -3,6 +3,7 @@
 #include "state_holder.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/resources_type.hpp"
+#include "utils/universal_constants.hpp"
 #include "utils/visitor.hpp"
 #include "view/standalones/imgui_styles.hpp"
 #include "view/standalones/mouse_position.hpp"
@@ -18,13 +19,14 @@
 
 namespace {
 const char *text_for(std::string_view key) {
-	return utils::resource_manager::instance().gui_text_for(key).data();
+	return utils::gui_text_for(key).data();
 }
 } // namespace
 
-constexpr const char *popup_menu_name       = "##view.map_editor.map_editor.display_map_creator";
-constexpr const char *selector_name         = "##view.map_editor.map_editor.show_selector";
-constexpr const char *right_click_menu_name = "##view.map_editor.map_editor.display_popup";
+constexpr const char *popup_menu_name        = "##view.map_editor.map_editor.display_map_creator";
+constexpr const char *selector_name          = "##view.map_editor.map_editor.show_selector";
+constexpr const char *right_click_menu_name  = "##view.map_editor.map_editor.display_popup";
+constexpr const char *field_editor_menu_name = "##map_editor.display_field_editor";
 
 view::map_editor::map_editor(sf::RenderWindow &window, state::holder &state) noexcept
     : m_state{state}
@@ -60,6 +62,7 @@ bool view::map_editor::show() {
 		case editor_state::editing_map:
 			display_selected();
 			display_popup(); // if needed (managed by ImGui, cf ImGui::OpenPopup(right_click_menu_name))
+			display_field_editor(); // if needed
 			break;
 	}
 
@@ -250,6 +253,83 @@ void view::map_editor::display_map_creator() {
 	}
 }
 
+void view::map_editor::display_field_editor() {
+	if (!m_editing_hovered_entity_fields || !m_hovered_entity) {
+		return;
+	}
+
+	if (!m_field_editor_open) {
+		ImGui::OpenPopup(field_editor_menu_name);
+		m_field_editor_open = true;
+	}
+
+	if (ImGui::BeginPopupModal(field_editor_menu_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		for (std::pair<std::string, adapter::entity_edit_v> &field : m_hovered_entity_fields) {
+
+			auto visitor = [&field](auto &value) {
+				using T = std::remove_reference_t<decltype(value)>;
+
+				if constexpr (std::is_integral_v<T>) {
+					int val = static_cast<int>(value);
+					ImGui::SliderInt(field.first.c_str(), &val, std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+					value = static_cast<T>(val);
+				}
+
+				else if constexpr (std::is_same_v<T, float>) {
+					ImGui::SliderFloat(field.first.c_str(), &value, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+				}
+
+				else if constexpr (std::is_same_v<T, std::string>) {
+					std::array<char, 128> buf{'\0'};
+					std::copy_n(value.data(), std::min(value.size(), buf.size()), buf.data());
+					ImGui::InputText(field.first.c_str(), buf.data(), buf.size());
+					value = buf.data();
+				}
+
+				else if constexpr (std::is_same_v<T, adapter::angle>) {
+					ImGui::SliderFloat(field.first.c_str(), &(value.val), -uni::math::pi<float>, uni::math::pi<float>);
+				}
+
+				else if constexpr (std::is_same_v<T, adapter::behaviour>) {
+					std::string all_behaviours_str; // TODO: add to translation files
+					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.harmless");
+					all_behaviours_str += '\0';
+					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.patrol");
+					all_behaviours_str += '\0';
+					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.aggressive");
+					all_behaviours_str += '\0';
+					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.dll");
+					all_behaviours_str += '\0';
+					all_behaviours_str += '\0';
+
+					int val = value.val;
+					ImGui::Combo(field.first.c_str(), &val, all_behaviours_str.c_str());
+					value.val = static_cast<adapter::behaviour::bhvr>(val);
+				}
+				else {
+					static_assert(false, "unsupported type.");
+				}
+			};
+
+			std::visit(visitor, field.second);
+		}
+
+		if (ImGui::Button(utils::gui_text_for("view.map_editor.editmenu.ok").data())) {
+			state::access<map_editor>::adapter(m_state).edit_entity(*m_hovered_entity, m_hovered_entity_fields);
+			m_editing_hovered_entity_fields = false;
+			m_field_editor_open             = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(utils::gui_text_for("view.map_editor.editmenu.cancel").data())) {
+			m_editing_hovered_entity_fields = false;
+			m_field_editor_open             = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::End();
+	}
+}
+
 void view::map_editor::load_map() {
 	state::access<map_editor>::adapter(m_state).load_map(m_file_explorer.selected_path());
 	m_has_map = true;
@@ -270,22 +350,33 @@ void view::map_editor::display_popup() {
 			return;
 		}
 
-		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.delete").data())) {
+		if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.delete").data())) {
 			adapter.remove_entity(*m_hovered_entity);
 		}
-		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.edit").data())) {
-			// TODO fill stub
+
+		if (!m_hovered_entity_fields.empty()) {
+			if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.edit").data())) {
+				m_editing_hovered_entity_fields = true;
+			}
 		}
-		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.link_to").data())) {
+		if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.link_to").data())) {
 			// TODO fill stub (for buttons)
 		}
-		if (ImGui::Selectable(utils::resource_manager::instance().gui_text_for("view.map_editor.rcmenu.toggle").data())) {
+		if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.toggle").data())) {
 			// TODO fill stub (for buttons)
 		}
 		ImGui::EndPopup();
 	}
 	else {
-		m_hovered_entity = m_map_viewer.hovered_entity();
+		if (!m_editing_hovered_entity_fields) {
+			m_hovered_entity = m_map_viewer.hovered_entity();
+			if (m_hovered_entity) {
+				m_hovered_entity_fields = adapter.entity_properties(*m_hovered_entity);
+			}
+			else {
+				m_hovered_entity_fields.clear();
+			}
+		}
 	}
 }
 void view::map_editor::selector_tile() {
