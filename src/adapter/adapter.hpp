@@ -117,9 +117,9 @@ private:
 	/**
 	 * Compute the list of properties that can be edited (used by map editor)
 	 */
-	[[nodiscard]] entity_edit actionable_entity_properties(view_handle handle) const;
-	[[nodiscard]] entity_edit activator_entity_properties(view_handle handle) const;
-	[[nodiscard]] entity_edit mob_entity_properties(view_handle handle) const;
+	[[nodiscard]] entity_edit actionable_entity_properties(view_handle vhandle, model_handle mhandle) const;
+	[[nodiscard]] entity_edit activator_entity_properties(view_handle vhandle, model_handle mhandle) const;
+	[[nodiscard]] entity_edit mob_entity_properties(view_handle vhandle, model_handle mhandle) const;
 
 	/**
 	 * Enacts modifications of properties (used by map editor)

@@ -61,6 +61,8 @@ public:
 	// Deletes a mob or an item
 	void erase(adapter::view_handle) noexcept;
 
+	void set_mob_kind(adapter::view_handle, utils::resources_type::mob_id type);
+
 private:
 
 	std::multiset<pair_type, less> m_ordered_displayable;

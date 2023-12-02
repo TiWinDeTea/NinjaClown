@@ -50,22 +50,6 @@ public:
 		return m_map.is_filled();
 	}
 
-    void move_entity(const adapter::view_handle& handle, float new_x, float new_y) {
-        m_map.acquire_overmap()->move_entity(handle, new_x, new_y);
-    }
-
-    void rotate_entity(const adapter::view_handle& handle, ::view::facing_direction::type value) {
-        m_map.acquire_overmap()->rotate_entity(handle, value);
-    }
-
-    void reveal(const adapter::view_handle& handle) {
-        m_map.acquire_overmap()->reveal(handle);
-    }
-
-    void hide(const adapter::view_handle& handle) {
-        m_map.acquire_overmap()->hide(handle);
-    }
-
 	/**
 	 * Displays the rightmost bar (play, pause, step, ... buttons).
 	 */

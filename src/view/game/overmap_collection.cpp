@@ -1,6 +1,6 @@
 
-#include "overmap_collection.hpp"
 #include "adapter/adapter.hpp"
+#include "overmap_collection.hpp"
 #include "utils/logging.hpp"
 #include "utils/resource_manager.hpp"
 #include "utils/visitor.hpp"
@@ -254,4 +254,16 @@ void view::overmap_collection::erase(adapter::view_handle handle) noexcept {
 		assert(handle.handle < m_objects.size());
 		std::next(m_objects.begin(), handle.handle)->reset();
 	}
+}
+
+void view::overmap_collection::set_mob_kind(adapter::view_handle handle, utils::resources_type::mob_id type) {
+	assert(handle.handle < m_mobs.size());
+	auto& target = *std::next(m_mobs.begin(), handle.handle);
+
+	if (!target || !handle.is_mob) {
+		utils::log::error("overmap_collection.bad_handle", "handle"_a = handle.handle, "is_mob"_a = handle.is_mob);
+		return;
+	}
+
+	target->set_mob_id(type);
 }

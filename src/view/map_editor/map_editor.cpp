@@ -258,12 +258,7 @@ void view::map_editor::display_field_editor() {
 		return;
 	}
 
-	if (!m_field_editor_open) {
-		ImGui::OpenPopup(field_editor_menu_name);
-		m_field_editor_open = true;
-	}
-
-	if (ImGui::BeginPopupModal(field_editor_menu_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::Begin(field_editor_menu_name)) {
 		for (std::pair<std::string, adapter::entity_edit_v> &field : m_hovered_entity_fields) {
 
 			auto visitor = [&field](auto &value) {
@@ -302,10 +297,22 @@ void view::map_editor::display_field_editor() {
 					all_behaviours_str += '\0';
 					all_behaviours_str += '\0';
 
-					int val = value.val;
+					int val = static_cast<int>(value.val);
 					ImGui::Combo(field.first.c_str(), &val, all_behaviours_str.c_str());
 					value.val = static_cast<adapter::behaviour::bhvr>(val);
 				}
+
+				else if constexpr (std::is_same_v<T, adapter::toggler_targets>) {
+					ImGui::Text("%s", field.first.c_str());
+					ImGui::Columns(3, nullptr, false);
+					for (int i = 0; i < value.names.size(); i++)
+					{
+						if (ImGui::Selectable(value.names[i].c_str(), &value.values[i])) {}
+						ImGui::NextColumn();
+					}
+					ImGui::Columns(1);
+				}
+
 				else {
 					static_assert(false, "unsupported type.");
 				}
@@ -317,13 +324,11 @@ void view::map_editor::display_field_editor() {
 		if (ImGui::Button(utils::gui_text_for("view.map_editor.editmenu.ok").data())) {
 			state::access<map_editor>::adapter(m_state).edit_entity(*m_hovered_entity, m_hovered_entity_fields);
 			m_editing_hovered_entity_fields = false;
-			m_field_editor_open             = false;
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button(utils::gui_text_for("view.map_editor.editmenu.cancel").data())) {
 			m_editing_hovered_entity_fields = false;
-			m_field_editor_open             = false;
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::End();

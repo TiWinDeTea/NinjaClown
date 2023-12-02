@@ -160,6 +160,9 @@
     [[log.entry]]
         id = "overmap_collection.invalid_object_handle_move"
         fmt = "Move request for unknown object : {handle}"
+    [[log.entry]]
+        id = "overmap_collection.bad_handle"
+        fmt = "Unknown handle recieved: ({handle}, {is_mob})"
 
     [[log.entry]]
         id = "actionable.none"
@@ -344,6 +347,12 @@
     [[log.entry]]
         id = "view.view.FA_load_success"
         fmt = "successfully loaded font awesome"
+    [[log.entry]]
+        id = "view.view.invalid_state"
+        fmt = "Invalid state for request"
+    [[log.entry]]
+        id = "view.view.set_mob_kind.unsupported_behaviour"
+        fmt = "Unsupported behaviour switch (view): {bhvr}"
 
     [[log.entry]]
         id = "view.terminal.regex_filter"
@@ -388,7 +397,7 @@
 
 [gui]
     [[gui.entry]]
-        id = "adapter.properties.actionable.name"
+        id = "$.actionable.name"
         fmt = "actionable name"
     [[gui.entry]]
         id = "adapter.properties.mob.hp"
@@ -399,6 +408,9 @@
     [[gui.entry]]
         id = "adapter.properties.mob.behaviour"
         fmt = "mob behaviour"
+    [[gui.entry]]
+        id = "adapter.properties.activator.link_to"
+        fmt = "Manage links"
     [[gui.entry]]
         id = "view.in_game_menu.resume"
         fmt = "Resume"

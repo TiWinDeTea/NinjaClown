@@ -77,7 +77,7 @@ struct angle {
 };
 
 struct behaviour {
-	enum bhvr {
+	enum class bhvr {
 		harmless,
 		patrol,
 		aggressive,
@@ -86,7 +86,12 @@ struct behaviour {
 	} val;
 };
 
-using entity_edit_v = std::variant<std::string, float, std::uint8_t, angle, behaviour>;
+struct toggler_targets {
+	std::vector<std::string> names;
+	std::basic_string<bool> values;
+};
+
+using entity_edit_v = std::variant<std::string, float, std::uint8_t, angle, behaviour, toggler_targets>;
 using entity_edit   = std::vector<std::pair<std::string, entity_edit_v>>;
 } // namespace adapter
 

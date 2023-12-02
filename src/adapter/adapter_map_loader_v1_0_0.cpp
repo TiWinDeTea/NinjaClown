@@ -396,8 +396,6 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 	return actors;
 }
 
-void test(const class maclasse &tes) { }
-
 } // namespace
 
 bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &map_file, std::string_view map) noexcept {

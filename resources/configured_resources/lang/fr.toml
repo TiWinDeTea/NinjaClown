@@ -157,6 +157,9 @@
     [[log.entry]]
         id = "overmap_collection.invalid_object_handle_move"
         fmt = "Demande de movement pour un objet inconnu : {handle}"
+    [[log.entry]]
+        id = "overmap_collection.bad_handle"
+        fmt = "Handle inconnu reçue : ({handle}, {is_mob})"
 
     [[log.entry]]
         id = "actionable.none"
@@ -314,7 +317,7 @@
         fmt = "Handle d'actionnable incconu; id: {handle}"
     [[log.entry]]
         id = "adapter.properties.bad_property"
-        fmt = "Type de propriété innatendu lors de l'édition."
+        fmt = "Type de propriété inatendu lors de l'édition."
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"
@@ -341,6 +344,12 @@
     [[log.entry]]
         id = "view.view.FA_load_success"
         fmt = "Font Awesome chargée avec succès"
+    [[log.entry]]
+        id = "view.view.invalid_state"
+        fmt = "État invalide pour la requête reçue"
+    [[log.entry]]
+        id = "view.view.set_mob_kind.unsupported_behaviour"
+        fmt = "Comportement non supporté par la vue: {bhvr}"
 
     [[log.entry]]
         id = "view.terminal.regex_filter"
@@ -395,6 +404,9 @@
     [[gui.entry]]
         id = "adapter.properties.mob.behaviour"
         fmt = "Comportement du mob"
+    [[gui.entry]]
+        id = "adapter.properties.activator.link_to"
+        fmt = "Gérer les liens"
     [[gui.entry]]
         id = "view.in_game_menu.resume"
         fmt = "Reprendre"

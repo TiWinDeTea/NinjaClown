@@ -129,7 +129,6 @@ private:
 	std::optional<adapter::view_handle> m_hovered_entity{};
 	adapter::entity_edit m_hovered_entity_fields{};
 	bool m_editing_hovered_entity_fields{false}; //! Are we currently editing the fields ?
-	bool m_field_editor_open{false};
 };
 } // namespace view
 #endif //NINJACLOWN_VIEW_MAP_EDITOR_MAP_EDITOR_HPP

@@ -1,5 +1,6 @@
 #include "view/view.hpp"
 #include "adapter/adapter.hpp"
+#include "adapter/adapter_classes.hpp"
 #include "model/model.hpp"
 #include "state_holder.hpp"
 #include "terminal_commands.hpp"
@@ -310,7 +311,19 @@ bool view::view::has_map() const noexcept {
 	return m_game != nullptr && m_game->has_map();
 }
 
-void view::view::set_map(map_viewer &&map) noexcept {
+void view::view::move_entity(adapter::view_handle handle, float new_x, float new_y) noexcept {
+	map_viewer().acquire_overmap()->move_entity(handle, new_x, new_y);
+}
+
+void view::view::hide(adapter::view_handle handle) noexcept {
+	map_viewer().acquire_overmap()->hide(handle);
+}
+
+void view::view::reveal(adapter::view_handle handle) noexcept {
+	map_viewer().acquire_overmap()->reveal(handle);
+}
+
+void view::view::set_map(::view::map_viewer&& map) {
 	switch (m_show_state) {
 		case window::game:
 			game().set_map(std::move(map));
@@ -324,68 +337,56 @@ void view::view::set_map(map_viewer &&map) noexcept {
 }
 
 void view::view::set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id) {
-	switch (m_show_state) {
-		case window::game:
-			game().get_map().set_tile(x, y, id);
-			break;
-		case window::menu:
-			break;
-		case window::map_editor:
-			m_editor->get_map().set_tile(x, y, id);
-			break;
-	}
+	map_viewer().set_tile(x,y,id);
 }
 
 adapter::view_handle view::view::add_mob(mob &&mob) {
-	switch (m_show_state) {
-		case window::game:
-			return game().get_map().acquire_overmap()->add_mob(std::move(mob));
-		case window::menu:
-			break;
-		case window::map_editor:
-			return m_editor->get_map().acquire_overmap()->add_mob(std::move(mob));
-	}
-
-	utils::log::error("view.view.add_mob-invalid_state", "state"_a = static_cast<int>(m_show_state)); // TODO add key to lang file
-	return adapter::view_handle{};
+	return map_viewer().acquire_overmap()->add_mob(std::move(mob));
 }
 
 adapter::view_handle view::view::add_object(object &&object) {
-	switch (m_show_state) {
-		case window::game:
-			return game().get_map().acquire_overmap()->add_object(std::move(object));
-		case window::menu:
-			break;
-		case window::map_editor:
-			return m_editor->get_map().acquire_overmap()->add_object(std::move(object));
-	}
-
-	utils::log::error("view.view.add_object-invalid_state", "state"_a = static_cast<int>(m_show_state)); // TODO add key to lang file
-	return adapter::view_handle{};
+	return map_viewer().acquire_overmap()->add_object(std::move(object));
 }
 
 void view::view::rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept {
-	switch (m_show_state) {
-		case window::game:
-			game().get_map().acquire_overmap()->rotate_entity(handle, dir);
+	map_viewer().acquire_overmap()->rotate_entity(handle, dir);
+}
+
+void view::view::erase(adapter::view_handle handle) noexcept {
+	map_viewer().acquire_overmap()->erase(handle);
+}
+
+void view::view::set_mob_kind(adapter::view_handle handle, adapter::behaviour bhvr) noexcept {
+	auto map = map_viewer().acquire_overmap();
+	switch (bhvr.val) {
+
+		case adapter::behaviour::bhvr::harmless:
+			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
 			break;
-		case window::menu:
+		case adapter::behaviour::bhvr::patrol:
+			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
 			break;
-		case window::map_editor:
-			m_editor->get_map().acquire_overmap()->rotate_entity(handle, dir);
+		case adapter::behaviour::bhvr::aggressive:
+			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
+			break;
+		case adapter::behaviour::bhvr::dll:
+			map->set_mob_kind(handle,utils::resources_type::mob_id::player);
+			break;
+		case adapter::behaviour::bhvr::unsupported:
+			utils::log::error("view.view.set_mob_kind.unsupported_behaviour", "bhvr"_a = static_cast<int>(bhvr.val));
 			break;
 	}
 }
 
-void view::view::erase(adapter::view_handle handle) noexcept {
+view::map_viewer& view::view::map_viewer() {
 	switch (m_show_state) {
 		case window::game:
-			game().get_map().acquire_overmap()->erase(handle);
-			break;
+			return game().get_map();
 		case window::menu:
 			break;
 		case window::map_editor:
-			m_editor->get_map().acquire_overmap()->erase(handle);
-			break;
+			return m_editor->get_map();
 	}
+
+	throw std::runtime_error(utils::gui_str_for("view.view.invalid_state"));
 }

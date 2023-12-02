@@ -27,6 +27,7 @@ enum class tile_id;
 
 namespace adapter {
 struct view_handle;
+struct behaviour;
 }
 
 
@@ -38,6 +39,9 @@ class map_editor;
 class mob;
 class object;
 
+/**
+ * Used mainly as a dispatcher
+ */
 class view {
 	enum class window {
 		game,
@@ -79,16 +83,25 @@ public:
 		m_fps_limiter.target_lps(target);
     }
 
-	void set_map(map_viewer&& map) noexcept;
+	void move_entity(adapter::view_handle handle, float new_x, float new_y) noexcept;
+	void hide(adapter::view_handle handle) noexcept;
+	void reveal(adapter::view_handle handle) noexcept;
+
+	/**
+	 * Used mainly when map editing
+	 */
+	void set_map(map_viewer&& map);
 	void set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id);
 	adapter::view_handle add_mob(mob&& mob);
 	adapter::view_handle add_object(object&& mob);
 	void rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept;
 	void erase(adapter::view_handle) noexcept;
+	void set_mob_kind(adapter::view_handle, adapter::behaviour) noexcept;
 
     std::atomic_bool show_debug_data{true};
 
 private:
+	map_viewer& map_viewer();
 	void do_run(state::holder&);
 
 	/**
