@@ -374,12 +374,17 @@ void view::map_editor::display_popup() {
 	}
 	else {
 		if (!m_editing_hovered_entity_fields) {
-			m_hovered_entity = m_map_viewer.hovered_entity();
-			if (m_hovered_entity) {
-				m_hovered_entity_fields = adapter.entity_properties(*m_hovered_entity);
+			auto hovered_entity = m_map_viewer.hovered_entity();
+			if (hovered_entity) {
+
+				if (!m_hovered_entity || m_hovered_entity->is_mob != hovered_entity->is_mob || m_hovered_entity->handle != hovered_entity->handle) {
+					m_hovered_entity = hovered_entity;
+					m_hovered_entity_fields = adapter.entity_properties(*m_hovered_entity);
+				}
 			}
 			else {
 				m_hovered_entity_fields.clear();
+				m_hovered_entity.reset();
 			}
 		}
 	}

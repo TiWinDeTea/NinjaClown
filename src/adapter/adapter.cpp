@@ -741,7 +741,7 @@ void adapter::adapter::edit_actionable_entity(view_handle handle, const entity_e
 }
 
 void adapter::adapter::edit_activator_entity(view_handle handle, const entity_edit &edits) {
-	utils::visitor visitor_with_a_really_long_name_for_clang_format{
+	utils::visitor visitor{
 
 	  [&](const toggler_targets &targets) {
 		  auto &world  = state::access<adapter>::model(m_state).world;
@@ -761,7 +761,7 @@ void adapter::adapter::edit_activator_entity(view_handle handle, const entity_ed
 	  }};
 
 	for (const auto &edit : edits) {
-		std::visit(visitor_with_a_really_long_name_for_clang_format, edit.second);
+		std::visit(visitor, edit.second);
 	}
 }
 
