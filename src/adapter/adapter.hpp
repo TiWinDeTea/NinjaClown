@@ -59,6 +59,9 @@ public:
 	void add_mob(unsigned int x, unsigned int y, utils::resources_type::mob_id id);
 	void add_object(unsigned int x, unsigned int y, utils::resources_type::object_id id);
 	void remove_entity(view_handle deleted_entity);
+	bool can_be_toggled(view_handle handle);
+	void toggle(view_handle handle);
+
 	/**
 	 * @param handle Handle to the view item
 	 * @return Returns the list of available properties for a given item (may be empty)

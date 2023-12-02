@@ -305,9 +305,9 @@ void view::map_editor::display_field_editor() {
 				else if constexpr (std::is_same_v<T, adapter::toggler_targets>) {
 					ImGui::Text("%s", field.first.c_str());
 					ImGui::Columns(3, nullptr, false);
-					for (int i = 0; i < value.names.size(); i++)
-					{
-						if (ImGui::Selectable(value.names[i].c_str(), &value.values[i])) {}
+					for (int i = 0; i < value.names.size(); i++) {
+						if (ImGui::Selectable(value.names[i].c_str(), &value.values[i])) {
+						}
 						ImGui::NextColumn();
 					}
 					ImGui::Columns(1);
@@ -364,28 +364,32 @@ void view::map_editor::display_popup() {
 				m_editing_hovered_entity_fields = true;
 			}
 		}
-		if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.link_to").data())) {
-			// TODO fill stub (for buttons)
-		}
-		if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.toggle").data())) {
-			// TODO fill stub (for buttons)
+		if (m_hovered_entity_has_toggle) {
+			if (ImGui::Selectable(utils::gui_text_for("view.map_editor.rcmenu.toggle").data())) {
+				adapter.toggle(*m_hovered_entity);
+			}
 		}
 		ImGui::EndPopup();
 	}
 	else {
-		if (!m_editing_hovered_entity_fields) {
-			auto hovered_entity = m_map_viewer.hovered_entity();
-			if (hovered_entity) {
+		auto hovered_entity = m_map_viewer.hovered_entity();
+		if (hovered_entity) {
+			if (!m_hovered_entity || m_hovered_entity->is_mob != hovered_entity->is_mob
+			    || m_hovered_entity->handle != hovered_entity->handle) {
 
-				if (!m_hovered_entity || m_hovered_entity->is_mob != hovered_entity->is_mob || m_hovered_entity->handle != hovered_entity->handle) {
-					m_hovered_entity = hovered_entity;
+				m_hovered_entity_has_toggle = adapter.can_be_toggled(*hovered_entity);
+				if (!m_editing_hovered_entity_fields) {
+					m_hovered_entity        = hovered_entity;
 					m_hovered_entity_fields = adapter.entity_properties(*m_hovered_entity);
 				}
 			}
-			else {
+
+		} else {
+			if (!m_editing_hovered_entity_fields) {
 				m_hovered_entity_fields.clear();
 				m_hovered_entity.reset();
 			}
+			m_hovered_entity_has_toggle = false;
 		}
 	}
 }

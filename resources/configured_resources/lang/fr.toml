@@ -525,9 +525,6 @@
         id = "view.map_editor.rcmenu.edit"
         fmt = "Éditer"
     [[gui.entry]]
-        id = "view.map_editor.rcmenu.link_to"
-        fmt = "Lier à"
-    [[gui.entry]]
         id = "view.map_editor.rcmenu.toggle"
         fmt = "Basculer"
     [[gui.entry]]

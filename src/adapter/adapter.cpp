@@ -830,3 +830,59 @@ void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit &e
 		std::visit(visitor, edit.second);
 	}
 }
+
+bool adapter::adapter::can_be_toggled(view_handle handle) {
+	if (handle == m_target_handle) {
+		return false;
+	}
+
+	if (handle.is_mob) {
+		return false;
+	}
+
+	// Retrieving model's handle
+	auto it = m_view2model.find(handle);
+	if (it == m_view2model.end()) {
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = handle.handle, "is_mob"_a = handle.is_mob);
+		return false;
+	}
+
+
+	switch (it->second.type) {
+		case model_handle::ACTIVATOR:
+		case model_handle::ACTIONABLE:
+			return true;
+		case model_handle::ENTITY:
+			utils::log::warn("adapter.non_coherent_entity", "handle"_a = it->second.handle);
+			return false;
+	}
+
+	return false;
+}
+void adapter::adapter::toggle(view_handle handle) {
+
+	if (handle == m_target_handle || handle.is_mob) {
+		utils::log::warn("adapter.non_coherent_entity", "handle"_a = handle.handle);
+		return;
+	}
+
+	// Retrieving model's handle
+	auto it = m_view2model.find(handle);
+	if (it == m_view2model.end()) {
+		utils::log::warn("adapter.unknown_view_entity", "view_handle"_a = handle.handle, "is_mob"_a = handle.is_mob);
+		return;
+	}
+
+	auto& world = state::access<adapter>::model(m_state).world;
+
+	switch (it->second.type) {
+		case model_handle::ACTIVATOR:
+			world.fire_activator(*this, it->second.handle, model::event_reason::NONE);
+			break;
+		case model_handle::ACTIONABLE:
+			world.fire_actionable(*this, it->second.handle);
+			break;
+		case model_handle::ENTITY:
+			break;
+	}
+}

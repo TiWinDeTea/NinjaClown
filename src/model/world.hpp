@@ -48,6 +48,7 @@ private:
 
 	event_queue m_event_queue{};
 
+	friend adapter::adapter;
 	friend terminal_commands;
 	friend event_queue;
 };

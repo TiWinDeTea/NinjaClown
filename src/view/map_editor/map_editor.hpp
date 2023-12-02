@@ -128,6 +128,7 @@ private:
 	// Used by right click pop-up menu
 	std::optional<adapter::view_handle> m_hovered_entity{};
 	adapter::entity_edit m_hovered_entity_fields{};
+	bool m_hovered_entity_has_toggle{false};
 	bool m_editing_hovered_entity_fields{false}; //! Are we currently editing the fields ?
 };
 } // namespace view
