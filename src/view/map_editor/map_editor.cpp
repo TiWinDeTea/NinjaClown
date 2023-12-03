@@ -274,7 +274,8 @@ void view::map_editor::display_field_editor() {
 				}
 
 				else if constexpr (std::is_same_v<T, float>) {
-					ImGui::SliderFloat(field.first.c_str(), &value, std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+					ImGui::SliderFloat(field.first.c_str(), &value, std::numeric_limits<float>::lowest() / 2.f,
+					                   std::numeric_limits<float>::max() / 2.f);
 				}
 
 				else if constexpr (std::is_same_v<T, std::string>) {
@@ -334,8 +335,8 @@ void view::map_editor::display_field_editor() {
 			m_editing_hovered_entity_fields = false;
 			ImGui::CloseCurrentPopup();
 		}
-		ImGui::End();
 	}
+	ImGui::End();
 }
 
 void view::map_editor::load_map() {

@@ -45,7 +45,7 @@
             pos.y = 64
             shift.x = 9
             shift.y = -50
-            width = 29
+            width = 28
             height = 56
 
         [graphics.mobs.scientist]
@@ -53,7 +53,7 @@
 
         [graphics.mobs.scientist.downwards]
             frame-count = 1
-            pos.x = 0
+            pos.x = 145
             pos.y = 64
             shift.x = 9
             shift.y = -50
@@ -62,7 +62,7 @@
 
         [graphics.mobs.scientist.upwards]
             frame-count = 1
-            pos.x = 73
+            pos.x = 218
             pos.y = 64
             shift.x = 9
             shift.y = -50
@@ -71,7 +71,7 @@
 
         [graphics.mobs.scientist.rightwards]
             frame-count = 1
-            pos.x = 116
+            pos.x = 261
             pos.y = 64
             shift.x = 9
             shift.y = -50
@@ -80,7 +80,7 @@
 
         [graphics.mobs.scientist.leftwards]
             frame-count = 1
-            pos.x = 43
+            pos.x = 188
             pos.y = 64
             shift.x = 9
             shift.y = -50
@@ -123,7 +123,7 @@
             pos.y = 32
 
     [graphics.objects]
-        list = ["button", "gate", "target"]
+        list = ["button", "gate", "target", "autoshooter"]
 
         [graphics.objects.button]
             id = @OBJECTS_BUTTONID@
@@ -153,3 +153,13 @@
             width = 81
             height = 31
             shift.x = 0
+
+        [graphics.objects.autoshooter]
+            id = @OBJECTS_AUTOSHOOTERID@
+            frame-count = 1
+            pos.x = 290
+            pos.y = 63
+            width = 60
+            height = 27
+            shift.x = 11
+            shift.y = 1
