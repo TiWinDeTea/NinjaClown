@@ -72,27 +72,27 @@ namespace request {
 	};
 } // namespace request
 
-struct angle {
-	float val;
-};
+namespace entity_edit {
+	struct angle {
+		float val;
+	};
 
-struct behaviour {
-	enum class bhvr {
-		harmless,
-		patrol,
-		aggressive,
-		dll,
-		unsupported
-	} val;
-};
+	struct behaviour {
+		enum class bhvr { harmless, patrol, aggressive, dll, unsupported } val;
+	};
 
-struct toggler_targets {
-	std::vector<std::string> names;
-	std::basic_string<bool> values;
-};
+	struct activator_targets {
+		std::vector<std::string> names;
+		std::basic_string<bool> values;
+	};
 
-using entity_edit_v = std::variant<std::string, float, std::uint8_t, angle, behaviour, toggler_targets>;
-using entity_edit   = std::vector<std::pair<std::string, entity_edit_v>>;
+	struct hitpoints {
+		std::uint8_t val;
+	};
+
+	using type = std::variant<std::string, float, hitpoints, angle, behaviour, activator_targets>;
+	using edits   = std::vector<std::pair<std::string, type>>;
+}
 } // namespace adapter
 
 #endif //NINJACLOWN_ADAPTER_ADAPTER_CLASSES_HPP

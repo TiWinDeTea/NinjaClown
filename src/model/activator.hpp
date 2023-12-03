@@ -12,6 +12,7 @@ namespace model {
 
 constexpr tick_t default_activation_delay      = 0;
 constexpr tick_t default_activation_difficulty = 10;
+constexpr unsigned int default_firing_rate     = 1u;
 
 struct activator {
 	std::vector<size_t> targets; // corresponds to world::actionables

@@ -356,24 +356,26 @@ void view::view::erase(adapter::view_handle handle) noexcept {
 	map_viewer().acquire_overmap()->erase(handle);
 }
 
-void view::view::set_mob_kind(adapter::view_handle handle, adapter::behaviour bhvr) noexcept {
-	auto map = map_viewer().acquire_overmap();
-	switch (bhvr.val) {
+void view::view::set_mob_kind(adapter::view_handle handle, adapter::entity_edit::behaviour ibhvr) noexcept {
+	using bhvr = adapter::entity_edit::behaviour::bhvr;
 
-		case adapter::behaviour::bhvr::harmless:
+	auto map = map_viewer().acquire_overmap();
+	switch (ibhvr.val) {
+
+		case bhvr::harmless:
 			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
 			break;
-		case adapter::behaviour::bhvr::patrol:
+		case bhvr::patrol:
 			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
 			break;
-		case adapter::behaviour::bhvr::aggressive:
+		case bhvr::aggressive:
 			map->set_mob_kind(handle,utils::resources_type::mob_id::scientist);
 			break;
-		case adapter::behaviour::bhvr::dll:
+		case bhvr::dll:
 			map->set_mob_kind(handle,utils::resources_type::mob_id::player);
 			break;
-		case adapter::behaviour::bhvr::unsupported:
-			utils::log::error("view.view.set_mob_kind.unsupported_behaviour", "bhvr"_a = static_cast<int>(bhvr.val));
+		case bhvr::unsupported:
+			utils::log::error("view.view.set_mob_kind.unsupported_behaviour", "bhvr"_a = static_cast<int>(ibhvr.val));
 			break;
 	}
 }

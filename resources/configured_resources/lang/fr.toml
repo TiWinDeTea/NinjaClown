@@ -318,6 +318,15 @@
     [[log.entry]]
         id = "adapter.properties.bad_property"
         fmt = "Type de propriété inatendu lors de l'édition."
+    [[log.entry]]
+        id = "adapter.properties.no_health"
+        fmt = "Le composant {handle} n'a pas de points de vie"
+    [[log.entry]]
+        id = "adapter.properties.no_hitbox"
+        fmt = "Le composant {handle} n'a pas de boite de collision"
+    [[log.entry]]
+        id = "adapter.properties.unknown_property"
+        fmt = "Propriété \"{property}\" inconnue"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

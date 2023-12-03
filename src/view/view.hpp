@@ -27,7 +27,9 @@ enum class tile_id;
 
 namespace adapter {
 struct view_handle;
-struct behaviour;
+namespace entity_edit {
+	struct behaviour;
+}
 }
 
 
@@ -96,7 +98,7 @@ public:
 	adapter::view_handle add_object(object&& mob);
 	void rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept;
 	void erase(adapter::view_handle) noexcept;
-	void set_mob_kind(adapter::view_handle, adapter::behaviour) noexcept;
+	void set_mob_kind(adapter::view_handle, adapter::entity_edit::behaviour) noexcept;
 
     std::atomic_bool show_debug_data{true};
 

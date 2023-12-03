@@ -321,6 +321,15 @@
     [[log.entry]]
         id = "adapter.properties.bad_property"
         fmt = "Unexpected property type when editing value."
+    [[log.entry]]
+        id = "adapter.properties.no_health"
+        fmt = "Component {handle} does not have hitpoints"
+    [[log.entry]]
+        id = "adapter.properties.no_hitbox"
+        fmt = "Component {handle} does not have a hitbox"
+    [[log.entry]]
+        id = "adapter.properties.unknown_property"
+        fmt = "Property \"{property}\" unknown"
 
     [[log.entry]]
         id = "resource_manager.commands_texts.reload_failed"

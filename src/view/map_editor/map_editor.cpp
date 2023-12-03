@@ -254,20 +254,23 @@ void view::map_editor::display_map_creator() {
 }
 
 void view::map_editor::display_field_editor() {
+	namespace e_edit = adapter::entity_edit;
+
 	if (!m_editing_hovered_entity_fields || !m_hovered_entity) {
 		return;
 	}
 
 	if (ImGui::Begin(field_editor_menu_name)) {
-		for (std::pair<std::string, adapter::entity_edit_v> &field : m_hovered_entity_fields) {
+		for (std::pair<std::string, adapter::entity_edit::type> &field : m_hovered_entity_fields) {
 
 			auto visitor = [&field](auto &value) {
 				using T = std::remove_reference_t<decltype(value)>;
 
-				if constexpr (std::is_integral_v<T>) {
-					int val = static_cast<int>(value);
-					ImGui::SliderInt(field.first.c_str(), &val, std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-					value = static_cast<T>(val);
+				if constexpr (std::is_same_v<T, e_edit::hitpoints>) {
+					int val = static_cast<int>(value.val);
+					ImGui::SliderInt(field.first.c_str(), &val, std::numeric_limits<decltype(T::val)>::min(),
+					                 std::numeric_limits<decltype(T::val)>::max());
+					value.val = static_cast<decltype(T::val)>(val);
 				}
 
 				else if constexpr (std::is_same_v<T, float>) {
@@ -281,12 +284,12 @@ void view::map_editor::display_field_editor() {
 					value = buf.data();
 				}
 
-				else if constexpr (std::is_same_v<T, adapter::angle>) {
+				else if constexpr (std::is_same_v<T, e_edit::angle>) {
 					ImGui::SliderFloat(field.first.c_str(), &(value.val), -uni::math::pi<float>, uni::math::pi<float>);
 				}
 
-				else if constexpr (std::is_same_v<T, adapter::behaviour>) {
-					std::string all_behaviours_str; // TODO: add to translation files
+				else if constexpr (std::is_same_v<T, e_edit::behaviour>) {
+					std::string all_behaviours_str;
 					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.harmless");
 					all_behaviours_str += '\0';
 					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.patrol");
@@ -299,10 +302,10 @@ void view::map_editor::display_field_editor() {
 
 					int val = static_cast<int>(value.val);
 					ImGui::Combo(field.first.c_str(), &val, all_behaviours_str.c_str());
-					value.val = static_cast<adapter::behaviour::bhvr>(val);
+					value.val = static_cast<e_edit::behaviour::bhvr>(val);
 				}
 
-				else if constexpr (std::is_same_v<T, adapter::toggler_targets>) {
+				else if constexpr (std::is_same_v<T, e_edit::activator_targets>) {
 					ImGui::Text("%s", field.first.c_str());
 					ImGui::Columns(3, nullptr, false);
 					for (int i = 0; i < value.names.size(); i++) {
@@ -383,8 +386,8 @@ void view::map_editor::display_popup() {
 					m_hovered_entity_fields = adapter.entity_properties(*m_hovered_entity);
 				}
 			}
-
-		} else {
+		}
+		else {
 			if (!m_editing_hovered_entity_fields) {
 				m_hovered_entity_fields.clear();
 				m_hovered_entity.reset();
