@@ -89,8 +89,6 @@ void view::view::do_run(state::holder &state) {
 	m_fps_limiter.start_now();
 	sf::Clock clock{};
 
-	//state::access<::view::view>::adapter(state).load_map("resources/maps/map_test/map_test.map"); // TODO remove at some point
-
 	constexpr std::array<ImWchar, 3> fontawesome_icons_ranges = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	ImFontConfig fontawesome_icons_config{};
 	fontawesome_icons_config.MergeMode        = true;

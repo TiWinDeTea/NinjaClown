@@ -731,7 +731,7 @@ adapter::entity_edit::edits adapter::adapter::mob_entity_properties(view_handle,
 		return {};
 	}
 
-	const entity_edit::type hp   = hp_component->points;
+	const entity_edit::type hp   = entity_edit::hitpoints{hp_component->points};
 	const entity_edit::type dir  = entity_edit::angle{dir_component->rad};
 	const entity_edit::type bhvr = entity_edit::behaviour{nnj_ett_kind2adapter_behaviour(world.components.metadata[mhandle.handle].kind)};
 

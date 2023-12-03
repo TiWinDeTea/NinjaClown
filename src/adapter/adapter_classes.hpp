@@ -90,7 +90,7 @@ namespace entity_edit {
 		std::uint8_t val;
 	};
 
-	using type = std::variant<std::string, float, hitpoints, angle, behaviour, activator_targets>;
+	using type = std::variant<std::string, hitpoints, angle, behaviour, activator_targets>;
 	using edits   = std::vector<std::pair<std::string, type>>;
 }
 } // namespace adapter
