@@ -5,12 +5,11 @@
 			name = "clown"
 			hp = 1
 			behaviour = "dll"
-			sprite = "clown"
+
 	[[mobs.definition]]
 			name = "scientist"
-			inherits = "clown"
+			hp = 5
 			behaviour = "none"
-			sprite = "scientist"
 
 	[[mobs.spawn]]
 		type = "clown"
@@ -80,6 +79,14 @@
 		pos.x = 7
 		pos.y = 2
 		closed = true
+	
+	[[actors.spawn]]
+		name = "autoshooter1"
+		type = "autoshooter"
+		pos.x = 8
+		pos.y = 3
+		firing_rate = 2
+		facing = 0
 
 	[[actors.spawn]]
 		type = "button"

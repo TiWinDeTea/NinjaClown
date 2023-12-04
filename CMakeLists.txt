@@ -16,6 +16,7 @@ set(NINJA_CLOWN_SOURCES
 
         src/adapter/adapter.cpp
         src/adapter/adapter_map_loader_v1_0_0.cpp
+        src/adapter/adapter_map_saver_v1_0_0.cpp
         src/adapter/facing_dir.cpp
 
         src/bot/bot_api.cpp

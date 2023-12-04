@@ -21,8 +21,8 @@ using fmt::literals::operator""_a;
 
 namespace {
 
-adapter::entity_edit::behaviour::bhvr nnj_ett_kind2adapter_behaviour(ninja_api::nnj_entity_kind ett_kind) {
-	using bhvr = adapter::entity_edit::behaviour::bhvr;
+adapter::entity_prop::behaviour::bhvr nnj_ett_kind2adapter_behaviour(ninja_api::nnj_entity_kind ett_kind) {
+	using bhvr = adapter::entity_prop::behaviour::bhvr;
 	switch (ett_kind) {
 		case ninja_api::EK_NOT_AN_ENTITY:
 			return bhvr::unsupported;
@@ -40,8 +40,8 @@ adapter::entity_edit::behaviour::bhvr nnj_ett_kind2adapter_behaviour(ninja_api::
 	}
 }
 
-ninja_api::nnj_entity_kind adapter_behaviour2nnj_ett_kind(adapter::entity_edit::behaviour::bhvr behaviour) {
-	using bhvr = adapter::entity_edit::behaviour::bhvr;
+ninja_api::nnj_entity_kind adapter_behaviour2nnj_ett_kind(adapter::entity_prop::behaviour::bhvr behaviour) {
+	using bhvr = adapter::entity_prop::behaviour::bhvr;
 	switch (behaviour) {
 		case bhvr::harmless:
 			return ninja_api::EK_HARMLESS;
@@ -474,11 +474,17 @@ void adapter::adapter::add_mob(unsigned int x, unsigned int y, utils::resources_
 	const float center_y = static_cast<float>(y) * model::cst::cell_height + model::cst::cell_height / 2.f;
 
 	switch (id) {
-		case utils::resources_type::mob_id::player:
+		case utils::resources_type::mob_id::dll:
 			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
 			break;
-		case utils::resources_type::mob_id::scientist:
+		case utils::resources_type::mob_id::harmless:
 			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
+			break;
+		case utils::resources_type::mob_id::aggressive:
+			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_AGGRESSIVE;
+			break;
+		case utils::resources_type::mob_id::patrol:
+			world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_PATROL;
 			break;
 		default:
 			utils::log::warn("adapter.adapter.unknown_mob_type", "id"_a = static_cast<int>(id));
@@ -607,7 +613,7 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 	}
 }
 
-void adapter::adapter::edit_entity(view_handle handle, const entity_edit::edits &new_data) {
+void adapter::adapter::edit_entity(view_handle handle, const entity_prop::edits &new_data) {
 
 	if (handle == m_target_handle) {
 		utils::log::warn("adapter.adapter.edit_entity.target_tile_edit");
@@ -640,7 +646,7 @@ void adapter::adapter::edit_entity(view_handle handle, const entity_edit::edits 
 	}
 }
 
-adapter::entity_edit::edits adapter::adapter::entity_properties(view_handle handle) const {
+adapter::entity_prop::edits adapter::adapter::entity_properties(view_handle handle) const {
 	if (handle == m_target_handle) {
 		return {};
 	}
@@ -678,17 +684,17 @@ std::size_t adapter::view_hhash::operator()(const view_handle &h) const noexcept
 	return h.handle | 0xFF00u;
 }
 
-adapter::entity_edit::edits adapter::adapter::actionable_entity_properties(view_handle vhandle, model_handle mhandle) const {
-	entity_edit::edits edit;
-	const entity_edit::type name = m_view2name.at(vhandle);
+adapter::entity_prop::edits adapter::adapter::actionable_entity_properties(view_handle vhandle, model_handle mhandle) const {
+	entity_prop::edits edit;
+	const entity_prop::type name = m_view2name.at(vhandle);
 	edit.emplace_back(utils::gui_str_for("adapter.properties.actionable.name"), name);
 	// TODO : add door default value (closed or open)
 	// TODO : autoshooter, ...
 	return edit;
 }
 
-adapter::entity_edit::edits adapter::adapter::activator_entity_properties(view_handle, model_handle mhandle) const {
-	entity_edit::edits edits;
+adapter::entity_prop::edits adapter::adapter::activator_entity_properties(view_handle, model_handle mhandle) const {
+	entity_prop::edits edits;
 
 	const auto &world = state::access<adapter>::model(m_state).world;
 
@@ -709,14 +715,14 @@ adapter::entity_edit::edits adapter::adapter::activator_entity_properties(view_h
 	}
 
 	edits.emplace_back(utils::gui_str_for("adapter.properties.activator.link_to"),
-	                   entity_edit::type{entity_edit::activator_targets{std::move(names), std::move(bools)}});
+	                   entity_prop::type{entity_prop::activator_targets{std::move(names), std::move(bools)}});
 	return edits;
 }
 
-adapter::entity_edit::edits adapter::adapter::mob_entity_properties(view_handle, model_handle mhandle) const {
+adapter::entity_prop::edits adapter::adapter::mob_entity_properties(view_handle, model_handle mhandle) const {
 	// TODO: add behaviour selector
 
-	entity_edit::edits edit;
+	entity_prop::edits edit;
 	auto &world = state::access<adapter>::model(m_state).world;
 
 	const auto &hp_component = world.components.health[mhandle.handle];
@@ -731,9 +737,9 @@ adapter::entity_edit::edits adapter::adapter::mob_entity_properties(view_handle,
 		return {};
 	}
 
-	const entity_edit::type hp   = entity_edit::hitpoints{hp_component->points};
-	const entity_edit::type dir  = entity_edit::angle{dir_component->rad};
-	const entity_edit::type bhvr = entity_edit::behaviour{nnj_ett_kind2adapter_behaviour(world.components.metadata[mhandle.handle].kind)};
+	const entity_prop::type hp   = entity_prop::hitpoints{hp_component->points};
+	const entity_prop::type dir  = entity_prop::angle{dir_component->rad};
+	const entity_prop::type bhvr = entity_prop::behaviour{nnj_ett_kind2adapter_behaviour(world.components.metadata[mhandle.handle].kind)};
 
 	edit.emplace_back(utils::gui_str_for("adapter.properties.mob.hp"), hp);
 	edit.emplace_back(utils::gui_str_for("adapter.properties.mob.direction"), dir);
@@ -741,7 +747,7 @@ adapter::entity_edit::edits adapter::adapter::mob_entity_properties(view_handle,
 	return edit;
 }
 
-void adapter::adapter::edit_actionable_entity(view_handle handle, const entity_edit::edits &edits) {
+void adapter::adapter::edit_actionable_entity(view_handle handle, const entity_prop::edits &edits) {
 	auto visitor = [&](const auto &value) {
 		using T = std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
 		if constexpr (std::is_same_v<T, std::string>) {
@@ -758,10 +764,10 @@ void adapter::adapter::edit_actionable_entity(view_handle handle, const entity_e
 	}
 }
 
-void adapter::adapter::edit_activator_entity(view_handle handle, const entity_edit::edits &edits) {
+void adapter::adapter::edit_activator_entity(view_handle handle, const entity_prop::edits &edits) {
 	utils::visitor visitor{
 
-	  [&](const entity_edit::activator_targets &targets) {
+	  [&](const entity_prop::activator_targets &targets) {
 		  auto &world  = state::access<adapter>::model(m_state).world;
 		  auto mhandle = m_view2model.at(handle);
 
@@ -783,7 +789,7 @@ void adapter::adapter::edit_activator_entity(view_handle handle, const entity_ed
 	}
 }
 
-void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit::edits &edits) {
+void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_prop::edits &edits) {
 	const std::string_view hp_str   = utils::gui_text_for("adapter.properties.mob.hp");
 	const std::string_view dir_str  = utils::gui_text_for("adapter.properties.mob.direction");
 	const std::string_view bhvr_str = utils::gui_text_for("adapter.properties.mob.behaviour");
@@ -803,7 +809,7 @@ void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit::e
 			using T = std::remove_cv_t<std::remove_reference_t<decltype(value)>>;
 
 			if (str == hp_str) {
-				if constexpr (!std::is_same_v<T, entity_edit::hitpoints>) {
+				if constexpr (!std::is_same_v<T, entity_prop::hitpoints>) {
 					utils::log::error("adapter.properties.bad_property");
 					return;
 				}
@@ -816,7 +822,7 @@ void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit::e
 				}
 			}
 			else if (str == dir_str) {
-				if constexpr (!std::is_same_v<T, entity_edit::angle>) {
+				if constexpr (!std::is_same_v<T, entity_prop::angle>) {
 					utils::log::error("adapter.properties.bad_property");
 					return;
 				}
@@ -830,7 +836,7 @@ void adapter::adapter::edit_mob_entity(view_handle vhandle, const entity_edit::e
 				}
 			}
 			else if (str == bhvr_str) {
-				if constexpr (!std::is_same_v<T, entity_edit::behaviour>) {
+				if constexpr (!std::is_same_v<T, entity_prop::behaviour>) {
 					utils::log::error("adapter.properties.bad_property");
 					return;
 				}

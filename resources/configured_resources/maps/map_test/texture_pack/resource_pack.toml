@@ -10,7 +10,7 @@
         list = ["player", "scientist"]
 
         [graphics.mobs.player]
-            id = @MOBS_PLAYERID@
+            id = @MOBS_DLLID@
 
         [graphics.mobs.player.downwards]
             frame-count = 1
@@ -49,7 +49,7 @@
             height = 56
 
         [graphics.mobs.scientist]
-            id = @MOBS_SCIENTISTID@
+            id = @MOBS_HARMLESSID@
 
         [graphics.mobs.scientist.downwards]
             frame-count = 1

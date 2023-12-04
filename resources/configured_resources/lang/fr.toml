@@ -498,6 +498,9 @@
         id = "view.map_editor.create_map"
         fmt = "Créer de zéro"
     [[gui.entry]]
+        id = "view.map_editor.save_map"
+        fmt = "Sauvegarder"
+    [[gui.entry]]
         id = "view.map_editor.tiles.chasm"
         fmt = "Case noire"
     [[gui.entry]]
@@ -522,11 +525,17 @@
         id = "view.map_editor.objects.target"
         fmt = "Case cible"
     [[gui.entry]]
-        id = "view.map_editor.mobs.player"
+        id = "view.map_editor.mobs.dll"
         fmt = "Joueur"
     [[gui.entry]]
-        id = "view.map_editor.mobs.scientist"
+        id = "view.map_editor.mobs.harmless"
         fmt = "Scientifique"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.patrol"
+        fmt = "Patrouilleur"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.aggressive"
+        fmt = "Poursuivant"
     [[gui.entry]]
         id = "view.map_editor.rcmenu.delete"
         fmt = "Supprimer"

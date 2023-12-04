@@ -44,10 +44,14 @@ set(SFML_MINIMUM_SYSTEM_VERSION 2.5)
 ##################################################################################################
 
 # mobs
-set(MOBS_PLAYERID 0)
-add_compile_definitions(MOBS_PLAYERID=0)
-set(MOBS_SCIENTISTID 1)
-add_compile_definitions(MOBS_SCIENTISTID=1)
+set(MOBS_DLLID 0)
+add_compile_definitions(MOBS_DLLID=0)
+set(MOBS_HARMLESSID 1)
+add_compile_definitions(MOBS_HARMLESSID=1)
+set(MOBS_PATROLID 2)
+add_compile_definitions(MOBS_PATROLID=2)
+set(MOBS_AGGRESSIVEID 3)
+add_compile_definitions(MOBS_AGGRESSIVEID=3)
 
 # tiles
 set(TILES_CHASMID 0)

@@ -512,6 +512,9 @@
         id = "view.map_editor.create_map"
         fmt = "Create map from scratch"
     [[gui.entry]]
+        id = "view.map_editor.save_map"
+        fmt = "Save"
+    [[gui.entry]]
         id = "view.map_editor.tiles.chasm"
         fmt = "Dark tile"
     [[gui.entry]]
@@ -536,11 +539,17 @@
         id = "view.map_editor.objects.target"
         fmt = "Target block"
     [[gui.entry]]
-        id = "view.map_editor.mobs.player"
+        id = "view.map_editor.mobs.dll"
         fmt = "Player"
     [[gui.entry]]
-        id = "view.map_editor.mobs.scientist"
+        id = "view.map_editor.mobs.harmless"
         fmt = "Scientist"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.patrol"
+        fmt = "Patrol"
+    [[gui.entry]]
+        id = "view.map_editor.mobs.aggressive"
+        fmt = "Aggressor"
     [[gui.entry]]
         id = "view.map_editor.rcmenu.delete"
         fmt = "Supprimer"

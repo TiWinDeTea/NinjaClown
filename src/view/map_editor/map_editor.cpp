@@ -136,11 +136,13 @@ void view::map_editor::event(sf::Event &event) {
 		}
 
 		if (event.mouseButton.button == sf::Mouse::Button::Right) {
-			if (!std::holds_alternative<std::nullopt_t>(m_selection)) {
-				m_selection = std::nullopt;
-				return;
+			if (!m_editing_hovered_entity_fields) {
+				if (!std::holds_alternative<std::nullopt_t>(m_selection)) {
+					m_selection = std::nullopt;
+					return;
+				}
+				m_needs_open_right_click = true;
 			}
-			m_needs_open_right_click = true;
 		}
 
 		return;
@@ -247,6 +249,13 @@ void view::map_editor::display_map_creator() {
 			if (ImGui::Button(res.gui_text_for("view.in_game_menu.return_to_main_menu").data())) {
 				m_stay_in_map_editor = false;
 			}
+
+			if (m_has_map) {
+				ImGui::SameLine();
+				if (ImGui::Button(res.gui_text_for("view.map_editor.save_map").data())) {
+					adapter.save_map("saved.map"); // TODO ask for user where to save
+				}
+			}
 		}
 
 		ImGui::EndPopup();
@@ -254,19 +263,19 @@ void view::map_editor::display_map_creator() {
 }
 
 void view::map_editor::display_field_editor() {
-	namespace e_edit = adapter::entity_edit;
+	namespace e_prop = adapter::entity_prop;
 
 	if (!m_editing_hovered_entity_fields || !m_hovered_entity) {
 		return;
 	}
 
 	if (ImGui::Begin(field_editor_menu_name)) {
-		for (std::pair<std::string, adapter::entity_edit::type> &field : m_hovered_entity_fields) {
+		for (std::pair<std::string, adapter::entity_prop::type> &field : m_hovered_entity_fields) {
 
 			auto visitor = [&field](auto &value) {
 				using T = std::remove_reference_t<decltype(value)>;
 
-				if constexpr (std::is_same_v<T, e_edit::hitpoints>) {
+				if constexpr (std::is_same_v<T, e_prop::hitpoints>) {
 					int val = static_cast<int>(value.val);
 					ImGui::SliderInt(field.first.c_str(), &val, std::numeric_limits<decltype(T::val)>::min(),
 					                 std::numeric_limits<decltype(T::val)>::max());
@@ -285,11 +294,11 @@ void view::map_editor::display_field_editor() {
 					value = buf.data();
 				}
 
-				else if constexpr (std::is_same_v<T, e_edit::angle>) {
+				else if constexpr (std::is_same_v<T, e_prop::angle>) {
 					ImGui::SliderFloat(field.first.c_str(), &(value.val), -uni::math::pi<float>, uni::math::pi<float>);
 				}
 
-				else if constexpr (std::is_same_v<T, e_edit::behaviour>) {
+				else if constexpr (std::is_same_v<T, e_prop::behaviour>) {
 					std::string all_behaviours_str;
 					all_behaviours_str += utils::gui_text_for("view.map_editor.bhvr.harmless");
 					all_behaviours_str += '\0';
@@ -303,10 +312,10 @@ void view::map_editor::display_field_editor() {
 
 					int val = static_cast<int>(value.val);
 					ImGui::Combo(field.first.c_str(), &val, all_behaviours_str.c_str());
-					value.val = static_cast<e_edit::behaviour::bhvr>(val);
+					value.val = static_cast<e_prop::behaviour::bhvr>(val);
 				}
 
-				else if constexpr (std::is_same_v<T, e_edit::activator_targets>) {
+				else if constexpr (std::is_same_v<T, e_prop::activator_targets>) {
 					ImGui::Text("%s", field.first.c_str());
 					ImGui::Columns(3, nullptr, false);
 					for (int i = 0; i < value.names.size(); i++) {
@@ -440,8 +449,10 @@ void view::map_editor::selector_object() {
 }
 void view::map_editor::selector_mob() {
 	const std::array mobs_type = {
-	  std::pair{utils::resources_type::mob_id::player, text_for("view.map_editor.mobs.player")},
-	  std::pair{utils::resources_type::mob_id::scientist, text_for("view.map_editor.mobs.scientist")},
+	  std::pair{utils::resources_type::mob_id::dll, text_for("view.map_editor.mobs.dll")},
+	  std::pair{utils::resources_type::mob_id::harmless, text_for("view.map_editor.mobs.harmless")},
+	  std::pair{utils::resources_type::mob_id::patrol, text_for("view.map_editor.mobs.patrol")},
+	  std::pair{utils::resources_type::mob_id::aggressive, text_for("view.map_editor.mobs.aggressive")},
 	};
 
 	for (auto mob : mobs_type) {

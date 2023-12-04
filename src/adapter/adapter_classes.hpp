@@ -72,7 +72,7 @@ namespace request {
 	};
 } // namespace request
 
-namespace entity_edit {
+namespace entity_prop {
 	struct angle {
 		float val;
 	};
@@ -90,9 +90,9 @@ namespace entity_edit {
 		std::uint8_t val;
 	};
 
-	using type = std::variant<std::string, hitpoints, angle, behaviour, activator_targets>;
-	using edits   = std::vector<std::pair<std::string, type>>;
-}
+	using type  = std::variant<std::string, hitpoints, angle, behaviour, activator_targets>;
+	using edits = std::vector<std::pair<std::string, type>>;
+} // namespace entity_prop
 } // namespace adapter
 
 #endif //NINJACLOWN_ADAPTER_ADAPTER_CLASSES_HPP

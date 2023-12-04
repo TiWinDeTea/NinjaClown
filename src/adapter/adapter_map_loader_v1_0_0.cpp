@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "adapter/adapter.hpp"
+#include "adapter/adapter_mapfile_constants.hpp"
 #include "facing_dir.hpp"
 #include "model/cell.hpp"
 #include "model/components.hpp"
@@ -19,6 +20,8 @@
 #include "view/view.hpp"
 
 using fmt::literals::operator""_a;
+namespace values = adapter::map_file::values;
+namespace keys = adapter::map_file::keys;
 
 namespace {
 
@@ -29,25 +32,11 @@ struct point {
 	std::size_t x, y;
 };
 
-enum class mob_behaviour {
-	NONE,
-	SCIENTIST,
-	CLOWN,
-	DLL,
-};
-
-enum class mob_sprite {
-	NONE,
-	SCIENTIST,
-	CLOWN,
-};
-
 struct mob_definition {
 	unsigned int hp;
 	model::tick_t attack_delay;
 	model::tick_t throw_delay;
-	mob_behaviour behaviour;
-	mob_sprite sprite;
+	adapter::entity_prop::behaviour behaviour;
 };
 
 struct mob {
@@ -86,46 +75,7 @@ struct autoshooter {
 	float facing;
 };
 
-namespace keys {
-	constexpr const char *inherits              = "inherits";
-	constexpr const char *name                  = "name";
-	constexpr const char *hp                    = "hp";
-	constexpr const char *attack_delay          = "attack_delay";
-	constexpr const char *throw_delay           = "throw_delay";
-	constexpr const char *sprite                = "sprite";
-	constexpr const char *behaviour             = "behaviour";
-	constexpr const char *type                  = "type";
-	constexpr const char *x_pos                 = "pos.x";
-	constexpr const char *y_pos                 = "pos.y";
-	constexpr const char *facing                = "facing";
-	constexpr const char *firing_rate           = "firing_rate";
-	constexpr const char *closed                = "closed";
-	constexpr const char *refire_after          = "refire_after";
-	constexpr const char *refire_repeat         = "refire_repeat";
-	constexpr const char *activation_difficulty = "activation_difficulty";
-	constexpr const char *duration              = "duration";
-	constexpr const char *delay                 = "delay";
-	constexpr const char *acts_on_table         = "acts_on";
-	constexpr const char *mobs_def_table        = "mobs.definition";
-	constexpr const char *mobs_spawn_table      = "mobs.spawn";
-	constexpr const char *actors_spawn_table    = "actors.spawn";
-	constexpr const char *map_layout            = "map.layout";
-} // namespace keys
-
-namespace values {
-	constexpr const char *none           = "none";
-	constexpr const char *scientist      = "scientist";
-	constexpr const char *dll            = "dll";
-	constexpr const char *clown          = "clown";
-	constexpr const char *button         = "button";
-	constexpr const char *induction_loop = "induction_loop";
-	constexpr const char *infrared_laser = "infrared_laser";
-	constexpr const char *autoshooter    = "autoshooter";
-	constexpr const char *gate           = "gate";
-} // namespace values
-
-usmap<mob_behaviour> globstr_to_behaviour;
-usmap<mob_sprite> globstr_to_mob_sprite;
+usmap<adapter::entity_prop::behaviour> globstr_to_behaviour;
 usmap<activator_type> globstr_to_activator_type;
 
 template <typename T, typename... Args>
@@ -147,13 +97,12 @@ bool try_get(const std::shared_ptr<cpptoml::table> &table, const char *key, T &v
 }
 
 void init_maps() {
+	using adapter::entity_prop::behaviour;
+
 	if (globstr_to_activator_type.empty()) {
-		globstr_to_behaviour.emplace(values::none, mob_behaviour::NONE);
-		globstr_to_behaviour.emplace(values::scientist, mob_behaviour::SCIENTIST);
-		globstr_to_behaviour.emplace(values::dll, mob_behaviour::DLL);
-		globstr_to_behaviour.emplace(values::clown, mob_behaviour::CLOWN);
-		globstr_to_mob_sprite.emplace(values::scientist, mob_sprite::SCIENTIST);
-		globstr_to_mob_sprite.emplace(values::clown, mob_sprite::CLOWN);
+		globstr_to_behaviour.emplace(values::none, behaviour{behaviour::bhvr::unsupported});
+		globstr_to_behaviour.emplace(values::scientist, behaviour{behaviour::bhvr::harmless});
+		globstr_to_behaviour.emplace(values::dll, behaviour{behaviour::bhvr::dll});
 		globstr_to_activator_type.emplace(values::button, activator_type::BUTTON);
 		globstr_to_activator_type.emplace(values::induction_loop, activator_type::INDUCTION_LOOP);
 		globstr_to_activator_type.emplace(values::infrared_laser, activator_type::INFRARED_LASER);
@@ -162,7 +111,6 @@ void init_maps() {
 
 [[nodiscard]] usmap<mob_definition> load_mobs_defs(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
 	assert(!globstr_to_behaviour.empty()); // NOLINT
-	assert(!globstr_to_mob_sprite.empty()); // NOLINT
 
 	auto error = [&map](const char *key, auto &&...vals) {
 		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, std::forward<decltype(vals)>(vals)..., "map"_a = map);
@@ -202,15 +150,6 @@ void init_maps() {
 
 		current.attack_delay = model::component::default_attack_delay;
 		try_get_silent(mob_def, keys::attack_delay, current.attack_delay);
-
-		cpptoml::option<std::string> sprite = mob_def->get_as<std::string>(keys::sprite);
-		if (auto it = globstr_to_mob_sprite.find(sprite.value_or("")); it != globstr_to_mob_sprite.end()) {
-			current.sprite = it->second;
-		}
-		else if (!base) {
-			error("mob_missing_sprite", "name"_a = *name, "key"_a = keys::sprite);
-			return {};
-		}
 
 		cpptoml::option<std::string> behaviour = mob_def->get_as<std::string>(keys::behaviour);
 		if (auto it = globstr_to_behaviour.find(behaviour.value_or("")); it != globstr_to_behaviour.end()) {
@@ -523,33 +462,26 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			const float CENTER_X = static_cast<float>(mob.pos.x) * model::cst::cell_width + model::cst::cell_width / 2.f;
 			const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cst::cell_height + model::cst::cell_height / 2.f;
 
-			switch (mob.type.behaviour) {
-				case mob_behaviour::NONE:
+			using bhvr = entity_prop::behaviour::bhvr;
+			switch (mob.type.behaviour.val) {
+				case bhvr::harmless:
 					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
 					break;
-				case mob_behaviour::SCIENTIST:
-					// TODO
+				case bhvr::unsupported:
+					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_NOT_AN_ENTITY;
 					break;
-				case mob_behaviour::CLOWN:
-					// TODO
-					break;
-				case mob_behaviour::DLL:
+				case bhvr::dll:
 					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_DLL;
+					break;
+				case bhvr::patrol:
+					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_PATROL;
+					break;
+				case bhvr::aggressive:
+					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_AGGRESSIVE;
 					break;
 			}
 
-			utils::resources_type::mob_id resource_id;
-			switch (mob.type.sprite) {
-				case mob_sprite::NONE:
-					error("Internal error");
-					return false;
-				case mob_sprite::SCIENTIST:
-					resource_id = utils::resources_type::mob_id::scientist;
-					break;
-				case mob_sprite::CLOWN:
-					resource_id = utils::resources_type::mob_id::player;
-					break;
-			}
+			utils::resources_type::mob_id resource_id = view::view::mob_id_from_behaviour(mob.type.behaviour);
 
 			world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
 			world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};

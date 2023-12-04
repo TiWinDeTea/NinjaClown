@@ -7,12 +7,12 @@
     file = "assets.png"
 
     [graphics.mobs]
-        list = ["player", "scientist"]
+        list = ["dll", "harmless", "patrol", "aggressive"]
 
-        [graphics.mobs.player]
-            id = @MOBS_PLAYERID@
+        [graphics.mobs.dll]
+            id = @MOBS_DLLID@
     
-            [graphics.mobs.player.downwards]
+            [graphics.mobs.dll.downwards]
                 frame-count = 1
                 pos.x = 192
                 pos.y = 16
@@ -21,7 +21,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.upwards]
+            [graphics.mobs.dll.upwards]
                 frame-count = 1
                 pos.x = 208
                 pos.y = 16
@@ -30,7 +30,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.rightwards]
+            [graphics.mobs.dll.rightwards]
                 frame-count = 1
                 pos.x = 208
                 pos.y = 0
@@ -39,7 +39,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.leftwards]
+            [graphics.mobs.dll.leftwards]
                 frame-count = 1
                 pos.x = 192
                 pos.y = 0
@@ -48,7 +48,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.uprightwards]
+            [graphics.mobs.dll.uprightwards]
                 frame-count = 1
                 pos.x = 240
                 pos.y = 0
@@ -57,7 +57,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.upleftwards]
+            [graphics.mobs.dll.upleftwards]
                 frame-count = 1
                 pos.x = 224
                 pos.y = 0
@@ -66,7 +66,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.downrightwards]
+            [graphics.mobs.dll.downrightwards]
                 frame-count = 1
                 pos.x = 240
                 pos.y = 16
@@ -75,7 +75,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.player.downleftwards]
+            [graphics.mobs.dll.downleftwards]
                 frame-count = 1
                 pos.x = 224
                 pos.y = 16
@@ -85,10 +85,10 @@
                 height = 16
 
 
-        [graphics.mobs.scientist]
-            id = @MOBS_SCIENTISTID@
+        [graphics.mobs.harmless]
+            id = @MOBS_HARMLESSID@
     
-            [graphics.mobs.scientist.downwards]
+            [graphics.mobs.harmless.downwards]
                 frame-count = 1
                 pos.x = 192
                 pos.y = 48
@@ -97,7 +97,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.upwards]
+            [graphics.mobs.harmless.upwards]
                 frame-count = 1
                 pos.x = 208
                 pos.y = 48
@@ -106,7 +106,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.rightwards]
+            [graphics.mobs.harmless.rightwards]
                 frame-count = 1
                 pos.x = 208
                 pos.y = 32
@@ -115,7 +115,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.leftwards]
+            [graphics.mobs.harmless.leftwards]
                 frame-count = 1
                 pos.x = 192
                 pos.y = 32
@@ -124,7 +124,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.uprightwards]
+            [graphics.mobs.harmless.uprightwards]
                 frame-count = 1
                 pos.x = 240
                 pos.y = 32
@@ -133,7 +133,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.upleftwards]
+            [graphics.mobs.harmless.upleftwards]
                 frame-count = 1
                 pos.x = 224
                 pos.y = 32
@@ -142,7 +142,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.downrightwards]
+            [graphics.mobs.harmless.downrightwards]
                 frame-count = 1
                 pos.x = 240
                 pos.y = 48
@@ -151,7 +151,7 @@
                 width = 16
                 height = 16
     
-            [graphics.mobs.scientist.downleftwards]
+            [graphics.mobs.harmless.downleftwards]
                 frame-count = 1
                 pos.x = 224
                 pos.y = 48
@@ -160,6 +160,155 @@
                 width = 16
                 height = 16
 
+        [graphics.mobs.patrol]
+            id = @MOBS_PATROLID@
+    
+            [graphics.mobs.patrol.downwards]
+                frame-count = 1
+                pos.x = 0
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.upwards]
+                frame-count = 1
+                pos.x = 16
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.rightwards]
+                frame-count = 1
+                pos.x = 16
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.leftwards]
+                frame-count = 1
+                pos.x = 0
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.uprightwards]
+                frame-count = 1
+                pos.x = 48
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.upleftwards]
+                frame-count = 1
+                pos.x = 32
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.downrightwards]
+                frame-count = 1
+                pos.x = 48
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.patrol.downleftwards]
+                frame-count = 1
+                pos.x = 32
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+
+        [graphics.mobs.aggressive]
+            id = @MOBS_AGGRESSIVEID@
+    
+            [graphics.mobs.aggressive.downwards]
+                frame-count = 1
+                pos.x = 64
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.upwards]
+                frame-count = 1
+                pos.x = 80
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.rightwards]
+                frame-count = 1
+                pos.x = 80
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.leftwards]
+                frame-count = 1
+                pos.x = 64
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.uprightwards]
+                frame-count = 1
+                pos.x = 112
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.upleftwards]
+                frame-count = 1
+                pos.x = 96
+                pos.y = 64
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.downrightwards]
+                frame-count = 1
+                pos.x = 112
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
+    
+            [graphics.mobs.aggressive.downleftwards]
+                frame-count = 1
+                pos.x = 96
+                pos.y = 80
+                shift.x = -8
+                shift.y = -8
+                width = 16
+                height = 16
 
     [graphics.tiles]
         list = ["chasm", "iron-tile", "concrete-tile", "tile-frame"]

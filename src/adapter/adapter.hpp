@@ -66,8 +66,8 @@ public:
 	 * @param handle Handle to the view item
 	 * @return Returns the list of available properties for a given item (may be empty)
 	 */
-	[[nodiscard]] entity_edit::edits entity_properties(view_handle handle) const;
-	void edit_entity(view_handle handle, const entity_edit::edits & new_data);
+	[[nodiscard]] entity_prop::edits entity_properties(view_handle handle) const;
+	void edit_entity(view_handle handle, const entity_prop::edits & new_data);
 
 	// -- Used by model -- //
 
@@ -95,6 +95,8 @@ public:
 
 	void bot_log(bot_log_level level, const char *text);
 
+	void save_map(std::filesystem::path path);
+
 private:
 	/**
 	 * Generates a tooltip for an actionable (door, ...), given its handle
@@ -120,16 +122,16 @@ private:
 	/**
 	 * Compute the list of properties that can be edited (used by map editor)
 	 */
-	[[nodiscard]] entity_edit::edits actionable_entity_properties(view_handle vhandle, model_handle mhandle) const;
-	[[nodiscard]] entity_edit::edits activator_entity_properties(view_handle vhandle, model_handle mhandle) const;
-	[[nodiscard]] entity_edit::edits mob_entity_properties(view_handle vhandle, model_handle mhandle) const;
+	[[nodiscard]] entity_prop::edits actionable_entity_properties(view_handle vhandle, model_handle mhandle) const;
+	[[nodiscard]] entity_prop::edits activator_entity_properties(view_handle vhandle, model_handle mhandle) const;
+	[[nodiscard]] entity_prop::edits mob_entity_properties(view_handle vhandle, model_handle mhandle) const;
 
 	/**
 	 * Enacts modifications of properties (used by map editor)
 	 */
-	void edit_actionable_entity(view_handle handle, const entity_edit::edits& edits);
-	void edit_activator_entity(view_handle handle, const entity_edit::edits& edits);
-	void edit_mob_entity(view_handle handle, const entity_edit::edits& edits);
+	void edit_actionable_entity(view_handle handle, const entity_prop::edits& edits);
+	void edit_activator_entity(view_handle handle, const entity_prop::edits& edits);
+	void edit_mob_entity(view_handle handle, const entity_prop::edits& edits);
 
 	friend terminal_commands;
 

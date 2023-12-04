@@ -3,8 +3,11 @@
 
 namespace utils::resources_type {
 enum class mob_id {
-	player    = MOBS_PLAYERID,
-	scientist = MOBS_SCIENTISTID,
+	dll        = MOBS_DLLID,
+	harmless   = MOBS_HARMLESSID,
+	patrol     = MOBS_PATROLID,
+	aggressive = MOBS_AGGRESSIVEID,
+
 };
 
 enum class object_id {

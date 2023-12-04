@@ -23,11 +23,12 @@ class holder;
 
 namespace utils::resources_type {
 enum class tile_id;
+enum class mob_id;
 }
 
 namespace adapter {
 struct view_handle;
-namespace entity_edit {
+namespace entity_prop {
 	struct behaviour;
 }
 }
@@ -98,7 +99,9 @@ public:
 	adapter::view_handle add_object(object&& mob);
 	void rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept;
 	void erase(adapter::view_handle) noexcept;
-	void set_mob_kind(adapter::view_handle, adapter::entity_edit::behaviour) noexcept;
+	void set_mob_kind(adapter::view_handle, adapter::entity_prop::behaviour) noexcept;
+
+	static utils::resources_type::mob_id mob_id_from_behaviour(adapter::entity_prop::behaviour);
 
     std::atomic_bool show_debug_data{true};
 
