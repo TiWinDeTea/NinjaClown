@@ -63,7 +63,6 @@ std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::
 
 	std::vector<std::vector<std::string>> ret;
 	for (const auto &displayable : m_ordered_displayable) {
-		displayable.first->print(viewer);
 		if (displayable.first->is_hovered(viewer)) {
 			local_info.clear();
 			const adapter::draw_request requests = adapter.tooltip_for(displayable.second);
@@ -74,6 +73,9 @@ std::vector<std::vector<std::string>> view::overmap_collection::print_all(view::
 				ret.emplace_back(std::move(local_info));
 			}
 		}
+	}
+	for (const auto& displayable : m_ordered_displayable) {
+		displayable.first->print(viewer);
 	}
 	return ret;
 }

@@ -81,7 +81,7 @@ std::pair<adapter::model_handle, adapter::view_handle> add_button(unsigned int x
 
 	world.interactions.push_back({model::interaction_kind::LIGHT_MANUAL, model::interactable_kind::BUTTON, world.activators.size()});
 	world.activators.push_back(
-	  {{}, {std::numeric_limits<model::tick_t>::max()}, model::default_activation_delay, model::default_activation_difficulty, false});
+	  {{}, {}, model::default_activation_delay, model::default_activation_difficulty, false});
 
 	return {adapter::model_handle{world.activators.size() - 1, adapter::model_handle::ACTIVATOR}, view.add_object(std::move(obj))};
 }
@@ -570,6 +570,9 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 		auto model_handle = m_view2model.at(view_handle);
 		m_model2view.erase(model_handle);
 		m_view2model.erase(view_handle);
+
+		m_name2view.erase(m_view2name.at(view_handle));
+		m_view2name.erase(view_handle);
 
 		state::access<adapter>::view(m_state).erase(view_handle);
 
