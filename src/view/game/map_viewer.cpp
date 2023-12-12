@@ -119,13 +119,13 @@ sf::Vector2f view::map_viewer::to_screen_coords(float x, float y) const noexcept
 void view::map_viewer::set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id) {
 	switch (id) {
 		case utils::resources_type::tile_id::chasm:
-			m_map.acquire()->set_tile(x, y, map::cell::abyss);
+			m_map.acquire()->set_tile(x, y, cell::abyss);
 			break;
 		case utils::resources_type::tile_id::iron:
-			m_map.acquire()->set_tile(x, y, map::cell::iron_tile);
+			m_map.acquire()->set_tile(x, y, cell::iron_tile);
 			break;
 		case utils::resources_type::tile_id::concrete:
-			m_map.acquire()->set_tile(x, y, map::cell::concrete_tile);
+			m_map.acquire()->set_tile(x, y, cell::concrete_tile);
 			break;
 		case utils::resources_type::tile_id::frame:
 			break;

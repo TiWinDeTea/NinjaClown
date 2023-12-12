@@ -1,27 +1,20 @@
 [file]
 	version = "1.0.0"
+
 [mobs]
-	[[mobs.definition]]
-			name = "clown"
-			hp = 1
-			behaviour = "dll"
-
-	[[mobs.definition]]
-			name = "scientist"
-			hp = 5
-			behaviour = "none"
-
 	[[mobs.spawn]]
-		type = "clown"
 		pos.x = 10
 		pos.y = 2
 		facing = 0
+		hp = 1
+		behaviour = "dll"
 
 	[[mobs.spawn]]
-		type = "scientist"
 		pos.x = 2
 		pos.y = 4
 		facing = -1.5
+		hp = 5
+		behaviour = "harmless"
 
 [actors]
 	[[actors.spawn]]
@@ -89,10 +82,15 @@
 		facing = 0
 
 	[[actors.spawn]]
+		name = "mybutton"
 		type = "button"
 		pos.x = 5
 		pos.y = 1
 		acts_on = ["Le BOSS", "gate2", "gate3", "gate5", "gate6", "gate7", "gate8"]
+
+[target.location]
+		pos.x = 3
+		pos.y = 8
 
 [map]
 	layout = [
@@ -104,7 +102,7 @@
 		"# ######~~~#",
 		"# ####~~~~~#",
 		"# ####~~~~~#",
-		"#  T#      #",
+		"#   #      #",
 		"# ####~~~~~#",
 		"#  #####~~~#",
 		"#        ~~#",

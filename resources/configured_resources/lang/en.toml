@@ -223,7 +223,7 @@
         fmt = "(specified type {type} not recognized)"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.mob_spawn_missing_component"
-        fmt = "Error while parsing map \"{map}\": key {key} was not specified when parsing spawn infos (mob type: {type})"
+        fmt = "Error while parsing map \"{map}\": key {key} was not specified when parsing spawn infos"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_type"
         fmt = "Error while parsing map \"{map}\": encountered actor with unspecified type (key: {key})"
@@ -243,9 +243,6 @@
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_target"
         fmt = "Error while parsing map \"{map}\": {type} actor's target \"{target}\" is unknown"
     [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_mob_def"
-        fmt = "Error while parsing map \"{map}\": missing mob definitions"
-    [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_mob_placings"
         fmt = "Error while parsing map \"{map}\": missing mob placings"
     [[log.entry]]
@@ -254,6 +251,9 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_map_layout"
         fmt = "Error while parsing map \"{map}\": missing map layout"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_target"
+        fmt = "Error while parsing map \"{map}\" : missing target location"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.map_loaded"
         fmt = "map \"{map}\" loaded"
@@ -278,7 +278,18 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.bad_map_char"
         fmt = "Error while parsing map \"{map}\": unknown character '{char}' in map layout ({line}:{column})"
-
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_target"
+        fmt = "Error while parsing map \"{map}\" : missing target tile"
+    [[log.entry]]
+        id = "adapter.save_map.open_failed"
+        fmt = "Map saving: failed to open file \"{file}\""
+    [[log.entry]]
+        id = "adapter.save_map.mob_missing_components"
+        fmt = "The mob \"{handle}\" is missing required components (when saving \"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.forgotten_behaviour_type"
+        fmt = "(when saving \"{file}\")"
     [[log.entry]]
         id = "adapter.map_load_failure"
         fmt = "Failed to load map \"{path}\": {reason}"

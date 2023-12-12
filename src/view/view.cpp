@@ -388,3 +388,6 @@ view::map_viewer& view::view::map_viewer() {
 
 	throw std::runtime_error(utils::gui_str_for("view.view.invalid_state"));
 }
+std::vector<std::vector<view::cell>> view::view::get_cells() {
+	return map_viewer().acquire_cellmap()->get_cells();
+}

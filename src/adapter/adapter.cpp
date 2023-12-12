@@ -427,7 +427,7 @@ void adapter::adapter::create_map(unsigned int width, unsigned int height) {
 	world.map.resize(width, height);
 
 	view::map_viewer map_viewer{m_state};
-	map_viewer.set_map({width, {height, {view::map::cell::abyss}}});
+	map_viewer.set_map({width, {height, {view::cell::abyss}}});
 	state::access<adapter>::view(m_state).set_map(std::move(map_viewer));
 }
 

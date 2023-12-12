@@ -61,7 +61,7 @@ private:
 	 */
 	void display_map_creator();
 	// actually loads the selected map
-	void load_map();
+	[[nodiscard]] bool load_map();
 
 	/**
 	 * Shows the selector (clickables to select what to place : tiles, mobs, ...)

@@ -220,7 +220,7 @@
         fmt = "(type spécifié ({type}) non reconnu)"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.mob_spawn_missing_component"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : la clef {key} est manquante (lors du chargement des information de la section 'spawn') (type de mob : {type})"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : la clef {key} est manquante (lors du chargement des information de la section 'spawn'))"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_type"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : clef '{key}' manquante pour un acteur (type de l'acteur inconnu)"
@@ -240,9 +240,6 @@
         id = "adapter_map_loader_v1_0_0.actor_with_unknown_target"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : un acteur de type '{type}' à pour cible \"{target}\", qui n'est pas connue"
     [[log.entry]]
-        id = "adapter_map_loader_v1_0_0.missing_mob_def"
-        fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'mobs.definition' est maquante"
-    [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_mob_placings"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : section 'mobs.spawn' manquante"
     [[log.entry]]
@@ -251,6 +248,9 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.missing_map_layout"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : entrée 'map.layout' manquante"
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_target"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : entrée 'target.location' manquante"
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.map_loaded"
         fmt = "carte \"{map}\" chargée"
@@ -275,10 +275,18 @@
     [[log.entry]]
         id = "adapter_map_loader_v1_0_0.bad_map_char"
         fmt = "Erreur lors du chargement de la carte \"{map}\" : caractère inconnu '{char}' dans la définition de la carte ({line}:{column})"
-
+    [[log.entry]]
+        id = "adapter_map_loader_v1_0_0.missing_target"
+        fmt = "Erreur lors du chargement de la carte \"{map}\" : case cible non valide"
     [[log.entry]]
         id = "adapter.map_load_failure"
         fmt = "Erreur lors du chargement de la carte \"{path}\" : {reason}"
+    [[log.entry]]
+        id = "adapter.save_map.open_failed"
+        fmt = "Sauvegarde de la carte : impossible d’ouvrir le fichier \"{file}\""
+    [[log.entry]]
+        id = "adapter.save_map.mob_missing_components"
+        fmt = "Le mob \"{handle}\" ne possède pas tout les components nécessaires à sa sauvegarde ({file})"
     [[log.entry]]
         id = "adapter.unsupported_version"
         fmt = "Version '{version}' non supportée pour la carte \"{path}\""

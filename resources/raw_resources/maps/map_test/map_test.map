@@ -1,28 +1,28 @@
 [file]
 	version = "1.0.0"
 [mobs]
-	[[mobs.definition]]
-			name = "clown"
-			hp = 1
-			behaviour = "dll"
-			sprite = "clown"
-	[[mobs.definition]]
-			name = "scientist"
-			inherits = "clown"
-			behaviour = "none"
-			sprite = "scientist"
-
 	[[mobs.spawn]]
-		type = "clown"
 		pos.x = 10
 		pos.y = 2
 		facing = 0
+		hp = 1
+		behaviour = "dll"
 
 	[[mobs.spawn]]
-		type = "scientist"
 		pos.x = 2
 		pos.y = 4
 		facing = -1.5
+		hp = 5
+		behaviour = "patrol"
+		attack_delay = 1
+		throw_delay = 1
+
+	[[mobs.spawn]]
+		pos.x = 2
+		pos.y = 3
+		facing = -1.5
+		hp = 5
+		behaviour = "aggressive"
 
 [actors]
 	[[actors.spawn]]
@@ -80,10 +80,14 @@
 		pos.y = 1
 		acts_on = ["gate1", "gate2", "gate3", "gate4", "gate5", "gate6", "gate7"]
 
+[target.location]
+	pos.x = 2
+	pos.y = 1
+
 [map]
 	layout = [
 		"############",
-		"# T #      #",
+		"#   #      #",
 		"#   # #### #",
 		"#   #      #",
 		"## ###  ~  #",

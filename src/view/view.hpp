@@ -42,6 +42,8 @@ class map_editor;
 class mob;
 class object;
 
+enum class cell;
+
 /**
  * Used mainly as a dispatcher
  */
@@ -89,6 +91,11 @@ public:
 	void move_entity(adapter::view_handle handle, float new_x, float new_y) noexcept;
 	void hide(adapter::view_handle handle) noexcept;
 	void reveal(adapter::view_handle handle) noexcept;
+
+	/**
+	 * Used for map saving
+	 */
+	 std::vector<std::vector<cell>> get_cells();
 
 	/**
 	 * Used mainly when map editing

@@ -50,9 +50,10 @@ bool view::map_editor::show() {
 			m_file_explorer.give_control();
 			if (!m_file_explorer.showing()) {
 				if (m_file_explorer.path_ready()) {
-					load_map();
 					m_file_explorer.close();
-					m_editor_state = editor_state::editing_map;
+                    if (load_map()) {
+						m_editor_state = editor_state::editing_map;
+					}
 				}
 				else {
 					m_editor_state = editor_state::showing_menu;
@@ -348,9 +349,12 @@ void view::map_editor::display_field_editor() {
 	ImGui::End();
 }
 
-void view::map_editor::load_map() {
-	state::access<map_editor>::adapter(m_state).load_map(m_file_explorer.selected_path());
-	m_has_map = true;
+bool view::map_editor::load_map() {
+	if (state::access<map_editor>::adapter(m_state).load_map(m_file_explorer.selected_path())) {
+        m_has_map = true;
+        return true;
+    }
+	return false;
 }
 
 void view::map_editor::display_popup() {

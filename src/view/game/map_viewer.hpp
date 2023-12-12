@@ -90,6 +90,10 @@ public:
 		return m_overmap.acquire();
 	}
 
+	auto acquire_cellmap() {
+		return m_map.acquire();
+	}
+
 	// todo refactor (delete this method)
 	const sf::RenderWindow& window() const {
 		return *m_window;
@@ -104,7 +108,7 @@ public:
 	 [[nodiscard]] std::optional<adapter::view_handle> hovered_entity() const noexcept;
 
  private:
-	void set_map(std::vector<std::vector<map::cell>> &&new_map) {
+	void set_map(std::vector<std::vector<cell>> &&new_map) {
 		auto map = m_map.acquire();
 		map->set(std::move(new_map));
 		m_level_size = map->level_size();

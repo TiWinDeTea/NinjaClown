@@ -22,13 +22,14 @@ class resource_manager;
 namespace view {
 class map_viewer;
 
+enum class cell {
+	iron_tile,
+	concrete_tile,
+	abyss,
+};
+
 class map {
 public:
-	enum class cell {
-		iron_tile,
-		concrete_tile,
-		abyss,
-	};
 
 	void set(std::vector<std::vector<cell>> &&cells) {
 		m_cells = std::move(cells);
@@ -48,6 +49,10 @@ public:
 
 	void set_tile(unsigned int x, unsigned int y, cell c) noexcept {
 		m_cells[x][y] = c;
+	}
+
+	std::vector<std::vector<cell>> get_cells() {
+		return m_cells;
 	}
 
 private:

@@ -3,7 +3,6 @@
 
 
 namespace adapter::map_file::keys {
-constexpr const char *inherits              = "inherits";
 constexpr const char *name                  = "name";
 constexpr const char *hp                    = "hp";
 constexpr const char *attack_delay          = "attack_delay";
@@ -21,21 +20,25 @@ constexpr const char *activation_difficulty = "activation_difficulty";
 constexpr const char *duration              = "duration";
 constexpr const char *delay                 = "delay";
 constexpr const char *acts_on_table         = "acts_on";
-constexpr const char *mobs_def_table        = "mobs.definition";
 constexpr const char *mobs_spawn_table      = "mobs.spawn";
 constexpr const char *actors_spawn_table    = "actors.spawn";
+constexpr const char *layout                = "layout";
 constexpr const char *map_layout            = "map.layout";
+constexpr const char *target                = "target.location";
 } // namespace keys
 
 namespace adapter::map_file::values {
 constexpr const char *none           = "none";
-constexpr const char *scientist      = "scientist";
+constexpr const char *harmless       = "harmless";
+constexpr const char *patrol         = "patrol";
+constexpr const char *aggressive     = "aggressive";
 constexpr const char *dll            = "dll";
 constexpr const char *button         = "button";
 constexpr const char *induction_loop = "induction_loop";
 constexpr const char *infrared_laser = "infrared_laser";
 constexpr const char *autoshooter    = "autoshooter";
 constexpr const char *gate           = "gate";
+constexpr const char *unknown        = "unknown";
 } // namespace values
 
 

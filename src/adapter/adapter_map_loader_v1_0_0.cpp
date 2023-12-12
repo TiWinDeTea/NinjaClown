@@ -21,7 +21,7 @@
 
 using fmt::literals::operator""_a;
 namespace values = adapter::map_file::values;
-namespace keys = adapter::map_file::keys;
+namespace keys   = adapter::map_file::keys;
 
 namespace {
 
@@ -32,17 +32,15 @@ struct point {
 	std::size_t x, y;
 };
 
-struct mob_definition {
-	unsigned int hp;
-	model::tick_t attack_delay;
-	model::tick_t throw_delay;
-	adapter::entity_prop::behaviour behaviour;
-};
+struct mob_definition { };
 
 struct mob {
 	point pos;
 	float facing;
-	const mob_definition &type;
+	unsigned int hp;
+	model::tick_t attack_delay;
+	model::tick_t throw_delay;
+	adapter::entity_prop::behaviour behaviour;
 };
 
 enum class activator_type {
@@ -60,6 +58,7 @@ struct activator {
 	model::tick_t activation_difficulty;
 	activator_type type;
 	std::vector<size_t> target_tiles;
+	std::string name;
 };
 
 struct gate {
@@ -101,7 +100,9 @@ void init_maps() {
 
 	if (globstr_to_activator_type.empty()) {
 		globstr_to_behaviour.emplace(values::none, behaviour{behaviour::bhvr::unsupported});
-		globstr_to_behaviour.emplace(values::scientist, behaviour{behaviour::bhvr::harmless});
+		globstr_to_behaviour.emplace(values::harmless, behaviour{behaviour::bhvr::harmless});
+		globstr_to_behaviour.emplace(values::patrol, behaviour{behaviour::bhvr::patrol});
+		globstr_to_behaviour.emplace(values::aggressive, behaviour{behaviour::bhvr::aggressive});
 		globstr_to_behaviour.emplace(values::dll, behaviour{behaviour::bhvr::dll});
 		globstr_to_activator_type.emplace(values::button, activator_type::BUTTON);
 		globstr_to_activator_type.emplace(values::induction_loop, activator_type::INDUCTION_LOOP);
@@ -109,81 +110,13 @@ void init_maps() {
 	}
 }
 
-[[nodiscard]] usmap<mob_definition> load_mobs_defs(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
-	assert(!globstr_to_behaviour.empty()); // NOLINT
-
-	auto error = [&map](const char *key, auto &&...vals) {
-		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, std::forward<decltype(vals)>(vals)..., "map"_a = map);
-	};
-
-	usmap<mob_definition> mobs_definitions;
-	for (const auto &mob_def : *tables) {
-		mob_definition current{};
-		cpptoml::option<std::string> base = mob_def->get_as<std::string>(keys::inherits);
-		if (base) {
-			if (auto it = mobs_definitions.find(*base); it != mobs_definitions.end()) {
-				current = it->second;
-			}
-			else {
-				error("unknown_mob_reference", "mob"_a = *base);
-				return {};
-			}
-		}
-
-		cpptoml::option<std::string> name = mob_def->get_as<std::string>(keys::name);
-		if (!name) {
-			error("mob_missing_name", "key"_a = keys::name);
-			return {};
-		}
-
-		cpptoml::option<unsigned int> hp = mob_def->get_as<unsigned int>(keys::hp);
-		if (hp) {
-			current.hp = *hp;
-		}
-		else if (!base) {
-			error("mob_missing_hp", "name"_a = *name, "key"_a = keys::hp);
-			return {};
-		}
-
-		current.throw_delay = model::component::default_throw_delay;
-		try_get_silent(mob_def, keys::throw_delay, current.throw_delay);
-
-		current.attack_delay = model::component::default_attack_delay;
-		try_get_silent(mob_def, keys::attack_delay, current.attack_delay);
-
-		cpptoml::option<std::string> behaviour = mob_def->get_as<std::string>(keys::behaviour);
-		if (auto it = globstr_to_behaviour.find(behaviour.value_or("")); it != globstr_to_behaviour.end()) {
-			current.behaviour = it->second;
-		}
-		else if (!base) {
-			error("mob_missing_behaviour", *name, keys::behaviour);
-			return {};
-		}
-
-		mobs_definitions.emplace(*name, current);
-	}
-	return mobs_definitions;
-}
-
-[[nodiscard]] std::vector<mob> load_mobs_spawns(const std::shared_ptr<cpptoml::table_array> &tables,
-                                                const usmap<mob_definition> &definitions, std::string_view map) {
+[[nodiscard]] std::vector<mob> load_mobs_spawns(const std::shared_ptr<cpptoml::table_array> &tables, std::string_view map) {
 	std::vector<mob> loaded_mobs;
 	for (const auto &mob : *tables) {
-
-		cpptoml::option<std::string> type = mob->get_as<std::string>(keys::type);
-		auto parsed_type                  = definitions.find(type.value_or(""));
-		if (!type || parsed_type == definitions.end()) {
-			utils::log::error("adapter_map_loader_v1_0_0.mob_with_unknown_type", "map"_a = map, "key"_a = keys::type);
-			if (type) {
-				utils::log::error("adapter_map_loader_v1_0_0.mob_type_not_recognized", "type"_a = *type);
-			}
-			return {};
-		}
-
-		auto try_get = [&map, &mob, &type](const char *key, auto &value) -> bool {
+		auto try_get = [&map, &mob](const char *key, auto &value) -> bool {
 			return ::try_get(mob, key, value,
 			                 utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
-			                 "map"_a = map, "type"_a = *type, "key"_a = key);
+			                 "map"_a = map, "key"_a = key);
 		};
 
 		std::size_t x_pos{};
@@ -201,7 +134,36 @@ void init_maps() {
 			return {};
 		}
 
-		loaded_mobs.emplace_back(::mob{point{x_pos, y_pos}, static_cast<float>(facing), parsed_type->second});
+		unsigned int hp{};
+		if (!try_get(keys::hp, hp)) {
+			return {};
+		}
+
+		model::tick_t attack_delay{};
+		if (!try_get_silent(mob, keys::attack_delay, attack_delay)) {
+			attack_delay = model::component::default_attack_delay;
+		}
+
+		model::tick_t throw_delay{};
+		if (!try_get_silent(mob, keys::throw_delay, throw_delay)) {
+			throw_delay = model::component::default_throw_delay;
+		}
+
+
+		using adapter::entity_prop::behaviour;
+
+		behaviour bhvr{};
+		const cpptoml::option<std::string> behaviour_str = mob->get_as<std::string>(keys::behaviour);
+		if (auto it = globstr_to_behaviour.find(behaviour_str.value_or("")); it != globstr_to_behaviour.end()) {
+			bhvr = it->second;
+		}
+		else {
+			utils::log::error(utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.mob_spawn_missing_component"),
+			                  "map"_a = map, "key"_a = keys::behaviour);
+			return {};
+		}
+
+		loaded_mobs.emplace_back(::mob{point{x_pos, y_pos}, static_cast<float>(facing), hp, attack_delay, throw_delay, bhvr});
 	}
 	return loaded_mobs;
 }
@@ -225,13 +187,14 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			return {};
 		}
 
-		auto try_get = [&actor, &type](const char *key, auto &value, bool silent = false) -> bool {
+		auto try_get = [&actor, &type, &map](const char *key, auto &value, bool silent = false) -> bool {
 			if (silent) {
 				return try_get_silent(actor, key, value);
 			}
 			else {
-				return ::try_get(actor, key, value, utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.actor_missing_component"), "key"_a = key,
-				                 "type"_a = *type);
+				return ::try_get(actor, key, value,
+				                 utils::resource_manager::instance().log_for("adapter_map_loader_v1_0_0.actor_missing_component"),
+				                 "key"_a = key, "type"_a = *type, "map"_a = map);
 			}
 		};
 
@@ -296,6 +259,10 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 			}
 			activator.type = parsed_type->second;
 
+			if (!try_get(keys::name, activator.name)) {
+				return {};
+			}
+
 			activator.refire_after = std::numeric_limits<decltype(activator.refire_after)>::max();
 			if (!try_get(keys::refire_after, activator.refire_after, true)) {
 				try_get(keys::duration, activator.refire_after, true);
@@ -314,7 +281,7 @@ load_actors(const std::shared_ptr<cpptoml::table_array> &tables, std::string_vie
 
 			auto targets = actor->get_array_of<std::string>(keys::acts_on_table);
 			if (!targets) {
-				error("actor_with_no_target", "type"_a = *type, keys::acts_on_table);
+				error("actor_with_no_target", "type"_a = *type, "key"_a = keys::acts_on_table);
 				return {};
 			}
 			for (const std::string &target : *targets) {
@@ -341,39 +308,32 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 	init_maps();
 
 	auto error = [&map](const char *key, auto &&...vals) {
-		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map,
-		                  std::forward<decltype(vals)>(vals)...);
+		utils::log::error(std::string("adapter_map_loader_v1_0_0.") + key, "map"_a = map, std::forward<decltype(vals)>(vals)...);
 	};
 
 	view::map_viewer map_viewer{m_state};
 
 	{
 
-		auto mobs_defs_toml   = map_file->get_table_array_qualified(keys::mobs_def_table);
 		auto mobs_spawns_toml = map_file->get_table_array_qualified(keys::mobs_spawn_table);
 		auto actors_toml      = map_file->get_table_array_qualified(keys::actors_spawn_table);
+		auto target_toml      = map_file->get_table_qualified(keys::target);
 		auto map_layout_toml  = map_file->get_qualified_array_of<std::string>(keys::map_layout);
 
-		if (!mobs_defs_toml || !mobs_spawns_toml || !map_layout_toml) {
-			if (!mobs_defs_toml) {
-				error("missing_mob_def");
-			}
+		if (!mobs_spawns_toml || !map_layout_toml || !target_toml) {
 			if (!mobs_spawns_toml) {
 				error("missing_mob_placings");
 			}
 			if (!map_layout_toml) {
 				error("missing_map_layout");
 			}
+			if (!target_toml) {
+				error("missing_target");
+			}
 			return false;
 		}
 
-		usmap<mob_definition> mobs_defs = load_mobs_defs(mobs_defs_toml, map);
-		if (mobs_defs.empty()) {
-			error("bad_mob_defs", "map"_a = map);
-			return false;
-		}
-
-		std::vector<mob> mobs = load_mobs_spawns(mobs_spawns_toml, mobs_defs, map);
+		const std::vector<mob> mobs = load_mobs_spawns(mobs_spawns_toml, map);
 		if (mobs.empty()) {
 			error("bad_mob_spawns", "map"_a = map);
 			return false;
@@ -407,7 +367,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 		model::world &world = state::access<adapter>::model(m_state).world;
 
-		std::vector<std::vector<view::map::cell>> view_map{map_width, {map_height, {view::map::cell::abyss}}};
+		std::vector<std::vector<view::cell>> view_map{map_width, {map_height, {view::cell::abyss}}};
 		world.map.resize(map_width, map_height);
 
 		unsigned int line_idx{0};
@@ -422,28 +382,16 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				switch (line[column_idx]) {
 					case '#':
 						world.map[column_idx][line_idx].type = model::cell_type::CHASM;
-						view_map[column_idx][line_idx]        = view::map::cell::abyss;
+						view_map[column_idx][line_idx]       = view::cell::abyss;
 						break;
 					case ' ':
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
+						view_map[column_idx][line_idx]       = view::cell::concrete_tile;
 						break;
 					case '~':
 						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::iron_tile;
+						view_map[column_idx][line_idx]       = view::cell::iron_tile;
 						break;
-					case 'T': {
-						world.map[column_idx][line_idx].type = model::cell_type::GROUND;
-						view_map[column_idx][line_idx]        = view::map::cell::concrete_tile;
-						world.target_tile = {column_idx, line_idx};
-
-						view::object obj;
-						obj.set_id(utils::resources_type::object_id::target);
-						obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
-						obj.reveal();
-						m_target_handle = map_viewer_omap->add_object(std::move(obj));
-						break;
-					}
 					default:
 						error("bad_map_char", "char"_a = line[column_idx], "line"_a = line_idx + 1, "column"_a = column_idx + 1);
 						return false;
@@ -452,6 +400,20 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 
 			++line_idx;
 		}
+
+
+		unsigned int target_x{}, target_y{};
+		try_get(target_toml, map_file::keys::x_pos, target_x, "adapter_map_loader_v1_0_0.missing_target", "map"_a = map);
+		try_get(target_toml, map_file::keys::y_pos, target_y, "adapter_map_loader_v1_0_0.missing_target", "map"_a = map);
+
+		world.target_tile = {target_x, target_y};
+
+		view::object obj;
+		obj.set_id(utils::resources_type::object_id::target);
+		obj.set_pos(world.target_tile.x * model::cst::cell_width, world.target_tile.y * model::cst::cell_height);
+		obj.reveal();
+		m_target_handle = map_viewer_omap->add_object(std::move(obj));
+
 
 		// TODO externaliser vers le fichier de la carte + ajouter une option de mise à l’échelle des objets graphiques
 		const float DEFAULT_HITBOX_HALF_WIDTH  = 0.25f;
@@ -463,7 +425,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 			const float CENTER_Y = static_cast<float>(mob.pos.y) * model::cst::cell_height + model::cst::cell_height / 2.f;
 
 			using bhvr = entity_prop::behaviour::bhvr;
-			switch (mob.type.behaviour.val) {
+			switch (mob.behaviour.val) {
 				case bhvr::harmless:
 					world.components.metadata[model_entity_handle].kind = ninja_api::nnj_entity_kind::EK_HARMLESS;
 					break;
@@ -481,13 +443,13 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 					break;
 			}
 
-			utils::resources_type::mob_id resource_id = view::view::mob_id_from_behaviour(mob.type.behaviour);
+			utils::resources_type::mob_id resource_id = view::view::mob_id_from_behaviour(mob.behaviour);
 
-			world.components.health[model_entity_handle] = {static_cast<std::uint8_t>(mob.type.hp)};
-			world.components.hitbox[model_entity_handle] = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
+			world.components.health[model_entity_handle]      = {static_cast<std::uint8_t>(mob.hp)};
+			world.components.hitbox[model_entity_handle]      = {CENTER_X, CENTER_Y, DEFAULT_HITBOX_HALF_WIDTH, DEFAULT_HITBOX_HALF_HEIGHT};
 			world.components.hitbox[model_entity_handle]->rad = mob.facing;
-			world.components.properties[model_entity_handle].throw_delay  = mob.type.throw_delay;
-			world.components.properties[model_entity_handle].attack_delay = mob.type.attack_delay;
+			world.components.properties[model_entity_handle].throw_delay  = mob.throw_delay;
+			world.components.properties[model_entity_handle].attack_delay = mob.attack_delay;
 
 			model::component::hitbox &hitbox = *world.components.hitbox[model_entity_handle];
 
@@ -545,6 +507,8 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_model2view[model_handle] = view_handle;
 				  m_view2model[view_handle]  = model_handle;
 
+				  m_view2name[view_handle] = std::move(activator.name);
+
 				  world.activators.push_back({activator.target_tiles,
 				                              activator.refire_after == std::numeric_limits<decltype(activator.refire_after)>::max() ?
 				                                std::optional<unsigned int>{} :
@@ -567,12 +531,13 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_view2model[view_handle]  = model_handle;
 				  if (gate.closed) {
 					  world.map[gate.pos.x][gate.pos.y].type = model::cell_type::CHASM;
-				  } else {
+				  }
+				  else {
 					  map_viewer_omap->hide(view_handle);
 				  }
 
 				  m_view2name[view_handle] = gate.name;
-				  m_name2view[gate.name] = view_handle;
+				  m_name2view[gate.name]   = view_handle;
 			  },
 			  [&](const autoshooter &autoshooter) {
 				  const float TOPLEFT_X = static_cast<float>(autoshooter.pos.x) * model::cst::cell_width;
@@ -591,7 +556,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 				  m_model2view[model_handle] = view_handle;
 				  m_view2model[view_handle]  = model_handle;
 
-				  m_view2name[view_handle] = autoshooter.name;
+				  m_view2name[view_handle]      = autoshooter.name;
 				  m_name2view[autoshooter.name] = view_handle;
 			  }};
 			std::visit(visitor, actor);
