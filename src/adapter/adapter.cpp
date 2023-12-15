@@ -580,6 +580,8 @@ void adapter::adapter::remove_entity(view_handle view_handle) {
 		switch (model_handle.type) {
 			case model_handle::ACTIVATOR:
 				// TODO
+				spdlog::error("Error: model activator removal is not implemented! (" __FILE__ ":" + std::to_string(__LINE__) + ")");
+				assert(false);
 				break;
 			case model_handle::ACTIONABLE: {
 				// FIXME: check if activators work with ID (as coded) or with index (this section to reconsider)
@@ -706,6 +708,10 @@ adapter::entity_prop::edits adapter::adapter::activator_entity_properties(view_h
 	for (const auto &handle_name : m_view2name) {
 
 		auto &current_actionable = m_view2model.at(handle_name.first);
+		if (current_actionable.type != model_handle::ACTIONABLE) {
+			continue;
+		}
+
 		bool is_target{false};
 		for (size_t target : world.activators[mhandle.handle].targets) {
 			if (target == current_actionable.handle) {
