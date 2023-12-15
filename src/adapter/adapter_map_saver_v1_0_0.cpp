@@ -119,7 +119,7 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 			}
 		}
 		if (pos_x == std::numeric_limits<unsigned int>::max()) {
-			utils::log::error("adapter.save_map.interaction_pos_not_found", "index"_a = i); // FIXME add key to lang files
+			utils::log::error("adapter.save_map.interaction_pos_not_found", "index"_a = i);
 			continue;
 		}
 
@@ -133,7 +133,6 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 		for (auto target : activator.targets) {
 			targets.push_back(m_view2name.at(m_model2view.at(model_handle{target, model_handle::ACTIONABLE})));
 		}
-
 
 		// Printing
 		os << "\t[[actors.spawn]]\n"
@@ -151,7 +150,8 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 				break;
 			default:
 				os << map_file::values::unknown;
-				utils::log::warn("adapter.save_map.forgotten_interactable_type"); // FIXME add key to lang files
+				utils::log::warn("adapter.save_map.forgotten_interactable_type", "file"_a = path.generic_string(),
+				                 "kind"_a = static_cast<int>(interaction.interactable));
 				break;
 		}
 		os << "\"\n"
@@ -167,7 +167,7 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 
 		if (!targets.empty()) {
 			os << "\t\t" << map_file::keys::acts_on_table << " = [";
-			for (unsigned int j = 0 ; j + 1 < targets.size() ; ++j) {
+			for (unsigned int j = 0; j + 1 < targets.size(); ++j) {
 				os << "\"" << targets[j] << "\", ";
 			}
 			os << "\"" << targets.back() << "\"]\n";
@@ -181,9 +181,8 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 	   << "\n";
 
 	// Map
-	auto print_tile = [&os](view::cell tile) {
-
-		switch(tile) { // FIXME base it on view rather than model
+	auto print_tile = [&os,&path](view::cell tile) {
+		switch (tile) {
 			case view::cell::iron_tile:
 				os << '~';
 				break;
@@ -195,23 +194,23 @@ void adapter::adapter::save_map(std::filesystem::path path) {
 				break;
 			default:
 				os << '?';
-				utils::log::error("adapter.save_map.forgotten_tile_type", "tile"_a = static_cast<int>(tile)); // FIXME add key to lang files
+				utils::log::error("adapter.save_map.forgotten_tile_type", "tile"_a = static_cast<int>(tile), "file"_a = path.generic_string());
 		}
 	};
 
 	os << "[map]\n"
 	   << "\t" << map_file::keys::layout << " = [\n";
 	auto cells = state::access<adapter>::view(m_state).get_cells();
-	for (unsigned int y = 0 ; y + 1 < cells.back().size() ; ++y) {
+	for (unsigned int y = 0; y + 1 < cells.back().size(); ++y) {
 		os << "\t\t\"";
-		for (unsigned int x = 0 ; x < cells.size() ; ++x) {
+		for (unsigned int x = 0; x < cells.size(); ++x) {
 			assert(cells[x].size() == cells.back().size()); // assuming a rectangular map
 			print_tile(cells[x][y]);
 		}
 		os << "\",\n";
 	}
 	os << "\t\t\"";
-	for (unsigned int x = 0 ; x < world.map.width() ; ++x) {
+	for (unsigned int x = 0; x < world.map.width(); ++x) {
 		print_tile(cells[x].back());
 	}
 	os << "\"\n\t]\n";

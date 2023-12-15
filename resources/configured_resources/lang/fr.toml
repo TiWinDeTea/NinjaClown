@@ -288,6 +288,18 @@
         id = "adapter.save_map.mob_missing_components"
         fmt = "Le mob \"{handle}\" ne possède pas tout les components nécessaires à sa sauvegarde ({file})"
     [[log.entry]]
+        id = "adapter.save_map.forgotten_behaviour_type"
+        fmt = "Comportement inconnu (lors de la sauvegarde de \"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.forgotten_interactable_type"
+        fmt = "Type d’interaction inconnu {kind} (\"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.interaction_pos_not_found"
+        fmt = "L’interaction {index} n'a pas de coordonnées sur la carte"
+    [[log.entry]]
+        id = "adapter.save_map.forgotten_tile_type"
+        fmt = "Type de tile inconnu {tile} (\"{file}\")"
+    [[log.entry]]
         id = "adapter.unsupported_version"
         fmt = "Version '{version}' non supportée pour la carte \"{path}\""
     [[log.entry]]

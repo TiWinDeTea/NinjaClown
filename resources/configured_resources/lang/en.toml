@@ -289,7 +289,16 @@
         fmt = "The mob \"{handle}\" is missing required components (when saving \"{file}\")"
     [[log.entry]]
         id = "adapter.save_map.forgotten_behaviour_type"
-        fmt = "(when saving \"{file}\")"
+        fmt = "Unknown behaviour type (when saving \"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.forgotten_interactable_type"
+        fmt = "Unknown interactable kind {kind} (when saving file \"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.forgotten_tile_type"
+        fmt = "Unknown tile {tile} (when saving file \"{file}\")"
+    [[log.entry]]
+        id = "adapter.save_map.interaction_pos_not_found"
+        fmt = "Interaction {index} not found in the map"
     [[log.entry]]
         id = "adapter.map_load_failure"
         fmt = "Failed to load map \"{path}\": {reason}"
