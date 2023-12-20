@@ -75,6 +75,7 @@
 	    closed = false
 
 	[[actors.spawn]]
+	    name = "buttonator"
 		type = "button"
 		pos.x = 6
 		pos.y = 1

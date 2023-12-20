@@ -563,7 +563,7 @@ bool adapter::adapter::load_map_v1_0_0(const std::shared_ptr<cpptoml::table> &ma
 		}
 
 		map_viewer.set_map(std::move(view_map));
-	} // unlocking locks on map_viewer before moving
+	} // unlocking locks on get_map_viewer before moving
 
 	state::access<adapter>::view(m_state).set_map(std::move(map_viewer));
 

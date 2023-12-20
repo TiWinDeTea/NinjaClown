@@ -310,15 +310,15 @@ bool view::view::has_map() const noexcept {
 }
 
 void view::view::move_entity(adapter::view_handle handle, float new_x, float new_y) noexcept {
-	map_viewer().acquire_overmap()->move_entity(handle, new_x, new_y);
+    get_map_viewer().acquire_overmap()->move_entity(handle, new_x, new_y);
 }
 
 void view::view::hide(adapter::view_handle handle) noexcept {
-	map_viewer().acquire_overmap()->hide(handle);
+    get_map_viewer().acquire_overmap()->hide(handle);
 }
 
 void view::view::reveal(adapter::view_handle handle) noexcept {
-	map_viewer().acquire_overmap()->reveal(handle);
+    get_map_viewer().acquire_overmap()->reveal(handle);
 }
 
 void view::view::set_map(::view::map_viewer&& map) {
@@ -335,27 +335,27 @@ void view::view::set_map(::view::map_viewer&& map) {
 }
 
 void view::view::set_tile(unsigned int x, unsigned int y, utils::resources_type::tile_id id) {
-	map_viewer().set_tile(x,y,id);
+    get_map_viewer().set_tile(x, y, id);
 }
 
 adapter::view_handle view::view::add_mob(mob &&mob) {
-	return map_viewer().acquire_overmap()->add_mob(std::move(mob));
+	return get_map_viewer().acquire_overmap()->add_mob(std::move(mob));
 }
 
 adapter::view_handle view::view::add_object(object &&object) {
-	return map_viewer().acquire_overmap()->add_object(std::move(object));
+	return get_map_viewer().acquire_overmap()->add_object(std::move(object));
 }
 
 void view::view::rotate_entity(adapter::view_handle handle, facing_direction::type dir) noexcept {
-	map_viewer().acquire_overmap()->rotate_entity(handle, dir);
+    get_map_viewer().acquire_overmap()->rotate_entity(handle, dir);
 }
 
 void view::view::erase(adapter::view_handle handle) noexcept {
-	map_viewer().acquire_overmap()->erase(handle);
+    get_map_viewer().acquire_overmap()->erase(handle);
 }
 
 void view::view::set_mob_kind(adapter::view_handle handle, adapter::entity_prop::behaviour bhvr) noexcept {
-	map_viewer().acquire_overmap()->set_mob_kind(handle, mob_id_from_behaviour(bhvr));
+    get_map_viewer().acquire_overmap()->set_mob_kind(handle, mob_id_from_behaviour(bhvr));
 }
 
 utils::resources_type::mob_id view::view::mob_id_from_behaviour(adapter::entity_prop::behaviour ibhvr) {
@@ -376,7 +376,7 @@ utils::resources_type::mob_id view::view::mob_id_from_behaviour(adapter::entity_
 	}
 }
 
-view::map_viewer& view::view::map_viewer() {
+view::map_viewer& view::view::get_map_viewer() {
 	switch (m_show_state) {
 		case window::game:
 			return game().get_map();
@@ -389,5 +389,5 @@ view::map_viewer& view::view::map_viewer() {
 	throw std::runtime_error(utils::gui_str_for("view.view.invalid_state"));
 }
 std::vector<std::vector<view::cell>> view::view::get_cells() {
-	return map_viewer().acquire_cellmap()->get_cells();
+	return get_map_viewer().acquire_cellmap()->get_cells();
 }

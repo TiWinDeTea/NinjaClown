@@ -113,7 +113,7 @@ public:
     std::atomic_bool show_debug_data{true};
 
 private:
-	map_viewer& map_viewer();
+	map_viewer& get_map_viewer();
 	void do_run(state::holder&);
 
 	/**
